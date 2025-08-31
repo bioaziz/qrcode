@@ -1,5 +1,9 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import dynamic from "next/dynamic";
+import { useSession, signOut } from "next-auth/react";
+import { Avatar } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import NavBar from "@/components/NavBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,30 +20,39 @@ const QRDesigner = dynamic(() => import("@/components/QRDesigner"), {
 });
 
 export default function Home() {
+  const { data: session, status } = useSession();
   return (
-    <div
-      className={`${geistSans.className} ${geistMono.className} font-sans min-h-screen p-6 md:p-10`}
-    >
-      <main className="mx-auto max-w-6xl space-y-8">
-        <header className="flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-semibold">QR Code Generator</h1>
-            <p className="text-sm text-black/60 dark:text-white/60">
-              Generate QR codes for text, links, phone, email, Wi‑Fi with custom shapes, gradients, and logos.
-            </p>
-          </div>
-          <a
-            href="https://nextjs.org"
-            target="_blank"
-            rel="noreferrer"
-            className="text-sm opacity-60 hover:opacity-100"
-          >
-            Built with Next.js
-          </a>
-        </header>
-
+    <div className={`${geistSans.className} ${geistMono.className} font-sans min-h-screen`}>
+      <NavBar />
+      <main className="mx-auto max-w-6xl px-6 md:px-10 py-8 space-y-6">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-semibold">QR Code Generator</h1>
+          <p className="text-sm text-black/60 dark:text-white/60">
+            Generate QR codes for text, links, phone, email, Wi‑Fi with custom shapes, gradients, and logos.
+          </p>
+        </div>
         <QRDesigner />
       </main>
     </div>
   );
+}
+
+// Redirect unauthenticated users to the sign-in page on first load
+export async function getServerSideProps(context) {
+  const { getServerSession } = await import("next-auth/next");
+  const { authOptions } = await import("./api/auth/[...nextauth]");
+  const session = await getServerSession(context.req, context.res, authOptions);
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/auth/signin",
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: { session },
+  };
 }

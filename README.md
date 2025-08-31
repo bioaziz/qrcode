@@ -30,3 +30,35 @@ No data is sent to a server; everything happens locally in your browser.
 
 Just edit the files and refresh the browser. No build step is required.
 
+
+## Auth Setup (NextAuth)
+
+Local development is configured on port `3008`.
+
+Environment variables (in `.env`):
+- `NEXTAUTH_URL=http://localhost:3008`
+- `NEXTAUTH_SECRET=...` (strong random string)
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`
+- `FACEBOOK_CLIENT_ID` / `FACEBOOK_CLIENT_SECRET`
+- `INSTAGRAM_CLIENT_ID` / `INSTAGRAM_CLIENT_SECRET`
+- `MONGODB_URI=mongodb://localhost:27020/qrcode`
+- `NEXTAUTH_DEBUG=true` (optional, for verbose logs)
+
+Provider redirect URIs
+- Google
+  - Authorized redirect URI: `http://localhost:3008/api/auth/callback/google`
+  - Authorized JavaScript origin: `http://localhost:3008`
+- Facebook
+  - Valid OAuth Redirect URIs: `http://localhost:3008/api/auth/callback/facebook`
+- Instagram (Basic Display)
+  - Valid OAuth Redirect URIs: `http://localhost:3008/api/auth/callback/instagram`
+
+Run with Docker
+1. Fill `.env` as above.
+2. `docker compose up --build`
+3. App available at `http://localhost:3008`
+
+Troubleshooting
+- Redirect URI mismatch: ensure exact match with provider console (including port).
+- Use an incognito window or clear cookies if flows get stuck.
+- Enable `NEXTAUTH_DEBUG=true` to see detailed NextAuth logs.

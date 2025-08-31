@@ -1,0 +1,26 @@
+services:
+  mongo:
+    image: mongo:6
+    restart: unless-stopped
+    ports:
+      - "27020:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  app:
+    build: .
+    depends_on:
+      - mongo
+    ports:
+      - "3008:3000"
+    env_file:
+      - .env
+    environment:
+      # In Docker, refer to Mongo by service name
+      - MONGODB_URI=mongodb://mongo:27017/qrcode
+      - NEXTAUTH_URL=http://localhost:3008
+      - NEXTAUTH_DEBUG=true
+    command: sh -c "npm run dev"
+
+volumes:
+  mongo_data:
