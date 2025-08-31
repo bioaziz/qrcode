@@ -13,6 +13,10 @@ services:
       - mongo
     ports:
       - "3008:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
     env_file:
       - .env
     environment:
@@ -20,6 +24,9 @@ services:
       - MONGODB_URI=mongodb://mongo:27017/qrcode
       - NEXTAUTH_URL=http://localhost:3008
       - NEXTAUTH_DEBUG=true
+      # Ensure file watching works reliably inside containers
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
     command: sh -c "npm run dev"
 
 volumes:
