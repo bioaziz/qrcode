@@ -15,16 +15,16 @@ export default function PresetsTab({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
       <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
-        <div>
-          <Label className="mb-1 block flex items-center gap-2"><Save className="size-4"/> Save preset name</Label>
+        <div className="min-w-0">
+          <Label className="mb-1 block flex flex-wrap items-center gap-2"><Save className="size-4"/> Save preset name</Label>
           <Input value={presetName} onChange={(e) => setPresetName(e.target.value)} placeholder="My preset" />
         </div>
-        <Button type="button" variant="outline" onClick={savePreset}>Save Preset</Button>
+        <Button type="button" variant="outline" className="w-full md:w-auto" onClick={savePreset}>Save Preset</Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
-        <div className="md:col-span-2">
+        <div className="md:col-span-2 min-w-0">
           <Select value={selectedPresetId} onValueChange={setSelectedPresetId}>
-            <SelectTrigger className="w-full"><SelectValue placeholder="Select saved preset" /></SelectTrigger>
+            <SelectTrigger className="w-full truncate"><SelectValue placeholder="Select saved preset" /></SelectTrigger>
             <SelectContent>
               {(!savedPresets || savedPresets.length === 0) && (
                 <SelectItem value="" disabled>No saved presets</SelectItem>
@@ -35,9 +35,9 @@ export default function PresetsTab({
             </SelectContent>
           </Select>
         </div>
-        <div className="flex gap-2">
-          <Button type="button" variant="outline" onClick={loadPreset}>Load</Button>
-          <Button type="button" variant="outline" onClick={deletePreset}>Delete</Button>
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="outline" className="flex-1 md:flex-none" onClick={loadPreset}>Load</Button>
+          <Button type="button" variant="outline" className="flex-1 md:flex-none" onClick={deletePreset}>Delete</Button>
         </div>
       </div>
     </div>
