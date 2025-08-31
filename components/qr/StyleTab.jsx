@@ -158,7 +158,7 @@ export default function StyleTab(props) {
               </RadioGroup>
             </div>
           )}
-          <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-3 sm:gap-4 mt-2">
+          <div className="flex flex-row sm:flex-row sm:flex-wrap items-start sm:items-center gap-3 sm:gap-4 mt-2">
             <div className="flex items-center gap-2 text-xs">
               <Switch id="bg-transparent" checked={bgTransparent} onCheckedChange={setBgTransparent} />
               <Label htmlFor="bg-transparent">Transparent</Label>

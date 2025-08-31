@@ -91,6 +91,10 @@ export default function QRDesigner() {
     const [imageUrl, setImageUrl] = useState("");
     const [imageSize, setImageSize] = useState(0.35); // ratio (0..1)
     const [error, setError] = useState("");
+  // Save to DB
+  const [qrName, setQrName] = useState("");
+  const [savingDb, setSavingDb] = useState(false);
+  const [savedQr, setSavedQr] = useState(null);
 
     // Preset fields
     const [linkUrl, setLinkUrl] = useState("");
@@ -570,6 +574,48 @@ export default function QRDesigner() {
         setSelectedPresetId("");
     };
 
+    const saveQrToDb = async () => {
+      try {
+        setSavingDb(true);
+        setSavedQr(null);
+        const name = qrName.trim() || "Untitled";
+        const designBody = buildSnapshot();
+        let designRef = null;
+        try {
+          const resD = await fetch("/api/design", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(designBody),
+          });
+          const jsD = await resD.json();
+          if (jsD?.success) designRef = jsD.item?._id || null;
+        } catch (_) {}
+        const payload = presetData();
+        const body = {
+          type: "static",
+          staticPayload: payload,
+          meta: { name },
+          ...(designRef ? { designRef } : {}),
+        };
+        const resQ = await fetch("/api/qr", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const jsQ = await resQ.json();
+        if (jsQ?.success) {
+          setSavedQr(jsQ.item);
+          toast.success("QR saved");
+        } else {
+          toast.error(jsQ?.message || "Failed to save");
+        }
+      } catch (e) {
+        toast.error("Failed to save");
+      } finally {
+        setSavingDb(false);
+      }
+    };
+
     return (
         <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-8">
             <Card className="">
@@ -594,10 +640,6 @@ export default function QRDesigner() {
               <TabsTrigger value="logo" className="flex items-center gap-2">
                 <ImageIcon className="size-4" />
                 Logo
-              </TabsTrigger>
-              <TabsTrigger value="presets" className="flex items-center gap-2">
-                <List className="size-4" />
-                Presets
               </TabsTrigger>
             </TabsList>
 
@@ -887,38 +929,6 @@ export default function QRDesigner() {
                             </div>
                         </TabsContent>
 
-                        <TabsContent value="presets" className="space-y-4">
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-                                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
-                                    <div>
-                                        <Label className="mb-1 block">Save preset name</Label>
-                                        <Input value={presetName} onChange={(e) => setPresetName(e.target.value)}
-                                               placeholder="My preset"/>
-                                    </div>
-                                    <Button type="button" variant="outline" onClick={savePreset}>Save Preset</Button>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
-                                    <div className="md:col-span-2">
-                                        <Select value={selectedPresetId} onValueChange={setSelectedPresetId}>
-                                            <SelectTrigger className="w-full"><SelectValue
-                                                placeholder="Select saved preset"/></SelectTrigger>
-                                            <SelectContent>
-                                                {savedPresets.length === 0 && (
-                                                    <SelectItem value="none" disabled>No saved presets</SelectItem>
-                                                )}
-                                                {savedPresets.map((p) => (
-                                                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <Button type="button" variant="outline" onClick={loadPreset}>Load</Button>
-                                        <Button type="button" variant="outline" onClick={deletePreset}>Delete</Button>
-                                    </div>
-                                </div>
-                            </div>
-                        </TabsContent>
                     </Tabs>
                 </CardContent>
             </Card>
@@ -930,6 +940,64 @@ export default function QRDesigner() {
                 >
                     <div ref={ref} className="flex items-center justify-center"/>
                 </CardContent>
+            </Card>
+        
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2"><List className="size-4"/> Presets</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                  <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
+                    <div>
+                      <Label className="mb-1 block">Save preset name</Label>
+                      <Input value={presetName} onChange={(e) => setPresetName(e.target.value)} placeholder="My preset"/>
+                    </div>
+                    <Button type="button" variant="outline" onClick={savePreset}>Save Preset</Button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
+                    <div className="md:col-span-2">
+                      <Select value={selectedPresetId} onValueChange={setSelectedPresetId}>
+                        <SelectTrigger className="w-full"><SelectValue placeholder="Select saved preset"/></SelectTrigger>
+                        <SelectContent>
+                          {savedPresets.length === 0 && (
+                            <SelectItem value="none" disabled>No saved presets</SelectItem>
+                          )}
+                          {savedPresets.map((p) => (
+                            <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button type="button" variant="outline" onClick={loadPreset}>Load</Button>
+                      <Button type="button" variant="outline" onClick={deletePreset}>Delete</Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Save to Library</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <Label className="mb-1 block">QR name</Label>
+                  <Input value={qrName} onChange={(e) => setQrName(e.target.value)} placeholder="My QR" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button onClick={saveQrToDb} disabled={savingDb}>{savingDb ? "Saving…" : "Save QR"}</Button>
+                  {savedQr?.slug && (
+                    <a className="text-sm underline" href="/qrs">
+                      View in My QR Codes
+                    </a>
+                  )}
+                </div>
+              </CardContent>
             </Card>
         </div>
     );

@@ -7,10 +7,20 @@ services:
     volumes:
       - mongo_data:/data/db
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "63790:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+
   app:
     build: .
     depends_on:
       - mongo
+      - redis
     ports:
       - "3008:3000"
     volumes:
@@ -24,6 +34,7 @@ services:
       - MONGODB_URI=mongodb://mongo:27017/qrcode
       - NEXTAUTH_URL=http://localhost:3008
       - NEXTAUTH_DEBUG=true
+      - REDIS_URL=redis://redis:6379/0
       # Ensure file watching works reliably inside containers
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
@@ -31,3 +42,4 @@ services:
 
 volumes:
   mongo_data:
+  redis_data:
