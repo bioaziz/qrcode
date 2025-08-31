@@ -69,14 +69,20 @@ Acceptance
   - Create a minimal micro‑app page template (for campaign/landing experiences).
   - Add stubs for pay‑later flow integration.
 
-## Week 4 — Planned
+## Week 4 — In Progress
 
-- Studio UI finalize
-  - Full list/edit/export; embed QRDesigner in edit flow and persist `Design` + `QrCode`.
+- Studio/UI polish
+  - Card overflow hardened (`overflow-hidden`, `min-w-0`, `break-words`), long slugs/titles now truncate/wrap.
+  - QRDesigner Style tab: switch row wraps; Presets and Save‑to‑Library grids no longer overflow.
+  - Gradient reset bugfix: switching away from gradient clears lingering background gradient.
 - Presets storage
-  - Persist Designer presets (user or tenant scoped) to Mongo.
+  - `Preset` model + `pages/api/presets` (GET/POST, GET/DELETE by id).
+  - Designer Presets card supports local and cloud save/load.
 - Admin pages
-  - Analytics admin (global filters) and fallback management.
+  - Fallback management UI at `/studio/admin/fallbacks` (`fallback.redirect`).
+  - Studio routes gated to admins via `ADMIN_EMAILS`.
+- Payments (planned this week)
+  - Replace pay‑later stub with a real PSP checkout/init session and test landing pages.
 
 ## Week 5+ — Optional
 
@@ -95,4 +101,3 @@ Acceptance
 - Frontend: `components/QRDesigner.jsx`, `components/ui/*`, `pages/_app.js`, `pages/index.js`, `components/NavBar.jsx`, Docker files.
 - Designer modules: `components/qr/{ContentTab,StyleTab,CornersTab,LogoTab,PresetsTab}.jsx`.
 - Backend: `models/{Tenant,Design,QrCode}.js`, `lib/auth.js`, `pages/api/qr/*`, `pages/studio/qrs.js`.
-

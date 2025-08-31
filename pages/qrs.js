@@ -18,11 +18,12 @@ export default function UserQrs() {
   const [selected, setSelected] = useState(null);
   const [testDest, setTestDest] = useState("");
   const [testing, setTesting] = useState(false);
+  const [deletingId, setDeletingId] = useState("");
 
   async function fetchList() {
     setLoading(true);
     try {
-      const res = await fetch(`/api/qr?q=${encodeURIComponent(query)}`);
+      const res = await fetch(`/api/qr?q=${encodeURIComponent(query)}&status=active`);
       const json = await res.json();
       if (json?.success) setItems(json.items || []);
     } finally {
@@ -59,6 +60,22 @@ export default function UserQrs() {
     }
   }
 
+  async function deleteQr(item) {
+    if (!item?._id) return;
+    const ok = window.confirm("Delete this QR? It will be archived.");
+    if (!ok) return;
+    setDeletingId(item._id);
+    try {
+      const res = await fetch(`/api/qr/${encodeURIComponent(item._id)}`, { method: "DELETE" });
+      if (res.ok) {
+        setItems((prev) => prev.filter((x) => x._id !== item._id));
+        if (openId === item._id) closePreview();
+      }
+    } finally {
+      setDeletingId("");
+    }
+  }
+
   if (status === "loading") return null;
 
   return (
@@ -83,11 +100,11 @@ export default function UserQrs() {
               </div>
             </CardHeader>
             <CardContent className="space-y-2 flex-1">
-              <div className="text-sm opacity-70 truncate">Slug: <code>{it.slug}</code></div>
-              <div className="flex gap-2 pt-2">
+              <div className="text-sm opacity-70">Slug: <code className="break-all">{it.slug}</code></div>
+              <div className="flex gap-2 pt-2 flex-wrap">
                 <Button size="sm" onClick={() => openPreview(it)}>Preview</Button>
                 <Link href={`/r/${it.slug}`} target="_blank"><Button size="sm" variant="outline">Open</Button></Link>
-                <Link href={`/studio/analytics?slug=${encodeURIComponent(it.slug)}`}><Button size="sm" variant="outline">Analytics</Button></Link>
+                <Button size="sm" variant="outline" onClick={() => deleteQr(it)} disabled={deletingId === it._id}>{deletingId === it._id ? "Deleting…" : "Delete"}</Button>
               </div>
             </CardContent>
           </Card>
@@ -127,7 +144,7 @@ export default function UserQrs() {
               <div className="flex flex-wrap gap-2 pt-1">
                 <Link href={`/r/${selected.slug}`} target="_blank"><Button size="sm">Open Redirect</Button></Link>
                 <Link href={`/m/${selected.slug}`}><Button size="sm" variant="outline">Open Micro‑app</Button></Link>
-                <Link href={`/studio/analytics?slug=${encodeURIComponent(selected.slug)}`}><Button size="sm" variant="outline">Open Analytics</Button></Link>
+                <Button size="sm" variant="outline" onClick={() => deleteQr(selected)} disabled={deletingId === selected?._id}>{deletingId === selected?._id ? "Deleting…" : "Delete"}</Button>
                 <Button size="sm" variant="outline" onClick={doTestResolve} disabled={testing}>Test resolve</Button>
               </div>
             </div>

@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { getServerSession } from "next-auth/next";
+import { isAdminEmail } from "@/lib/admin";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
@@ -8,6 +10,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 export default function Analytics() {
   const { status } = useSession();
   const [slug, setSlug] = useState("");
+  const [days, setDays] = useState(14);
+  const [list, setList] = useState([]);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -15,7 +19,7 @@ export default function Analytics() {
     if (!slug) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/analytics/summary?slug=${encodeURIComponent(slug)}&days=14`);
+      const res = await fetch(`/api/analytics/summary?slug=${encodeURIComponent(slug)}&days=${encodeURIComponent(days)}`);
       const json = await res.json();
       if (json?.success) setData(json.data);
     } finally {
@@ -28,6 +32,7 @@ export default function Analytics() {
       const params = new URLSearchParams(window.location.search);
       const s = params.get("slug");
       if (s) setSlug(s);
+      fetch('/api/qr').then(r=>r.json()).then(js=>{ if (js?.success) setList(js.items || []); }).catch(()=>{});
     }
   }, [status]);
 
@@ -38,8 +43,10 @@ export default function Analytics() {
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">Analytics</h1>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Input placeholder="Slug (e.g. summer-campaign)" value={slug} onChange={(e) => setSlug(e.target.value)} />
+          <select className="rounded-md border px-2 py-2" value={slug} onChange={(e)=>setSlug(e.target.value)}><option value="">Pick from list…</option>{list.map((it)=>(<option key={it._id} value={it.slug}>{it.meta?.name || it.slug}</option>))}</select>
+          <Input type="number" className="w-24" value={days} onChange={(e)=>setDays(Number(e.target.value)||14)} />
           <Button onClick={load} disabled={!slug || loading}>Load</Button>
           <Link href="/studio/qrs"><Button variant="outline">Back to Studio</Button></Link>
         </div>
@@ -80,11 +87,35 @@ export default function Analytics() {
               </div>
             </CardContent>
           </Card>
+          <Card>
+            <CardHeader><CardTitle className="text-base">Top Countries</CardTitle></CardHeader>
+            <CardContent className="space-y-1 text-sm">
+              {Object.entries(data.countries || {}).sort((a,b)=>Number(b[1])-Number(a[1])).slice(0,10).map(([k,v])=> (
+                <div key={k} className="flex justify-between"><span>{k}</span><span>{v}</span></div>
+              ))}
+              {!Object.keys(data.countries||{}).length && <div className="opacity-70">No data</div>}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader><CardTitle className="text-base">Top Cities</CardTitle></CardHeader>
+            <CardContent className="space-y-1 text-sm">
+              {Object.entries(data.cities || {}).sort((a,b)=>Number(b[1])-Number(a[1])).slice(0,10).map(([k,v])=> (
+                <div key={k} className="flex justify-between"><span>{k}</span><span>{v}</span></div>
+              ))}
+              {!Object.keys(data.cities||{}).length && <div className="opacity-70">No data</div>}
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>
   );
 }
 
-export { getServerSideProps } from "@/pages/index";
+export async function getServerSideProps(context) {
+  const { authOptions } = await import("@/pages/api/auth/[...nextauth]");
+  const session = await getServerSession(context.req, context.res, authOptions);
+  if (!session) return { redirect: { destination: "/auth/signin", permanent: false } };
+  if (!isAdminEmail(session.user?.email)) return { notFound: true };
+  return { props: {} };
+}
 

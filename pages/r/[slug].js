@@ -1,6 +1,7 @@
 import { dbConnect } from "@/lib/mongoose";
 import QrCode from "@/models/QrCode";
 import { logScanEvent } from "@/lib/redis";
+import { getSetting } from "@/lib/settings";
 
 function detectDevice(ua = "") {
   const s = ua.toLowerCase();
@@ -108,8 +109,9 @@ export async function getServerSideProps(ctx) {
   await dbConnect();
   const code = await QrCode.findOne({ slug }).lean();
   if (!code || code.status !== "active") {
+    const fb = await getSetting('fallback.redirect', '/');
     return {
-      redirect: { destination: "/", permanent: false },
+      redirect: { destination: fb || "/", permanent: false },
     };
   }
 

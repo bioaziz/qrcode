@@ -1,9 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import dynamic from "next/dynamic";
-import { useSession, signOut } from "next-auth/react";
-import { Avatar } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import NavBar from "@/components/NavBar";
+import { useSession } from "next-auth/react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,10 +17,9 @@ const QRDesigner = dynamic(() => import("@/components/QRDesigner"), {
 });
 
 export default function Home() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   return (
     <div className={`${geistSans.className} ${geistMono.className} font-sans min-h-screen`}>
-      <NavBar />
       <main className="mx-auto max-w-6xl px-6 md:px-10 py-8 space-y-6">
         <div>
           <h1 className="text-2xl md:text-3xl font-semibold">QR Code Generator</h1>

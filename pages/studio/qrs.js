@@ -47,6 +47,8 @@ export default function QrStudio() {
           <Input placeholder="Search…" value={query} onChange={(e) => setQuery(e.target.value)} />
           <Button onClick={fetchList} disabled={loading}>Search</Button>
           <Button onClick={createQuick}>New QR</Button>
+          <a href="/api/qr/export?format=json" target="_blank" rel="noreferrer"><Button variant="outline">Export JSON</Button></a>
+          <a href="/api/qr/export?format=csv" target="_blank" rel="noreferrer"><Button variant="outline">Export CSV</Button></a>
           <Link href="/"><Button variant="outline">Open Designer</Button></Link>
         </div>
       </div>
@@ -55,11 +57,11 @@ export default function QrStudio() {
         {items.map((it) => (
           <Card key={it._id}>
             <CardHeader>
-              <CardTitle className="text-base">{it?.meta?.name || it.slug}</CardTitle>
+              <CardTitle className="text-base truncate" title={it?.meta?.name || it.slug}>{it?.meta?.name || it.slug}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="text-sm opacity-70">Type: {it.type}</div>
-              <div className="text-sm">Slug: <code>{it.slug}</code></div>
+              <div className="text-sm">Slug: <code className="break-all">{it.slug}</code></div>
               <div className="flex gap-2">
                 <Link href={`/studio/qrs/${it._id}`} className="underline text-sm">Edit</Link>
                 <a href={`/r/${it.slug}`} target="_blank" rel="noreferrer" className="underline text-sm">Open</a>
@@ -72,5 +74,10 @@ export default function QrStudio() {
   );
 }
 
-export { getServerSideProps } from "@/pages/index";
-
+export async function getServerSideProps(context) {
+  const { authOptions } = await import("@/pages/api/auth/[...nextauth]");
+  const session = await getServerSession(context.req, context.res, authOptions);
+  if (!session) return { redirect: { destination: "/auth/signin", permanent: false } };
+  if (!isAdminEmail(session.user?.email)) return { notFound: true };
+  return { props: {} };
+}

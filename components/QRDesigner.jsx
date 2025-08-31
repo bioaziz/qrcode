@@ -18,20 +18,20 @@ import {Button} from "@/components/ui/button";
 import {toast} from "sonner";
 import {Card, CardHeader, CardTitle, CardContent} from "@/components/ui/card";
 import {
-  Palette,
-  Shapes,
-  Square as SquareIcon,
-  Circle,
-  Image as ImageIcon,
-  List,
-  Link as LinkIcon,
-  Phone as PhoneIcon,
-  Mail,
-  Wifi as WifiIcon,
-  Save,
-  QrCode,
-  Maximize2,
-  Shield,
+    Palette,
+    Shapes,
+    Square as SquareIcon,
+    Circle,
+    Image as ImageIcon,
+    List,
+    Link as LinkIcon,
+    Phone as PhoneIcon,
+    Mail,
+    Wifi as WifiIcon,
+    Save,
+    QrCode,
+    Maximize2,
+    Shield,
 } from "lucide-react";
 import ContentTab from "@/components/qr/ContentTab";
 
@@ -54,7 +54,7 @@ const DOT_TYPES = [
 const CORNER_SQUARE_TYPES = ["square", "extra-rounded"];
 const CORNER_DOT_TYPES = ["square", "dot"]; // library accepts these
 
-export default function QRDesigner() {
+export default function QRDesigner({embedded = false, initialSnapshot = null, onSnapshotChange = null}) {
     const ref = useRef(null);
     const qrRef = useRef(null);
 
@@ -91,10 +91,10 @@ export default function QRDesigner() {
     const [imageUrl, setImageUrl] = useState("");
     const [imageSize, setImageSize] = useState(0.35); // ratio (0..1)
     const [error, setError] = useState("");
-  // Save to DB
-  const [qrName, setQrName] = useState("");
-  const [savingDb, setSavingDb] = useState(false);
-  const [savedQr, setSavedQr] = useState(null);
+    // Save to DB
+    const [qrName, setQrName] = useState("");
+    const [savingDb, setSavingDb] = useState(false);
+    const [savedQr, setSavedQr] = useState(null);
 
     // Preset fields
     const [linkUrl, setLinkUrl] = useState("");
@@ -192,7 +192,7 @@ export default function QRDesigner() {
             data: presetData() || "https://",
             backgroundOptions: {
                 color: bgTransparent ? "transparent" : bgColor,
-                ...(bgGradEnabled
+                ...(bgGradEnabled && !bgTransparent
                     ? {
                         gradient: {
                             type: bgGradType,
@@ -210,7 +210,7 @@ export default function QRDesigner() {
                                     ],
                         },
                     }
-                    : {}),
+                    : { gradient: null }),
             },
             image: imageUrl || undefined,
             imageOptions: {
@@ -244,7 +244,7 @@ export default function QRDesigner() {
                                     ],
                         },
                     }
-                    : {}),
+                    : { gradient: null }),
             },
             cornersSquareOptions: {
                 color: cornerSquareColor,
@@ -564,6 +564,20 @@ export default function QRDesigner() {
     };
 
     const [selectedPresetId, setSelectedPresetId] = useState("");
+    // Cloud presets
+    const [cloudPresets, setCloudPresets] = useState([]);
+    const [cloudSelectedId, setCloudSelectedId] = useState("");
+    const refreshCloudPresets = async () => {
+        try {
+            const r = await fetch('/api/presets');
+            const js = await r.json();
+            if (js?.success) setCloudPresets(js.items || []);
+        } catch (_) {
+        }
+    };
+    useEffect(() => {
+        refreshCloudPresets();
+    }, []);
     const loadPreset = () => {
         const p = savedPresets.find((x) => x.id === selectedPresetId);
         if (p) applySnapshot(p);
@@ -575,45 +589,46 @@ export default function QRDesigner() {
     };
 
     const saveQrToDb = async () => {
-      try {
-        setSavingDb(true);
-        setSavedQr(null);
-        const name = qrName.trim() || "Untitled";
-        const designBody = buildSnapshot();
-        let designRef = null;
         try {
-          const resD = await fetch("/api/design", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(designBody),
-          });
-          const jsD = await resD.json();
-          if (jsD?.success) designRef = jsD.item?._id || null;
-        } catch (_) {}
-        const payload = presetData();
-        const body = {
-          type: "static",
-          staticPayload: payload,
-          meta: { name },
-          ...(designRef ? { designRef } : {}),
-        };
-        const resQ = await fetch("/api/qr", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
-        const jsQ = await resQ.json();
-        if (jsQ?.success) {
-          setSavedQr(jsQ.item);
-          toast.success("QR saved");
-        } else {
-          toast.error(jsQ?.message || "Failed to save");
+            setSavingDb(true);
+            setSavedQr(null);
+            const name = qrName.trim() || "Untitled";
+            const designBody = buildSnapshot();
+            let designRef = null;
+            try {
+                const resD = await fetch("/api/design", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(designBody),
+                });
+                const jsD = await resD.json();
+                if (jsD?.success) designRef = jsD.item?._id || null;
+            } catch (_) {
+            }
+            const payload = presetData();
+            const body = {
+                type: "static",
+                staticPayload: payload,
+                meta: {name},
+                ...(designRef ? {designRef} : {}),
+            };
+            const resQ = await fetch("/api/qr", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(body),
+            });
+            const jsQ = await resQ.json();
+            if (jsQ?.success) {
+                setSavedQr(jsQ.item);
+                toast.success("QR saved");
+            } else {
+                toast.error(jsQ?.message || "Failed to save");
+            }
+        } catch (e) {
+            toast.error("Failed to save");
+        } finally {
+            setSavingDb(false);
         }
-      } catch (e) {
-        toast.error("Failed to save");
-      } finally {
-        setSavingDb(false);
-      }
     };
 
     return (
@@ -624,73 +639,82 @@ export default function QRDesigner() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <Tabs defaultValue="content">
-            <TabsList>
-              <TabsTrigger value="content" className="flex items-center gap-2">
-                <QrCode className="size-4" />
-                Content
-              </TabsTrigger>
-              <TabsTrigger value="style" className="flex items-center gap-2">
-                <Palette className="size-4" />
-                Style
-              </TabsTrigger>
-              <TabsTrigger value="corners" className="flex items-center gap-2">
-                <Shapes className="size-4" />
-                Corners
-              </TabsTrigger>
-              <TabsTrigger value="logo" className="flex items-center gap-2">
-                <ImageIcon className="size-4" />
-                Logo
-              </TabsTrigger>
-            </TabsList>
+                        <TabsList>
+                            <TabsTrigger value="content" className="flex items-center gap-2">
+                                <QrCode className="size-4"/>
+                                Content
+                            </TabsTrigger>
+                            <TabsTrigger value="style" className="flex items-center gap-2">
+                                <Palette className="size-4"/>
+                                Style
+                            </TabsTrigger>
+                            <TabsTrigger value="corners" className="flex items-center gap-2">
+                                <Shapes className="size-4"/>
+                                Corners
+                            </TabsTrigger>
+                            <TabsTrigger value="logo" className="flex items-center gap-2">
+                                <ImageIcon className="size-4"/>
+                                Logo
+                            </TabsTrigger>
+                        </TabsList>
 
                         <TabsContent value="content" className="space-y-4">
-                          <ContentTab
-                            mode={mode} setMode={setMode}
-                            data={data} setData={setData}
-                            linkUrl={linkUrl} setLinkUrl={setLinkUrl}
-                            phone={phone} setPhone={setPhone}
-                            email={email} setEmail={setEmail}
-                            emailSubject={emailSubject} setEmailSubject={setEmailSubject}
-                            emailBody={emailBody} setEmailBody={setEmailBody}
-                            firstName={firstName} setFirstName={setFirstName}
-                            lastName={lastName} setLastName={setLastName}
-                            contactPhone={contactPhone} setContactPhone={setContactPhone}
-                            contactEmail={contactEmail} setContactEmail={setContactEmail}
-                            org={org} setOrg={setOrg}
-                            url={url} setUrl={setUrl}
-                            note={note} setNote={setNote}
-                            street={street} setStreet={setStreet}
-                            city={city} setCity={setCity}
-                            state={state} setState={setState}
-                            zip={zip} setZip={setZip}
-                            country={country} setCountry={setCountry}
-                            wifiSsid={wifiSsid} setWifiSsid={setWifiSsid}
-                            wifiType={wifiType} setWifiType={setWifiType}
-                            wifiPass={wifiPass} setWifiPass={setWifiPass}
-                            wifiHidden={wifiHidden} setWifiHidden={setWifiHidden}
-                            validation={validation}
-                            copyContent={() => { copyContent(); toast.success("Content copied"); }}
-                            copyImage={() => { copyImage(); toast.success("Image copied"); }}
-                          />
+                            <ContentTab
+                                mode={mode} setMode={setMode}
+                                data={data} setData={setData}
+                                linkUrl={linkUrl} setLinkUrl={setLinkUrl}
+                                phone={phone} setPhone={setPhone}
+                                email={email} setEmail={setEmail}
+                                emailSubject={emailSubject} setEmailSubject={setEmailSubject}
+                                emailBody={emailBody} setEmailBody={setEmailBody}
+                                firstName={firstName} setFirstName={setFirstName}
+                                lastName={lastName} setLastName={setLastName}
+                                contactPhone={contactPhone} setContactPhone={setContactPhone}
+                                contactEmail={contactEmail} setContactEmail={setContactEmail}
+                                org={org} setOrg={setOrg}
+                                url={url} setUrl={setUrl}
+                                note={note} setNote={setNote}
+                                street={street} setStreet={setStreet}
+                                city={city} setCity={setCity}
+                                state={state} setState={setState}
+                                zip={zip} setZip={setZip}
+                                country={country} setCountry={setCountry}
+                                wifiSsid={wifiSsid} setWifiSsid={setWifiSsid}
+                                wifiType={wifiType} setWifiType={setWifiType}
+                                wifiPass={wifiPass} setWifiPass={setWifiPass}
+                                wifiHidden={wifiHidden} setWifiHidden={setWifiHidden}
+                                validation={validation}
+                                copyContent={() => {
+                                    copyContent();
+                                    toast.success("Content copied");
+                                }}
+                                copyImage={() => {
+                                    copyImage();
+                                    toast.success("Image copied");
+                                }}
+                            />
                         </TabsContent>
 
                         <TabsContent value="style" className="space-y-6">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div>
-                                            <Label className="block mb-1 flex items-center gap-2"><Maximize2 className="size-4"/> Size: {size}px</Label>
-                                            <Slider min={128} max={512} value={[size]}
-                                                    onValueChange={(val) => setSize(val?.[0] ?? 256)}/>
-                                        </div>
-                                        <div>
-                                            <Label className="block mb-1 flex items-center gap-2"><Maximize2 className="size-4"/> Quiet zone: {quietZone}px</Label>
-                                            <Slider min={0} max={32} value={[quietZone]}
-                                                    onValueChange={(val) => setQuietZone(val?.[0] ?? 4)}/>
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div>
-                                            <Label className="block mb-1 flex items-center gap-2"><Shield className="size-4"/> Error correction</Label>
-                                            <Select value={errorCorrection} onValueChange={setErrorCorrection}>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <Label className="block mb-1 flex items-center gap-2"><Maximize2
+                                        className="size-4"/> Size: {size}px</Label>
+                                    <Slider min={128} max={512} value={[size]}
+                                            onValueChange={(val) => setSize(val?.[0] ?? 256)}/>
+                                </div>
+                                <div>
+                                    <Label className="block mb-1 flex items-center gap-2"><Maximize2
+                                        className="size-4"/> Quiet zone: {quietZone}px</Label>
+                                    <Slider min={0} max={32} value={[quietZone]}
+                                            onValueChange={(val) => setQuietZone(val?.[0] ?? 4)}/>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <Label className="block mb-1 flex items-center gap-2"><Shield
+                                        className="size-4"/> Error correction</Label>
+                                    <Select value={errorCorrection} onValueChange={setErrorCorrection}>
                                         <SelectTrigger className="w-full"><SelectValue
                                             placeholder="Level"/></SelectTrigger>
                                         <SelectContent>
@@ -705,7 +729,8 @@ export default function QRDesigner() {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                                 <div>
-                                    <Label className="block mb-1 flex items-center gap-2"><Shapes className="size-4"/> Dots type</Label>
+                                    <Label className="block mb-1 flex items-center gap-2"><Shapes
+                                        className="size-4"/> Dots type</Label>
                                     <Select value={dotType} onValueChange={setDotType}>
                                         <SelectTrigger className="w-full"><SelectValue
                                             placeholder="Type"/></SelectTrigger>
@@ -718,7 +743,9 @@ export default function QRDesigner() {
                                 </div>
                                 {!dotGradEnabled && (
                                     <div>
-                                    <label className="block text-sm font-medium mb-1 flex items-center gap-2"><Palette className="size-4"/> Dots color</label>
+                                        <label
+                                            className="block text-sm font-medium mb-1 flex items-center gap-2"><Palette
+                                            className="size-4"/> Dots color</label>
                                         <Input type="color" value={dotColor}
                                                onChange={(e) => setDotColor(e.target.value)}
                                                className="h-10 w-full cursor-pointer"/>
@@ -726,7 +753,8 @@ export default function QRDesigner() {
                                 )}
                                 {dotGradEnabled && (
                                     <div className="space-y-2">
-                                        <label className="block text-sm font-medium flex items-center gap-2"><Palette className="size-4"/> Dots gradient</label>
+                                        <label className="block text-sm font-medium flex items-center gap-2"><Palette
+                                            className="size-4"/> Dots gradient</label>
                                         <div className="grid grid-cols-2 gap-2">
                                             <Input type="color" value={dotGradStart}
                                                    onChange={(e) => setDotGradStart(e.target.value)}/>
@@ -770,7 +798,8 @@ export default function QRDesigner() {
                                 )}
 
                                 <div>
-                                    <label className="block text-sm font-medium mb-1 flex items-center gap-2"><Palette className="size-4"/> Background</label>
+                                    <label className="block text-sm font-medium mb-1 flex items-center gap-2"><Palette
+                                        className="size-4"/> Background</label>
                                     {!bgGradEnabled && (
                                         <Input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)}
                                                className="h-10 w-full cursor-pointer" disabled={bgTransparent}/>
@@ -824,7 +853,7 @@ export default function QRDesigner() {
                                         </div>
                                     )}
                                     <div
-                                        className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mt-2">
+                                        className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-3 sm:gap-4 mt-2 w-full">
                                         <div className="flex items-center gap-2 text-xs">
                                             <Switch id="bg-transparent" checked={bgTransparent}
                                                     onCheckedChange={setBgTransparent}/>
@@ -848,7 +877,8 @@ export default function QRDesigner() {
                         <TabsContent value="corners" className="space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                                 <div>
-                                    <Label className="block mb-1 flex items-center gap-2"><SquareIcon className="size-4"/> Corner square</Label>
+                                    <Label className="block mb-1 flex items-center gap-2"><SquareIcon
+                                        className="size-4"/> Corner square</Label>
                                     <Select value={cornerSquareType} onValueChange={setCornerSquareType}>
                                         <SelectTrigger className="w-full"><SelectValue
                                             placeholder="Type"/></SelectTrigger>
@@ -860,13 +890,16 @@ export default function QRDesigner() {
                                     </Select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1 flex items-center gap-2"><SquareIcon className="size-4"/> Corner square color</label>
+                                    <label
+                                        className="block text-sm font-medium mb-1 flex items-center gap-2"><SquareIcon
+                                        className="size-4"/> Corner square color</label>
                                     <Input type="color" value={cornerSquareColor}
                                            onChange={(e) => setCornerSquareColor(e.target.value)}
                                            className="h-10 w-full cursor-pointer"/>
                                 </div>
                                 <div>
-                                    <Label className="block mb-1 flex items-center gap-2"><Circle className="size-4"/> Corner dot</Label>
+                                    <Label className="block mb-1 flex items-center gap-2"><Circle
+                                        className="size-4"/> Corner dot</Label>
                                     <Select value={cornerDotType} onValueChange={setCornerDotType}>
                                         <SelectTrigger className="w-full"><SelectValue
                                             placeholder="Type"/></SelectTrigger>
@@ -880,7 +913,8 @@ export default function QRDesigner() {
 
 
                                 <div>
-                                    <label className="block text-sm font-medium mb-1 flex items-center gap-2"><Circle className="size-4"/> Corner dot color</label>
+                                    <label className="block text-sm font-medium mb-1 flex items-center gap-2"><Circle
+                                        className="size-4"/> Corner dot color</label>
                                     <Input type="color" value={cornerDotColor}
                                            onChange={(e) => setCornerDotColor(e.target.value)}
                                            className="h-10 w-full cursor-pointer"/>
@@ -890,7 +924,8 @@ export default function QRDesigner() {
 
                         <TabsContent value="logo" className="space-y-4">
                             <div>
-                                <Label className="block mb-1 flex items-center gap-2"><ImageIcon className="size-4"/> Logo (optional)</Label>
+                                <Label className="block mb-1 flex items-center gap-2"><ImageIcon
+                                    className="size-4"/> Logo (optional)</Label>
                                 <Input type="file" accept="image/*" onChange={onUpload}/>
                                 {error && <p className="text-red-600 text-sm mt-1">{error}</p>}
                                 {imageUrl && (
@@ -932,7 +967,6 @@ export default function QRDesigner() {
                     </Tabs>
                 </CardContent>
             </Card>
-
             <Card className="flex items-center justify-center">
                 <CardContent
                     className="flex items-center justify-center p-4"
@@ -941,64 +975,159 @@ export default function QRDesigner() {
                     <div ref={ref} className="flex items-center justify-center"/>
                 </CardContent>
             </Card>
-        
+            {!embedded && (
+                <Card>
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-base flex items-center gap-2"><List
+                            className="size-4"/> Presets</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 w-full">
+                            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
+                                <div>
+                                    <Label className="mb-1 block">Save preset name</Label>
+                                    <Input value={presetName} onChange={(e) => setPresetName(e.target.value)}
+                                           placeholder="My preset"/>
+                                </div>
+                                <Button type="button" variant="outline" onClick={savePreset}>Save Preset</Button>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
+                                <div className="md:col-span-2">
+                                    <Select value={selectedPresetId} onValueChange={setSelectedPresetId}>
+                                        <SelectTrigger className="w-full"><SelectValue
+                                            placeholder="Select saved preset"/></SelectTrigger>
+                                        <SelectContent>
+                                            {savedPresets.length === 0 && (
+                                                <SelectItem value="none" disabled>No saved presets</SelectItem>
+                                            )}
+                                            {savedPresets.map((p) => (
+                                                <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    <Button type="button" variant="outline" onClick={loadPreset}>Load</Button>
+                                    <Button type="button" variant="outline" onClick={deletePreset}>Delete</Button>
+                                </div>
+                            </div>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2"><List className="size-4"/> Presets</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-                  <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
-                    <div>
-                      <Label className="mb-1 block">Save preset name</Label>
-                      <Input value={presetName} onChange={(e) => setPresetName(e.target.value)} placeholder="My preset"/>
-                    </div>
-                    <Button type="button" variant="outline" onClick={savePreset}>Save Preset</Button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
-                    <div className="md:col-span-2">
-                      <Select value={selectedPresetId} onValueChange={setSelectedPresetId}>
-                        <SelectTrigger className="w-full"><SelectValue placeholder="Select saved preset"/></SelectTrigger>
-                        <SelectContent>
-                          {savedPresets.length === 0 && (
-                            <SelectItem value="none" disabled>No saved presets</SelectItem>
-                          )}
-                          {savedPresets.map((p) => (
-                            <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button type="button" variant="outline" onClick={loadPreset}>Load</Button>
-                      <Button type="button" variant="outline" onClick={deletePreset}>Delete</Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                            <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-3 w-full">
+                                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
+                                    <div>
+                                        <Label className="mb-1 block">Save to cloud (name)</Label>
+                                        <Input value={presetName} onChange={(e) => setPresetName(e.target.value)}
+                                               placeholder="Company default"/>
+                                    </div>
+                                    <Button type="button" variant="outline" onClick={async () => {
+                                        const snapshot = buildSnapshot();
+                                        const res = await fetch('/api/presets', {
+                                            method: 'POST',
+                                            headers: {'Content-Type': 'application/json'},
+                                            body: JSON.stringify({name: presetName || 'Untitled', snapshot})
+                                        });
+                                        if (res.ok) toast.success('Preset saved to cloud'); else toast.error('Failed to save');
+                                    }}>Save to Cloud</Button>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
+                                    <div className="md:col-span-2">
+                                        <select
+                                            className="w-full rounded-md border border-black/10 dark:border-white/15 bg-transparent px-2 py-2"
+                                            onChange={async (e) => {
+                                                const id = e.target.value;
+                                                if (!id) return;
+                                                const r = await fetch(`/api/presets/${id}`);
+                                                const js = await r.json();
+                                                if (js?.success) applySnapshot(js.item.snapshot);
+                                            }}>
+                                            <option value="">Load from cloud…</option>
+                                            {cloudPresets.map(p => (
+                                                <option key={p._id} value={p._id}>{p.name}</option>))}
+                                        </select>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        <Button type="button" variant="outline" onClick={async () => {
+                                            if (!cloudSelectedId) return;
+                                            await fetch(`/api/presets/${cloudSelectedId}`, {method: "DELETE"});
+                                            refreshCloudPresets();
+                                            setCloudSelectedId("");
+                                        }}>Delete</Button>
+                                        <Button type="button" variant="outline"
+                                                onClick={refreshCloudPresets}>Refresh</Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+            {!embedded && (
+                <Card>
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-base">Save to Library</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        <div>
+                            <Label className="mb-1 block">QR name</Label>
+                            <Input value={qrName} onChange={(e) => setQrName(e.target.value)} placeholder="My QR"/>
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-2 w-full">
+                            <Button onClick={saveQrToDb} disabled={savingDb}>{savingDb ? "Saving…" : "Save QR"}</Button>
+                            {savedQr?.slug && (
+                                <a className="text-sm underline" href="/qrs">
+                                    View in My QR Codes
+                                </a>
+                            )}
 
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Save to Library</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <Label className="mb-1 block">QR name</Label>
-                  <Input value={qrName} onChange={(e) => setQrName(e.target.value)} placeholder="My QR" />
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button onClick={saveQrToDb} disabled={savingDb}>{savingDb ? "Saving…" : "Save QR"}</Button>
-                  {savedQr?.slug && (
-                    <a className="text-sm underline" href="/qrs">
-                      View in My QR Codes
-                    </a>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                            <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-3 w-full">
+                                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
+                                    <div>
+                                        <Label className="mb-1 block">Save to cloud (name)</Label>
+                                        <Input value={presetName} onChange={(e) => setPresetName(e.target.value)}
+                                               placeholder="Company default"/>
+                                    </div>
+                                    <Button type="button" variant="outline" onClick={async () => {
+                                        const snapshot = buildSnapshot();
+                                        const res = await fetch('/api/presets', {
+                                            method: 'POST',
+                                            headers: {'Content-Type': 'application/json'},
+                                            body: JSON.stringify({name: presetName || 'Untitled', snapshot})
+                                        });
+                                        if (res.ok) toast.success('Preset saved to cloud'); else toast.error('Failed to save');
+                                    }}>Save to Cloud</Button>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
+                                    <div className="md:col-span-2">
+                                        <select
+                                            className="w-full rounded-md border border-black/10 dark:border-white/15 bg-transparent px-2 py-2"
+                                            onChange={async (e) => {
+                                                const id = e.target.value;
+                                                if (!id) return;
+                                                const r = await fetch(`/api/presets/${id}`);
+                                                const js = await r.json();
+                                                if (js?.success) applySnapshot(js.item.snapshot);
+                                            }}>
+                                            <option value="">Load from cloud…</option>
+                                            {cloudPresets.map(p => (
+                                                <option key={p._id} value={p._id}>{p.name}</option>))}
+                                        </select>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Button type="button" variant="outline" onClick={async () => {
+                                            if (!cloudSelectedId) return;
+                                            await fetch(`/api/presets/${cloudSelectedId}`, {method: "DELETE"});
+                                            refreshCloudPresets();
+                                            setCloudSelectedId("");
+                                        }}>Delete</Button>
+                                        <Button type="button" variant="outline"
+                                                onClick={refreshCloudPresets}>Refresh</Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 }

@@ -5,8 +5,9 @@ import Design from "@/models/Design";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+const Designer = dynamic(() => import("@/components/QRDesigner"), { ssr: false });
 
 export async function getServerSideProps(ctx) {
   const { getServerSession } = await import("next-auth/next");
@@ -29,7 +30,7 @@ export default function EditQr({ initial }) {
   const [design, setDesign] = useState(initial.design || null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
-  const [designJson, setDesignJson] = useState(design ? JSON.stringify(design, null, 2) : "");
+  const [snapshot, setSnapshot] = useState(design || null);
 
   function onField(k, v) {
     setCode((c) => ({ ...c, [k]: v }));
@@ -40,8 +41,8 @@ export default function EditQr({ initial }) {
     setMessage("");
     try {
       let designId = code.designRef;
-      if (designJson && designJson.trim()) {
-        const body = JSON.parse(designJson);
+      if (snapshot) {
+        const body = snapshot;
         if (designId) {
           await fetch(`/api/design/${designId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         } else {
@@ -102,10 +103,9 @@ export default function EditQr({ initial }) {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle className="text-base">Design (JSON snapshot)</CardTitle></CardHeader>
-          <CardContent className="space-y-2">
-            <Textarea rows={16} placeholder="Paste QRDesigner snapshot matching models/Design.js" value={designJson} onChange={(e) => setDesignJson(e.target.value)} />
-            <div className="text-xs opacity-70">Tip: paste the output of your designer settings JSON to persist a design and link it to this QR.</div>
+          <CardHeader><CardTitle className="text-base">Designer</CardTitle></CardHeader>
+          <CardContent>
+            <Designer embedded initialSnapshot={design || null} onSnapshotChange={setSnapshot} />
           </CardContent>
         </Card>
       </div>

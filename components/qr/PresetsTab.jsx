@@ -13,7 +13,7 @@ export default function PresetsTab({
   savePreset, loadPreset, deletePreset,
 }) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 w-full">
       <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
         <div className="min-w-0">
           <Label className="mb-1 block flex flex-wrap items-center gap-2"><Save className="size-4"/> Save preset name</Label>
@@ -35,7 +35,7 @@ export default function PresetsTab({
             </SelectContent>
           </Select>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 w-full md:w-auto">
           <Button type="button" variant="outline" className="flex-1 md:flex-none" onClick={loadPreset}>Load</Button>
           <Button type="button" variant="outline" className="flex-1 md:flex-none" onClick={deletePreset}>Delete</Button>
         </div>
@@ -43,4 +43,3 @@ export default function PresetsTab({
     </div>
   );
 }
-
