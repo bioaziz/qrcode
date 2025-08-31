@@ -37,20 +37,20 @@ export default function StyleTab(props) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <Label className="block mb-1 flex items-center gap-2"><Maximize2 className="size-4"/> Size: {size}px</Label>
+        <div className="min-w-0">
+          <Label className="block mb-1 flex flex-wrap items-center gap-2"><Maximize2 className="size-4"/> Size: {size}px</Label>
           <Slider min={128} max={512} value={[size]} onValueChange={(val) => setSize(val?.[0] ?? 256)} />
         </div>
-        <div>
-          <Label className="block mb-1 flex items-center gap-2"><Maximize2 className="size-4"/> Quiet zone: {quietZone}px</Label>
+        <div className="min-w-0">
+          <Label className="block mb-1 flex flex-wrap items-center gap-2"><Maximize2 className="size-4"/> Quiet zone: {quietZone}px</Label>
           <Slider min={0} max={32} value={[quietZone]} onValueChange={(val) => setQuietZone(val?.[0] ?? 4)} />
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
+        <div className="min-w-0">
           <Label className="block mb-1">Error correction</Label>
           <Select value={errorCorrection} onValueChange={setErrorCorrection}>
-            <SelectTrigger className="w-full"><SelectValue placeholder="Level" /></SelectTrigger>
+            <SelectTrigger className="w-full truncate"><SelectValue placeholder="Level" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="L">L (Lowest)</SelectItem>
               <SelectItem value="M">M</SelectItem>
@@ -62,10 +62,10 @@ export default function StyleTab(props) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <Label className="block mb-1 flex items-center gap-2"><Shapes className="size-4"/> Dots type</Label>
+        <div className="min-w-0">
+          <Label className="block mb-1 flex flex-wrap items-center gap-2"><Shapes className="size-4"/> Dots type</Label>
           <Select value={dotType} onValueChange={setDotType}>
-            <SelectTrigger className="w-full"><SelectValue placeholder="Type" /></SelectTrigger>
+            <SelectTrigger className="w-full truncate"><SelectValue placeholder="Type" /></SelectTrigger>
             <SelectContent>
               {dotTypes.map((t) => (
                 <SelectItem key={t} value={t}>{t}</SelectItem>
@@ -74,14 +74,14 @@ export default function StyleTab(props) {
           </Select>
         </div>
         {!dotGradEnabled && (
-          <div>
-            <label className="block text-sm font-medium mb-1 flex items-center gap-2"><Palette className="size-4"/> Dots color</label>
+          <div className="min-w-0">
+            <label className="block text-sm font-medium mb-1 flex flex-wrap items-center gap-2"><Palette className="size-4"/> Dots color</label>
             <Input type="color" value={dotColor} onChange={(e) => setDotColor(e.target.value)} className="h-10 w-full cursor-pointer" />
           </div>
         )}
         {dotGradEnabled && (
-          <div className="space-y-2">
-            <label className="block text-sm font-medium flex items-center gap-2"><Palette className="size-4"/> Dots gradient</label>
+          <div className="space-y-2 min-w-0">
+            <label className="block text-sm font-medium flex flex-wrap items-center gap-2"><Palette className="size-4"/> Dots gradient</label>
             <div className="grid grid-cols-2 gap-2">
               <Input type="color" value={dotGradStart} onChange={(e) => setDotGradStart(e.target.value)} />
               {dotGradStops === 3 ? (
@@ -93,13 +93,13 @@ export default function StyleTab(props) {
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Select value={dotGradType} onValueChange={setDotGradType}>
-                <SelectTrigger className="w-full"><SelectValue placeholder="Type" /></SelectTrigger>
+                <SelectTrigger className="w-full truncate"><SelectValue placeholder="Type" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="linear">Linear</SelectItem>
                   <SelectItem value="radial">Radial</SelectItem>
                 </SelectContent>
               </Select>
-              <div>
+              <div className="min-w-0">
                 <Label className="block text-xs mb-1">Rotation (radians)</Label>
                 <Input type="number" step={0.1} value={dotGradRotation} onChange={(e) => setDotGradRotation(parseFloat(e.target.value) || 0)} />
               </div>
@@ -117,8 +117,8 @@ export default function StyleTab(props) {
           </div>
         )}
 
-        <div>
-          <label className="block text-sm font-medium mb-1 flex items-center gap-2"><Palette className="size-4"/> Background</label>
+        <div className="min-w-0">
+          <label className="block text-sm font-medium mb-1 flex flex-wrap items-center gap-2"><Palette className="size-4"/> Background</label>
           {!bgGradEnabled && (
             <Input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="h-10 w-full cursor-pointer" disabled={bgTransparent} />
           )}
@@ -135,13 +135,13 @@ export default function StyleTab(props) {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <Select value={bgGradType} onValueChange={setBgGradType} disabled={bgTransparent}>
-                  <SelectTrigger className="w-full"><SelectValue placeholder="Type" /></SelectTrigger>
+                  <SelectTrigger className="w-full truncate"><SelectValue placeholder="Type" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="linear">Linear</SelectItem>
                     <SelectItem value="radial">Radial</SelectItem>
                   </SelectContent>
                 </Select>
-                <div>
+                <div className="min-w-0">
                   <Label className="block text-xs mb-1">Rotation (radians)</Label>
                   <Input type="number" step={0.1} value={bgGradRotation} onChange={(e) => setBgGradRotation(parseFloat(e.target.value) || 0)} disabled={bgTransparent} />
                 </div>
@@ -158,7 +158,7 @@ export default function StyleTab(props) {
               </RadioGroup>
             </div>
           )}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mt-2">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-3 sm:gap-4 mt-2">
             <div className="flex items-center gap-2 text-xs">
               <Switch id="bg-transparent" checked={bgTransparent} onCheckedChange={setBgTransparent} />
               <Label htmlFor="bg-transparent">Transparent</Label>
