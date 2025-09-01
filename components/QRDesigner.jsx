@@ -34,7 +34,7 @@ import {
     Shield,
 } from "lucide-react";
 import ContentTab from "@/components/qr/ContentTab";
-import { renderCustomQR } from "@/lib/customRenderer";
+import {renderCustomQR} from "@/lib/customRenderer";
 
 let QRCodeStyling;
 // Lazy-load to avoid SSR issues
@@ -191,6 +191,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             width: size,
             height: size,
             type: "canvas",
+            margin: quietZone, // ensure library paths honor quiet zone
             data: presetData() || "https://",
             backgroundOptions: {
                 color: bgTransparent ? "transparent" : bgColor,
@@ -212,7 +213,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                     ],
                         },
                     }
-                    : { gradient: null }),
+                    : {gradient: null}),
             },
             image: imageUrl || undefined,
             imageOptions: {
@@ -246,7 +247,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                     ],
                         },
                     }
-                    : { gradient: null }),
+                    : {gradient: null}),
             },
             cornersSquareOptions: {
                 color: cornerSquareColor,
@@ -330,7 +331,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
 
     useEffect(() => {
         if (!ref.current) return;
-        const wantCustom = cornerSquareType === 'circle' ;
+        const wantCustom = cornerSquareType === 'circle';
         const ensureCanvasSize = () => {
             const canvas = ref.current?.querySelector?.("canvas");
             if (canvas) {
@@ -345,7 +346,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 ref.current.innerHTML = '';
                 const canvas = document.createElement('canvas');
                 ref.current.appendChild(canvas);
-                qrRef.current = { kind: 'custom', canvas };
+                qrRef.current = {kind: 'custom', canvas};
             }
             const canvas = qrRef.current.canvas;
             renderCustomQR(canvas, options);
@@ -359,7 +360,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             ref.current.innerHTML = '';
             const inst = new QRCodeStyling(options);
             inst.append(ref.current);
-            qrRef.current = { kind: 'styling', inst };
+            qrRef.current = {kind: 'styling', inst};
         } else {
             qrRef.current.inst.update(options);
         }
@@ -381,7 +382,11 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     const autoSaveDesign = async () => {
         try {
             const snapshot = buildSnapshot();
-            const res = await fetch('/api/design', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(snapshot) });
+            const res = await fetch('/api/design', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(snapshot)
+            });
             if (res.status === 401) {
                 toast.message('Sign in to save designs');
             } else if (res.ok) {
@@ -397,7 +402,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         // Save design snapshot automatically
         await autoSaveDesign();
         if (qrRef.current.kind === 'styling' && qrRef.current.inst?.download) {
-            await qrRef.current.inst.download({ extension: ext });
+            await qrRef.current.inst.download({extension: ext});
             return;
         }
         // Custom renderer path: only PNG supported directly
@@ -697,31 +702,31 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     return (
         <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-8">
             <Card className="">
-                <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Customize</CardTitle>
+                <CardHeader className="pb-4">
+                    <CardTitle className="text-base">Customize QR Code</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <Tabs defaultValue="content">
-                        <TabsList>
+                        <TabsList className="grid w-full grid-cols-4">
                             <TabsTrigger value="content" className="flex items-center gap-2">
                                 <QrCode className="size-4"/>
-                                Content
+                                <span className="hidden sm:inline">Content</span>
                             </TabsTrigger>
                             <TabsTrigger value="style" className="flex items-center gap-2">
                                 <Palette className="size-4"/>
-                                Style
+                                <span className="hidden sm:inline">Style</span>
                             </TabsTrigger>
                             <TabsTrigger value="corners" className="flex items-center gap-2">
                                 <Shapes className="size-4"/>
-                                Corners
+                                <span className="hidden sm:inline">Corners</span>
                             </TabsTrigger>
                             <TabsTrigger value="logo" className="flex items-center gap-2">
                                 <ImageIcon className="size-4"/>
-                                Logo
+                                <span className="hidden sm:inline">Logo</span>
                             </TabsTrigger>
                         </TabsList>
 
-                        <TabsContent value="content" className="space-y-4">
+                        <TabsContent value="content" className="space-y-4 mt-6">
                             <ContentTab
                                 mode={mode} setMode={setMode}
                                 data={data} setData={setData}
@@ -758,266 +763,360 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                             />
                         </TabsContent>
 
-                        <TabsContent value="style" className="space-y-6">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <Label className="block mb-1 flex items-center gap-2"><Maximize2
-                                        className="size-4"/> Size: {size}px</Label>
-                                    <Slider min={128} max={512} value={[size]}
-                                            onValueChange={(val) => setSize(val?.[0] ?? 256)}/>
-                                </div>
-                                <div>
-                                    <Label className="block mb-1 flex items-center gap-2"><Maximize2
-                                        className="size-4"/> Quiet zone: {quietZone}px</Label>
-                                    <Slider min={0} max={32} value={[quietZone]}
-                                            onValueChange={(val) => setQuietZone(val?.[0] ?? 4)}/>
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <Label className="block mb-1 flex items-center gap-2"><Shield
-                                        className="size-4"/> Error correction</Label>
-                                    <Select value={errorCorrection} onValueChange={setErrorCorrection}>
-                                        <SelectTrigger className="w-full"><SelectValue
-                                            placeholder="Level"/></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="L">L (Lowest)</SelectItem>
-                                            <SelectItem value="M">M</SelectItem>
-                                            <SelectItem value="Q">Q</SelectItem>
-                                            <SelectItem value="H">H (Highest)</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                        <TabsContent value="style" className="space-y-6 mt-6">
+                            {/* Basic Settings */}
+                            <div>
+                                <h3 className="text-sm font-medium mb-4 text-muted-foreground">Basic Settings</h3>
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-end">
+                                    <div>
+                                        <Label className="block mb-2 flex items-center gap-2">
+                                            <Maximize2 className="size-4"/> Size: {size}px
+                                        </Label>
+                                        <div className="h-10 flex items-center">
+                                            <Slider min={128} max={512} value={[size]}
+                                                    onValueChange={(val) => setSize(val?.[0] ?? 256)}
+                                                    className="w-full"/>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <Label className="block mb-2 flex items-center gap-2">
+                                            <Maximize2 className="size-4"/> Quiet zone: {quietZone}px
+                                        </Label>
+                                        <div className="h-10 flex items-center">
+                                            <Slider min={0} max={32} value={[quietZone]}
+                                                    onValueChange={(val) => setQuietZone(val?.[0] ?? 4)}
+                                                    className="w-full"/>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <Label className="block mb-2 flex items-center gap-2">
+                                            <Shield className="size-4"/> Error correction
+                                        </Label>
+                                        <Select value={errorCorrection} onValueChange={setErrorCorrection}>
+                                            <SelectTrigger className="w-full h-10">
+                                                <SelectValue placeholder="Level"/>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="L">L (Lowest)</SelectItem>
+                                                <SelectItem value="M">M</SelectItem>
+                                                <SelectItem value="Q">Q</SelectItem>
+                                                <SelectItem value="H">H (Highest)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                <div>
-                                    <Label className="block mb-1 flex items-center gap-2"><Shapes
-                                        className="size-4"/> Dots type</Label>
-                                    <Select value={dotType} onValueChange={setDotType}>
-                                        <SelectTrigger className="w-full"><SelectValue
-                                            placeholder="Type"/></SelectTrigger>
-                                        <SelectContent>
-                                            {DOT_TYPES.map((t) => (
-                                                <SelectItem key={t} value={t}>{t}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                {!dotGradEnabled && (
-                                    <div>
-                                        <label
-                                            className="block text-sm font-medium mb-1 flex items-center gap-2"><Palette
-                                            className="size-4"/> Dots color</label>
-                                        <Input type="color" value={dotColor}
-                                               onChange={(e) => setDotColor(e.target.value)}
-                                               className="h-10 w-full cursor-pointer"/>
+                            {/* Appearance */}
+                            <div>
+                                <h3 className="text-sm font-medium mb-4 text-muted-foreground">Appearance</h3>
+
+                                {/* Toggle Controls */}
+                                <div className="flex flex-wrap items-center gap-6 mb-6 p-4 bg-muted/30 rounded-lg">
+                                    <div className="flex items-center gap-2">
+                                        <Switch id="bg-transparent" checked={bgTransparent}
+                                                onCheckedChange={setBgTransparent}/>
+                                        <Label htmlFor="bg-transparent" className="text-sm">Transparent
+                                            background</Label>
                                     </div>
-                                )}
-                                {dotGradEnabled && (
-                                    <div className="space-y-2">
-                                        <label className="block text-sm font-medium flex items-center gap-2"><Palette
-                                            className="size-4"/> Dots gradient</label>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            <Input type="color" value={dotGradStart}
-                                                   onChange={(e) => setDotGradStart(e.target.value)}/>
-                                            {dotGradStops === 3 ? (
-                                                <Input type="color" value={dotGradMid}
-                                                       onChange={(e) => setDotGradMid(e.target.value)}/>
-                                            ) : (
-                                                <div/>
-                                            )}
-                                            <Input type="color" value={dotGradEnd}
-                                                   onChange={(e) => setDotGradEnd(e.target.value)}/>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            <Select value={dotGradType} onValueChange={setDotGradType}>
-                                                <SelectTrigger className="w-full"><SelectValue
-                                                    placeholder="Type"/></SelectTrigger>
+                                    <div className="flex items-center gap-2">
+                                        <Switch id="dots-gradient" checked={dotGradEnabled}
+                                                onCheckedChange={setDotGradEnabled}/>
+                                        <Label htmlFor="dots-gradient" className="text-sm">Dots gradient</Label>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Switch id="bg-gradient" checked={bgGradEnabled}
+                                                onCheckedChange={setBgGradEnabled} disabled={bgTransparent}/>
+                                        <Label htmlFor="bg-gradient" className="text-sm">Background gradient</Label>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    {/* Dots Configuration */}
+                                    <div className="space-y-4">
+                                        <h4 className="text-sm font-medium">Dots</h4>
+                                        <div>
+                                            <Label className="block mb-2 flex items-center gap-2">
+                                                <Shapes className="size-4"/> Dots type
+                                            </Label>
+                                            <Select value={dotType} onValueChange={setDotType}>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Type"/>
+                                                </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="linear">Linear</SelectItem>
-                                                    <SelectItem value="radial">Radial</SelectItem>
+                                                    {DOT_TYPES.map((t) => (
+                                                        <SelectItem key={t} value={t}>{t}</SelectItem>
+                                                    ))}
                                                 </SelectContent>
                                             </Select>
+                                        </div>
+
+                                        {!dotGradEnabled ? (
                                             <div>
-                                                <Label className="block text-xs mb-1">Rotation (radians)</Label>
-                                                <Input type="number" step={0.1} value={dotGradRotation}
-                                                       onChange={(e) => setDotGradRotation(parseFloat(e.target.value) || 0)}/>
+                                                <Label className="block mb-2 flex items-center gap-2">
+                                                    <Palette className="size-4"/> Dots color
+                                                </Label>
+                                                <Input type="color" value={dotColor}
+                                                       onChange={(e) => setDotColor(e.target.value)}
+                                                       className="h-10 w-full cursor-pointer"/>
                                             </div>
-                                        </div>
-                                        <RadioGroup className="flex items-center gap-3 text-xs"
-                                                    value={String(dotGradStops)}
-                                                    onValueChange={(v) => setDotGradStops(parseInt(v, 10))}>
-                                            <div className="flex items-center gap-2">
-                                                <RadioGroupItem id="dotstops-2" value="2"/>
-                                                <Label htmlFor="dotstops-2">2 stops</Label>
+                                        ) : (
+                                            <div className="space-y-3">
+                                                <Label className="block flex items-center gap-2">
+                                                    <Palette className="size-4"/> Dots gradient
+                                                </Label>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <Input type="color" value={dotGradStart}
+                                                           onChange={(e) => setDotGradStart(e.target.value)}
+                                                           placeholder="Start"/>
+                                                    {dotGradStops === 3 && (
+                                                        <Input type="color" value={dotGradMid}
+                                                               onChange={(e) => setDotGradMid(e.target.value)}
+                                                               placeholder="Middle"/>
+                                                    )}
+                                                    <Input type="color" value={dotGradEnd}
+                                                           onChange={(e) => setDotGradEnd(e.target.value)}
+                                                           placeholder="End"/>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <Select value={dotGradType} onValueChange={setDotGradType}>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Type"/>
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="linear">Linear</SelectItem>
+                                                            <SelectItem value="radial">Radial</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <div>
+                                                        <Input type="number" step={0.1} value={dotGradRotation}
+                                                               onChange={(e) => setDotGradRotation(parseFloat(e.target.value) || 0)}
+                                                               placeholder="Rotation"/>
+                                                    </div>
+                                                </div>
+                                                <RadioGroup className="flex items-center gap-4"
+                                                            value={String(dotGradStops)}
+                                                            onValueChange={(v) => setDotGradStops(parseInt(v, 10))}>
+                                                    <div className="flex items-center gap-2">
+                                                        <RadioGroupItem id="dotstops-2" value="2"/>
+                                                        <Label htmlFor="dotstops-2" className="text-sm">2 stops</Label>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <RadioGroupItem id="dotstops-3" value="3"/>
+                                                        <Label htmlFor="dotstops-3" className="text-sm">3 stops</Label>
+                                                    </div>
+                                                </RadioGroup>
                                             </div>
-                                            <div className="flex items-center gap-2">
-                                                <RadioGroupItem id="dotstops-3" value="3"/>
-                                                <Label htmlFor="dotstops-3">3 stops</Label>
-                                            </div>
-                                        </RadioGroup>
+                                        )}
                                     </div>
-                                )}
 
-                                <div>
-                                    <label className="block text-sm font-medium mb-1 flex items-center gap-2"><Palette
-                                        className="size-4"/> Background</label>
-                                    {!bgGradEnabled && (
-                                        <Input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)}
-                                               className="h-10 w-full cursor-pointer" disabled={bgTransparent}/>
-                                    )}
-                                    {bgGradEnabled && (
-                                        <div className="space-y-2">
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <Input type="color" value={bgGradStart}
-                                                       onChange={(e) => setBgGradStart(e.target.value)}
+                                    {/* Background Configuration */}
+                                    <div className="space-y-4">
+                                        <h4 className="text-sm font-medium">Background</h4>
+                                        {!bgGradEnabled ? (
+                                            <div>
+                                                <Label className="block mb-2 flex items-center gap-2">
+                                                    <Palette className="size-4"/> Background color
+                                                </Label>
+                                                <Input type="color" value={bgColor}
+                                                       onChange={(e) => setBgColor(e.target.value)}
+                                                       className="h-10 w-full cursor-pointer"
                                                        disabled={bgTransparent}/>
-                                                {bgGradStops === 3 ? (
-                                                    <Input type="color" value={bgGradMid}
-                                                           onChange={(e) => setBgGradMid(e.target.value)}
-                                                           disabled={bgTransparent}/>
-                                                ) : (
-                                                    <div/>
-                                                )}
-                                                <Input type="color" value={bgGradEnd}
-                                                       onChange={(e) => setBgGradEnd(e.target.value)}
-                                                       disabled={bgTransparent}/>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <Select value={bgGradType} onValueChange={setBgGradType}
-                                                        disabled={bgTransparent}>
-                                                    <SelectTrigger className="w-full"><SelectValue placeholder="Type"/></SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="linear">Linear</SelectItem>
-                                                        <SelectItem value="radial">Radial</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                                <div>
-                                                    <Label className="block text-xs mb-1">Rotation (radians)</Label>
-                                                    <Input type="number" step={0.1} value={bgGradRotation}
-                                                           onChange={(e) => setBgGradRotation(parseFloat(e.target.value) || 0)}
-                                                           disabled={bgTransparent}/>
+                                        ) : (
+                                            <div className="space-y-3">
+                                                <Label className="block flex items-center gap-2">
+                                                    <Palette className="size-4"/> Background gradient
+                                                </Label>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <Input type="color" value={bgGradStart}
+                                                           onChange={(e) => setBgGradStart(e.target.value)}
+                                                           disabled={bgTransparent}
+                                                           placeholder="Start"/>
+                                                    {bgGradStops === 3 && (
+                                                        <Input type="color" value={bgGradMid}
+                                                               onChange={(e) => setBgGradMid(e.target.value)}
+                                                               disabled={bgTransparent}
+                                                               placeholder="Middle"/>
+                                                    )}
+                                                    <Input type="color" value={bgGradEnd}
+                                                           onChange={(e) => setBgGradEnd(e.target.value)}
+                                                           disabled={bgTransparent}
+                                                           placeholder="End"/>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <Select value={bgGradType} onValueChange={setBgGradType}
+                                                            disabled={bgTransparent}>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Type"/>
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="linear">Linear</SelectItem>
+                                                            <SelectItem value="radial">Radial</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <div>
+                                                        <Input type="number" step={0.1} value={bgGradRotation}
+                                                               onChange={(e) => setBgGradRotation(parseFloat(e.target.value) || 0)}
+                                                               disabled={bgTransparent}
+                                                               placeholder="Rotation"/>
+                                                    </div>
+                                                </div>
+                                                <RadioGroup className="flex items-center gap-4"
+                                                            value={String(bgGradStops)}
+                                                            onValueChange={(v) => setBgGradStops(parseInt(v, 10))}
+                                                            disabled={bgTransparent}>
+                                                    <div className="flex items-center gap-2">
+                                                        <RadioGroupItem id="bgstops-2" value="2"/>
+                                                        <Label htmlFor="bgstops-2" className="text-sm">2 stops</Label>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <RadioGroupItem id="bgstops-3" value="3"/>
+                                                        <Label htmlFor="bgstops-3" className="text-sm">3 stops</Label>
+                                                    </div>
+                                                </RadioGroup>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="corners" className="space-y-6 mt-6">
+                            <h3 className="text-sm font-medium mb-4 text-muted-foreground">Corner Customization</h3>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                {/* Corner Square */}
+                                <div className="space-y-4">
+                                    <h4 className="text-sm font-medium">Corner Square</h4>
+                                    <div>
+                                        <Label className="block mb-2 flex items-center gap-2">
+                                            <SquareIcon className="size-4"/> Style
+                                        </Label>
+                                        <Select value={cornerSquareType} onValueChange={setCornerSquareType}>
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="Type"/>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {CORNER_SQUARE_TYPES.map((t) => (
+                                                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    {cornerSquareType === 'circle-ring' && (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <Label className="block mb-1">Ring thickness</Label>
+                                                <Slider min={0.3} max={1.2} step={0.05} value={[ringWidthUnits]}
+                                                        onValueChange={(v) => setRingWidthUnits(v?.[0] ?? 0.6)}/>
+                                                <div
+                                                    className="text-xs text-muted-foreground mt-1">{ringWidthUnits.toFixed(2)} modules
                                                 </div>
                                             </div>
-                                            <RadioGroup className="flex items-center gap-3 text-xs"
-                                                        value={String(bgGradStops)}
-                                                        onValueChange={(v) => setBgGradStops(parseInt(v, 10))}
-                                                        disabled={bgTransparent}>
-                                                <div className="flex items-center gap-2 text-xs">
-                                                    <RadioGroupItem id="bgstops-2" value="2"/>
-                                                    <Label htmlFor="bgstops-2">2 stops</Label>
+                                            <div>
+                                                <Label className="block mb-1">Inner mark size</Label>
+                                                <Slider min={0.8} max={1.8} step={0.05} value={[innerDotUnits]}
+                                                        onValueChange={(v) => setInnerDotUnits(v?.[0] ?? 1.2)}/>
+                                                <div
+                                                    className="text-xs text-muted-foreground mt-1">{innerDotUnits.toFixed(2)} modules
                                                 </div>
-                                                <div className="flex items-center gap-2 text-xs">
-                                                    <RadioGroupItem id="bgstops-3" value="3"/>
-                                                    <Label htmlFor="bgstops-3">3 stops</Label>
-                                                </div>
-                                            </RadioGroup>
+                                            </div>
                                         </div>
                                     )}
-                                    <div
-                                        className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-3 sm:gap-4 mt-2 w-full">
-                                        <div className="flex items-center gap-2 text-xs">
-                                            <Switch id="bg-transparent" checked={bgTransparent}
-                                                    onCheckedChange={setBgTransparent}/>
-                                            <Label htmlFor="bg-transparent">Transparent</Label>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-xs">
-                                            <Switch id="dots-gradient" checked={dotGradEnabled}
-                                                    onCheckedChange={setDotGradEnabled}/>
-                                            <Label htmlFor="dots-gradient">Dots gradient</Label>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-xs">
-                                            <Switch id="bg-gradient" checked={bgGradEnabled}
-                                                    onCheckedChange={setBgGradEnabled} disabled={bgTransparent}/>
-                                            <Label htmlFor="bg-gradient">Background gradient</Label>
-                                        </div>
+                                    <div>
+                                        <Label className="block mb-2 flex items-center gap-2">
+                                            <Palette className="size-4"/> Color
+                                        </Label>
+                                        <Input type="color" value={cornerSquareColor}
+                                               onChange={(e) => setCornerSquareColor(e.target.value)}
+                                               className="h-10 w-full cursor-pointer"/>
+                                    </div>
+                                </div>
+
+                                {/* Corner Dot */}
+                                <div className="space-y-4">
+                                    <h4 className="text-sm font-medium">Corner Dot</h4>
+                                    <div>
+                                        <Label className="block mb-2 flex items-center gap-2">
+                                            <Circle className="size-4"/> Style
+                                        </Label>
+                                        <Select value={cornerDotType} onValueChange={setCornerDotType}>
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="Type"/>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {CORNER_DOT_TYPES.map((t) => (
+                                                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div>
+                                        <Label className="block mb-2 flex items-center gap-2">
+                                            <Palette className="size-4"/> Color
+                                        </Label>
+                                        <Input type="color" value={cornerDotColor}
+                                               onChange={(e) => setCornerDotColor(e.target.value)}
+                                               className="h-10 w-full cursor-pointer"/>
                                     </div>
                                 </div>
                             </div>
                         </TabsContent>
 
-                        <TabsContent value="corners" className="space-y-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                <div>
-                                    <Label className="block mb-1 flex items-center gap-2"><SquareIcon
-                                        className="size-4"/> Corner square</Label>
-                                    <Select value={cornerSquareType} onValueChange={setCornerSquareType}>
-                                        <SelectTrigger className="w-full"><SelectValue
-                                            placeholder="Type"/></SelectTrigger>
-                                        <SelectContent>
-                                            {CORNER_SQUARE_TYPES.map((t) => (
-                                                <SelectItem key={t} value={t}>{t}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div>
-                                    <label
-                                        className="block text-sm font-medium mb-1 flex items-center gap-2"><SquareIcon
-                                        className="size-4"/> Corner square color</label>
-                                    <Input type="color" value={cornerSquareColor}
-                                           onChange={(e) => setCornerSquareColor(e.target.value)}
-                                           className="h-10 w-full cursor-pointer"/>
-                                </div>
-                                <div>
-                                    <Label className="block mb-1 flex items-center gap-2"><Circle
-                                        className="size-4"/> Corner dot</Label>
-                                    <Select value={cornerDotType} onValueChange={setCornerDotType}>
-                                        <SelectTrigger className="w-full"><SelectValue
-                                            placeholder="Type"/></SelectTrigger>
-                                        <SelectContent>
-                                            {CORNER_DOT_TYPES.map((t) => (
-                                                <SelectItem key={t} value={t}>{t}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-
-                                <div>
-                                    <label className="block text-sm font-medium mb-1 flex items-center gap-2"><Circle
-                                        className="size-4"/> Corner dot color</label>
-                                    <Input type="color" value={cornerDotColor}
-                                           onChange={(e) => setCornerDotColor(e.target.value)}
-                                           className="h-10 w-full cursor-pointer"/>
-                                </div>
-                            </div>
-                        </TabsContent>
-
-                        <TabsContent value="logo" className="space-y-4">
-                            <div>
-                                <Label className="block mb-1 flex items-center gap-2"><ImageIcon
-                                    className="size-4"/> Logo (optional)</Label>
-                                <Input type="file" accept="image/*" onChange={onUpload}/>
-                                {error && <p className="text-red-600 text-sm mt-1">{error}</p>}
-                                {imageUrl && (
-                                    <div
-                                        className="flex items-center gap-3 mt-2 text-xs text-black/60 dark:text-white/60">
-                                        <img src={imageUrl} alt="logo" className="h-8 w-8 object-contain rounded"/>
-                                        <Button type="button" variant="outline" size="sm"
-                                                onClick={() => setImageUrl("")}>Remove</Button>
+                        <TabsContent value="logo" className="space-y-6 mt-6">
+                            <h3 className="text-sm font-medium mb-4 text-muted-foreground">Logo Settings</h3>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                {/* Logo Upload */}
+                                <div className="space-y-4">
+                                    <div>
+                                        <Label className="block mb-2 flex items-center gap-2">
+                                            <ImageIcon className="size-4"/> Upload Logo
+                                        </Label>
+                                        <Input type="file" accept="image/*" onChange={onUpload}/>
+                                        {error && <p className="text-destructive text-sm mt-1">{error}</p>}
+                                        {imageUrl && (
+                                            <div className="flex items-center gap-3 mt-3 p-3 bg-muted/30 rounded-lg">
+                                                <img src={imageUrl} alt="logo"
+                                                     className="h-12 w-12 object-contain rounded"/>
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-medium">Logo uploaded</p>
+                                                    <p className="text-xs text-muted-foreground">Ready to use</p>
+                                                </div>
+                                                <Button type="button" variant="outline" size="sm"
+                                                        onClick={() => setImageUrl("")}>Remove</Button>
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-                            </div>
-                            <div>
-                                <Label className="block mb-1">Logo size</Label>
-                                <Slider min={0.15} max={0.45} step={0.01} value={[imageSize]}
-                                        onValueChange={(val) => setImageSize(val?.[0] ?? 0.35)}/>
-                            </div>
-                            <div className="flex items-center justify-between gap-3">
-                                <div>
-                                    <Label className="block mb-1">Hide dots behind logo</Label>
-                                    <div className="text-xs opacity-70">Turn off for transparent PNGs to let QR dots show through.</div>
                                 </div>
-                                <Switch checked={hideLogoBgDots} onCheckedChange={setHideLogoBgDots} />
-                            </div>
-                            
-                        </TabsContent>
 
+                                {/* Logo Configuration */}
+                                <div className="space-y-4">
+                                    <div>
+                                        <Label className="block mb-2">Logo size</Label>
+                                        <Slider min={0.15} max={0.45} step={0.01} value={[imageSize]}
+                                                onValueChange={(val) => setImageSize(val?.[0] ?? 0.35)}/>
+                                        <div className="text-xs text-muted-foreground mt-1">
+                                            Current: {Math.round(imageSize * 100)}% of QR code
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-start justify-between gap-4 p-4 bg-muted/30 rounded-lg">
+                                        <div>
+                                            <Label className="font-medium text-sm">Hide dots behind logo</Label>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                Turn off for transparent PNGs to let QR dots show through.
+                                            </p>
+                                        </div>
+                                        <Switch checked={hideLogoBgDots} onCheckedChange={setHideLogoBgDots}/>
+                                    </div>
+                                </div>
+                            </div>
+                        </TabsContent>
                     </Tabs>
                 </CardContent>
             </Card>
+
+            {/* QR Code Preview */}
             <Card className="flex items-center justify-center">
                 <CardContent
                     className="flex items-center justify-center p-4"
@@ -1026,296 +1125,291 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                     <div ref={ref} className="flex items-center justify-center"/>
                 </CardContent>
             </Card>
-            
-            {/*{!embedded && (*/}
-            {/*    <Card className='lg:col-span-2'>*/}
-            {/*        <CardHeader className="pb-2">*/}
-            {/*            <CardTitle className="text-base flex items-center gap-2"><List*/}
-            {/*                className="size-4"/> Presets</CardTitle>*/}
-            {/*        </CardHeader>*/}
-            {/*        <CardContent>*/}
-            {/*            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 w-full">*/}
-            {/*                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 items-end">*/}
-            {/*                    <div>*/}
-            {/*                        <Label className="mb-1 block">Save preset name</Label>*/}
-            {/*                        <Input value={presetName} onChange={(e) => setPresetName(e.target.value)}*/}
-            {/*                               placeholder="My preset"/>*/}
-            {/*                    </div>*/}
-            {/*                    <Button type="button" variant="outline" onClick={savePreset}>Save Preset</Button>*/}
-            {/*                </div>*/}
-            {/*                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">*/}
-            {/*                    <div className="md:col-span-2">*/}
-            {/*                        <Select value={selectedPresetId} onValueChange={setSelectedPresetId}>*/}
-            {/*                            <SelectTrigger className="w-full"><SelectValue*/}
-            {/*                                placeholder="Select saved preset"/></SelectTrigger>*/}
-            {/*                            <SelectContent>*/}
-            {/*                                {savedPresets.length === 0 && (*/}
-            {/*                                    <SelectItem value="none" disabled>No saved presets</SelectItem>*/}
-            {/*                                )}*/}
-            {/*                                {savedPresets.map((p) => (*/}
-            {/*                                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>*/}
-            {/*                                ))}*/}
-            {/*                            </SelectContent>*/}
-            {/*                        </Select>*/}
-            {/*                    </div>*/}
-            {/*                    <div className="flex flex-wrap gap-2">*/}
-            {/*                        <Button type="button" variant="outline" onClick={loadPreset}>Load</Button>*/}
-            {/*                        <Button type="button" variant="outline" onClick={deletePreset}>Delete</Button>*/}
-            {/*                    </div>*/}
-            {/*                </div>*/}
-
-            {/*                <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-3 w-full">*/}
-            {/*                    <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 items-end">*/}
-            {/*                        <div>*/}
-            {/*                            <Label className="mb-1 block">Save to cloud (name)</Label>*/}
-            {/*                            <Input value={presetName} onChange={(e) => setPresetName(e.target.value)}*/}
-            {/*                                   placeholder="Company default"/>*/}
-            {/*                        </div>*/}
-            {/*                        <Button type="button" variant="outline" onClick={async () => {*/}
-            {/*                            const snapshot = buildSnapshot();*/}
-            {/*                            const res = await fetch('/api/presets', {*/}
-            {/*                                method: 'POST',*/}
-            {/*                                headers: {'Content-Type': 'application/json'},*/}
-            {/*                                body: JSON.stringify({name: presetName || 'Untitled', snapshot})*/}
-            {/*                            });*/}
-            {/*                            if (res.ok) toast.success('Preset saved to cloud'); else toast.error('Failed to save');*/}
-            {/*                        }}>Save to Cloud</Button>*/}
-            {/*                    </div>*/}
-            {/*                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">*/}
-            {/*                        <div className="md:col-span-2">*/}
-            {/*                            <select*/}
-            {/*                                className="w-full rounded-md border border-black/10 dark:border-white/15 bg-transparent px-2 py-2"*/}
-            {/*                                onChange={async (e) => {*/}
-            {/*                                    const id = e.target.value;*/}
-            {/*                                    if (!id) return;*/}
-            {/*                                    const r = await fetch(`/api/presets/${id}`);*/}
-            {/*                                    const js = await r.json();*/}
-            {/*                                    if (js?.success) applySnapshot(js.item.snapshot);*/}
-            {/*                                }}>*/}
-            {/*                                <option value="">Load from cloud…</option>*/}
-            {/*                                {cloudPresets.map(p => (*/}
-            {/*                                    <option key={p._id} value={p._id}>{p.name}</option>))}*/}
-            {/*                            </select>*/}
-            {/*                        </div>*/}
-            {/*                        <div className="flex flex-wrap gap-2">*/}
-            {/*                            <Button type="button" variant="outline" onClick={async () => {*/}
-            {/*                                if (!cloudSelectedId) return;*/}
-            {/*                                await fetch(`/api/presets/${cloudSelectedId}`, {method: "DELETE"});*/}
-            {/*                                refreshCloudPresets();*/}
-            {/*                                setCloudSelectedId("");*/}
-            {/*                            }}>Delete</Button>*/}
-            {/*                            <Button type="button" variant="outline"*/}
-            {/*                                    onClick={refreshCloudPresets}>Refresh</Button>*/}
-            {/*                        </div>*/}
-            {/*                    </div>*/}
-            {/*                </div>*/}
-            {/*            </div>*/}
-            {/*        </CardContent>*/}
-            {/*    </Card>*/}
-            {/*)}*/}
-
             {!embedded && (
-    <Card className='lg:col-span-2'>
-        <CardHeader className="pb-4">
-            <CardTitle className="text-base flex items-center gap-2">
-                <List className="size-4"/> Presets
-            </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-            {/* Local Presets Section */}
-            <div>
-                <h3 className="text-sm font-medium mb-3 text-muted-foreground">Local Presets</h3>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {/* Save Local Preset */}
-                    <div className="space-y-3">
-                        <Label className="text-sm">Save new preset</Label>
-                        <div className="flex gap-2">
-                            <Input
-                                value={presetName}
-                                onChange={(e) => setPresetName(e.target.value)}
-                                placeholder="Enter preset name"
-                                className="flex-1"
-                            />
-                            <Button type="button" variant="outline" onClick={savePreset}>
-                                Save
-                            </Button>
-                        </div>
-                    </div>
-
-                    {/* Load/Manage Local Presets */}
-                    <div className="space-y-3">
-                        <Label className="text-sm">Manage saved presets</Label>
-                        <div className="flex gap-2">
-                            <Select value={selectedPresetId} onValueChange={setSelectedPresetId} className="flex-1">
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select preset" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {savedPresets.length === 0 && (
-                                        <SelectItem value="none" disabled>No saved presets</SelectItem>
-                                    )}
-                                    {savedPresets.map((p) => (
-                                        <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <Button type="button" variant="outline" onClick={loadPreset} disabled={!selectedPresetId}>
-                                Load
-                            </Button>
-                            <Button type="button" variant="outline" onClick={deletePreset} disabled={!selectedPresetId}>
-                                Delete
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Divider */}
-            <div className="border-t"></div>
-
-            {/* Cloud Presets Section */}
-            <div>
-                <h3 className="text-sm font-medium mb-3 text-muted-foreground">Cloud Presets</h3>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {/* Save to Cloud */}
-                    <div className="space-y-3">
-                        <Label className="text-sm">Save to cloud</Label>
-                        <div className="flex gap-2">
-                            <Input
-                                value={presetName}
-                                onChange={(e) => setPresetName(e.target.value)}
-                                placeholder="Enter cloud preset name"
-                                className="flex-1"
-                            />
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={async () => {
-                                    const snapshot = buildSnapshot();
-                                    const res = await fetch('/api/presets', {
-                                        method: 'POST',
-                                        headers: {'Content-Type': 'application/json'},
-                                        body: JSON.stringify({name: presetName || 'Untitled', snapshot})
-                                    });
-                                    if (res.ok) toast.success('Preset saved to cloud');
-                                    else toast.error('Failed to save');
-                                }}
-                            >
-                                Save to Cloud
-                            </Button>
-                        </div>
-                    </div>
-
-                    {/* Load/Manage Cloud Presets */}
-                    <div className="space-y-3">
-                        <Label className="text-sm">Manage cloud presets</Label>
-                        <div className="flex gap-2">
-                            <select
-                                className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                value={cloudSelectedId}
-                                onChange={async (e) => {
-                                    const id = e.target.value;
-                                    setCloudSelectedId(id);
-                                    if (!id) return;
-                                    const r = await fetch(`/api/presets/${id}`);
-                                    const js = await r.json();
-                                    if (js?.success) applySnapshot(js.item.snapshot);
-                                }}
-                            >
-                                <option value="">Select cloud preset...</option>
-                                {cloudPresets.map(p => (
-                                    <option key={p._id} value={p._id}>{p.name}</option>
-                                ))}
-                            </select>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={async () => {
-                                    if (!cloudSelectedId) return;
-                                    await fetch(`/api/presets/${cloudSelectedId}`, {method: "DELETE"});
-                                    refreshCloudPresets();
-                                    setCloudSelectedId("");
-                                }}
-                                disabled={!cloudSelectedId}
-                            >
-                                Delete
-                            </Button>
-                            <Button type="button" variant="outline" onClick={refreshCloudPresets}>
-                                Refresh
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </CardContent>
-    </Card>
-)}
-            {!embedded && (
-                <Card className="lg:col-span-2">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-base">Save to Library</CardTitle>
+                <Card className='lg:col-span-2'>
+                    <CardHeader className="pb-4">
+                        <CardTitle className="text-base flex items-center gap-2">
+                            <List className="size-4"/> Presets
+                        </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-3">
+                    <CardContent className="space-y-6">
+                        {/* Local Presets Section */}
                         <div>
-                            <Label className="mb-1 block">QR name</Label>
-                            <Input value={qrName} onChange={(e) => setQrName(e.target.value)} placeholder="My QR"/>
-                        </div>
-                        <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-2 w-full">
-                            <Button onClick={saveQrToDb} disabled={savingDb}>{savingDb ? "Saving…" : "Save QR"}</Button>
-                            {savedQr?.slug && (
-                                <a className="text-sm underline" href="/qrs">
-                                    View in My QR Codes
-                                </a>
-                            )}
-
-                            <div className="flex flex-wrap gap-3 mt-4">
-                                <Button type="button" onClick={() => { download('png'); toast.success('PNG download started'); }}>Download PNG</Button>
-                                <Button type="button" variant="outline" onClick={() => { download('svg'); toast.success('SVG download started'); }}>Download SVG</Button>
-                                <Button type="button" variant="outline" onClick={() => { downloadPDF(); toast.success('PDF download started'); }}>Download PDF</Button>
-                            </div>
-
-                            <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-3 w-full">
-                                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
-                                    <div>
-                                        <Label className="mb-1 block">Save to cloud (name)</Label>
-                                        <Input value={presetName} onChange={(e) => setPresetName(e.target.value)}
-                                               placeholder="Company default"/>
+                            <h3 className="text-sm font-medium mb-3 text-muted-foreground">Local Presets</h3>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                {/* Save Local Preset */}
+                                <div className="space-y-3">
+                                    <Label className="text-sm">Save new preset</Label>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            value={presetName}
+                                            onChange={(e) => setPresetName(e.target.value)}
+                                            placeholder="Enter preset name"
+                                            className="flex-1"
+                                        />
+                                        <Button type="button" variant="outline" onClick={savePreset}>
+                                            Save
+                                        </Button>
                                     </div>
-                                    <Button type="button" variant="outline" onClick={async () => {
-                                        const snapshot = buildSnapshot();
-                                        const res = await fetch('/api/presets', {
-                                            method: 'POST',
-                                            headers: {'Content-Type': 'application/json'},
-                                            body: JSON.stringify({name: presetName || 'Untitled', snapshot})
-                                        });
-                                        if (res.ok) toast.success('Preset saved to cloud'); else toast.error('Failed to save');
-                                    }}>Save to Cloud</Button>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
-                                    <div className="md:col-span-2">
+
+                                {/* Load/Manage Local Presets */}
+                                <div className="space-y-3">
+                                    <Label className="text-sm">Manage saved presets</Label>
+                                    <div className="flex gap-2">
+                                        <Select value={selectedPresetId} onValueChange={setSelectedPresetId}
+                                                className="flex-1">
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select preset"/>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {savedPresets.length === 0 && (
+                                                    <SelectItem value="none" disabled>No saved presets</SelectItem>
+                                                )}
+                                                {savedPresets.map((p) => (
+                                                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <Button type="button" variant="outline" onClick={loadPreset}
+                                                disabled={!selectedPresetId}>
+                                            Load
+                                        </Button>
+                                        <Button type="button" variant="outline" onClick={deletePreset}
+                                                disabled={!selectedPresetId}>
+                                            Delete
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="border-t"></div>
+
+                        {/* Cloud Presets Section */}
+                        <div>
+                            <h3 className="text-sm font-medium mb-3 text-muted-foreground">Cloud Presets</h3>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                {/* Save to Cloud */}
+                                <div className="space-y-3">
+                                    <Label className="text-sm">Save to cloud</Label>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            value={presetName}
+                                            onChange={(e) => setPresetName(e.target.value)}
+                                            placeholder="Enter cloud preset name"
+                                            className="flex-1"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={async () => {
+                                                const snapshot = buildSnapshot();
+                                                const res = await fetch('/api/presets', {
+                                                    method: 'POST',
+                                                    headers: {'Content-Type': 'application/json'},
+                                                    body: JSON.stringify({name: presetName || 'Untitled', snapshot})
+                                                });
+                                                if (res.ok) toast.success('Preset saved to cloud');
+                                                else toast.error('Failed to save');
+                                            }}
+                                        >
+                                            Save to Cloud
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                {/* Load/Manage Cloud Presets */}
+                                <div className="space-y-3">
+                                    <Label className="text-sm">Manage cloud presets</Label>
+                                    <div className="flex gap-2">
                                         <select
-                                            className="w-full rounded-md border border-black/10 dark:border-white/15 bg-transparent px-2 py-2"
+                                            className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                            value={cloudSelectedId}
                                             onChange={async (e) => {
                                                 const id = e.target.value;
+                                                setCloudSelectedId(id);
                                                 if (!id) return;
                                                 const r = await fetch(`/api/presets/${id}`);
                                                 const js = await r.json();
                                                 if (js?.success) applySnapshot(js.item.snapshot);
-                                            }}>
-                                            <option value="">Load from cloud…</option>
+                                            }}
+                                        >
+                                            <option value="">Select cloud preset...</option>
                                             {cloudPresets.map(p => (
-                                                <option key={p._id} value={p._id}>{p.name}</option>))}
+                                                <option key={p._id} value={p._id}>{p.name}</option>
+                                            ))}
                                         </select>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={async () => {
+                                                if (!cloudSelectedId) return;
+                                                await fetch(`/api/presets/${cloudSelectedId}`, {method: "DELETE"});
+                                                refreshCloudPresets();
+                                                setCloudSelectedId("");
+                                            }}
+                                            disabled={!cloudSelectedId}
+                                        >
+                                            Delete
+                                        </Button>
+                                        <Button type="button" variant="outline" onClick={refreshCloudPresets}>
+                                            Refresh
+                                        </Button>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
+            {!embedded && (
+                <Card className="lg:col-span-2">
+                    <CardHeader className="pb-4">
+                        <CardTitle className="text-base">Save & Export</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        {/* Save QR to Library Section */}
+                        <div>
+                            <h3 className="text-sm font-medium mb-3 text-muted-foreground">Save to Library</h3>
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">
+                                <div className="lg:col-span-2">
+                                    <Label className="mb-2 block text-sm">QR name</Label>
+                                    <Input
+                                        value={qrName}
+                                        onChange={(e) => setQrName(e.target.value)}
+                                        placeholder="Enter QR name"
+                                        className="w-full"
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <Button onClick={saveQrToDb} disabled={savingDb} className="w-full">
+                                        {savingDb ? "Saving…" : "Save QR"}
+                                    </Button>
+                                    {savedQr?.slug && (
+                                        <a className="text-sm text-center underline text-muted-foreground hover:text-foreground transition-colors"
+                                           href="/qrs">
+                                            View in My QR Codes
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="border-t"></div>
+
+                        {/* Download Section */}
+                        <div>
+                            <h3 className="text-sm font-medium mb-3 text-muted-foreground">Download Options</h3>
+                            <div className="flex flex-wrap gap-3">
+                                <Button
+                                    type="button"
+                                    onClick={() => {
+                                        download('png');
+                                        toast.success('PNG download started');
+                                    }}
+                                >
+                                    Download PNG
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => {
+                                        download('svg');
+                                        toast.success('SVG download started');
+                                    }}
+                                >
+                                    Download SVG
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => {
+                                        downloadPDF();
+                                        toast.success('PDF download started');
+                                    }}
+                                >
+                                    Download PDF
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="border-t"></div>
+
+                        {/* Quick Save Preset Section */}
+                        <div>
+                            <h3 className="text-sm font-medium mb-3 text-muted-foreground">Quick Save Settings</h3>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                {/* Save to Cloud */}
+                                <div className="space-y-3">
+                                    <Label className="text-sm">Save current settings to cloud</Label>
                                     <div className="flex gap-2">
-                                        <Button type="button" variant="outline" onClick={async () => {
-                                            if (!cloudSelectedId) return;
-                                            await fetch(`/api/presets/${cloudSelectedId}`, {method: "DELETE"});
-                                            refreshCloudPresets();
-                                            setCloudSelectedId("");
-                                        }}>Delete</Button>
-                                        <Button type="button" variant="outline"
-                                                onClick={refreshCloudPresets}>Refresh</Button>
+                                        <Input
+                                            value={presetName}
+                                            onChange={(e) => setPresetName(e.target.value)}
+                                            placeholder="Enter preset name"
+                                            className="flex-1"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={async () => {
+                                                const snapshot = buildSnapshot();
+                                                const res = await fetch('/api/presets', {
+                                                    method: 'POST',
+                                                    headers: {'Content-Type': 'application/json'},
+                                                    body: JSON.stringify({name: presetName || 'Untitled', snapshot})
+                                                });
+                                                if (res.ok) toast.success('Preset saved to cloud');
+                                                else toast.error('Failed to save');
+                                            }}
+                                        >
+                                            Save to Cloud
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                {/* Load from Cloud */}
+                                <div className="space-y-3">
+                                    <Label className="text-sm">Load settings from cloud</Label>
+                                    <div className="flex gap-2">
+                                        <select
+                                            className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                            value={cloudSelectedId}
+                                            onChange={async (e) => {
+                                                const id = e.target.value;
+                                                setCloudSelectedId(id);
+                                                if (!id) return;
+                                                const r = await fetch(`/api/presets/${id}`);
+                                                const js = await r.json();
+                                                if (js?.success) applySnapshot(js.item.snapshot);
+                                            }}
+                                        >
+                                            <option value="">Select cloud preset...</option>
+                                            {cloudPresets.map(p => (
+                                                <option key={p._id} value={p._id}>{p.name}</option>
+                                            ))}
+                                        </select>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={async () => {
+                                                if (!cloudSelectedId) return;
+                                                await fetch(`/api/presets/${cloudSelectedId}`, {method: "DELETE"});
+                                                refreshCloudPresets();
+                                                setCloudSelectedId("");
+                                            }}
+                                            disabled={!cloudSelectedId}
+                                        >
+                                            Delete
+                                        </Button>
+                                        <Button type="button" variant="outline" onClick={refreshCloudPresets}>
+                                            Refresh
+                                        </Button>
                                     </div>
                                 </div>
                             </div>
