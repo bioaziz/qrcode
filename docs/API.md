@@ -69,9 +69,19 @@ Conventions
 - Response: `{ success, data: { total, daily[{ day, count }], devices{}, countries{}, cities{} } }`.
 - Implementation: `lib/redis.getSummary()` fetches total, last N days by daily keys, and hash maps for distributions.
 
-### `POST /api/analytics/rollup` (stub)
+### `POST /api/analytics/rollup`
 - File: `pages/api/analytics/rollup.js`
-- Purpose: Placeholder for future background rollups; no behavior yet.
+- Purpose: Aggregate Redis daily counters into Mongo (`AnalyticsDaily`).
+- Query params:
+  - `slug` (optional): limit to a single slug.
+  - `days` (optional, default 30): how many days back to upsert.
+  - `dryRun` (optional, `true|false`): if `true`, do not write; returns counts only.
+- Response: `{ success, message, results: [{ slug, upserts }] }`.
+
+### `GET /api/analytics/export?slug=...&dim=devices|countries|cities&days=N`
+- File: `pages/api/analytics/export.js`
+- Purpose: Export a CSV of all‑time distribution for the chosen dimension; percent is of all‑time total.
+- Response: `text/csv` with headers `key,count,percent`.
 
 ## Design Snapshots
 
@@ -124,8 +134,8 @@ Conventions
 # Helper Libraries (used by API/pages)
 
 ## `lib/redis.js`
-- `hasRedis()`: Boolean.
-- `logScanEvent({ slug, qrId, country, city, device })`: Pipelined counters; best‑effort.
+- Strictly requires `REDIS_URL` to be set.
+- `logScanEvent({ slug, qrId, country, city, device })`: Pipelined counters; best-effort.
 - `getSummary({ slug, days })`: Returns totals, daily array, and distributions from Redis keys/hashes.
 
 ## `lib/resolve.js`
@@ -139,4 +149,3 @@ Conventions
 
 ## `lib/auth.js`
 - `requireSession(req, res)`: Returns NextAuth session or sends 401; used by most authenticated APIs.
-

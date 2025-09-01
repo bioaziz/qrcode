@@ -122,7 +122,14 @@ export default function Analytics() {
 
           <div className="grid md:grid-cols-2 gap-4">
             <Card>
-              <CardHeader><CardTitle className="text-base">Devices</CardTitle></CardHeader>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">Devices</CardTitle>
+                  {slug && <a className="text-xs underline opacity-70 hover:opacity-100" href={`/api/analytics/export?slug=${encodeURIComponent(slug)}&dim=devices`}>
+                    Export CSV
+                  </a>}
+                </div>
+              </CardHeader>
               <CardContent className="space-y-2">
                 {Object.keys(view.devices).length === 0 && <div className="text-sm opacity-70">No device data yet</div>}
                 {Object.entries(view.devices).map(([k, v]) => {
@@ -137,7 +144,14 @@ export default function Analytics() {
               </CardContent>
             </Card>
             <Card>
-              <CardHeader><CardTitle className="text-base">Top Countries</CardTitle></CardHeader>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">Top Countries</CardTitle>
+                  {slug && <a className="text-xs underline opacity-70 hover:opacity-100" href={`/api/analytics/export?slug=${encodeURIComponent(slug)}&dim=countries`}>
+                    Export CSV
+                  </a>}
+                </div>
+              </CardHeader>
               <CardContent className="space-y-2 text-sm">
                 {Object.keys(view.countries).length === 0 && <div className="opacity-70">No data</div>}
                 {Object.entries(view.countries).sort((a,b)=>Number(b[1])-Number(a[1])).slice(0,10).map(([k,v])=> {
@@ -152,7 +166,14 @@ export default function Analytics() {
               </CardContent>
             </Card>
             <Card>
-              <CardHeader><CardTitle className="text-base">Top Cities</CardTitle></CardHeader>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">Top Cities</CardTitle>
+                  {slug && <a className="text-xs underline opacity-70 hover:opacity-100" href={`/api/analytics/export?slug=${encodeURIComponent(slug)}&dim=cities`}>
+                    Export CSV
+                  </a>}
+                </div>
+              </CardHeader>
               <CardContent className="space-y-2 text-sm">
                 {Object.keys(view.cities).length === 0 && <div className="opacity-70">No data</div>}
                 {Object.entries(view.cities).sort((a,b)=>Number(b[1])-Number(a[1])).slice(0,10).map(([k,v])=> {

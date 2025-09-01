@@ -8,7 +8,7 @@ This document explains the Week 2 changes in detail: the redirector route for pu
 - Logged each scan (best-effort, non-blocking) into Redis for fast counters and simple breakdowns.
 - Exposed an analytics summary API that reads aggregates from Redis.
 - Built a minimal analytics page in the Studio to visualize totals, a 14-day sparkline, and device share.
-- Kept all logic resilient: if Redis is not configured, scanning still works and analytics return zeros.
+  
 
 ## What’s Included
 
@@ -25,9 +25,9 @@ This document explains the Week 2 changes in detail: the redirector route for pu
   - Device detection: simple UA parsing → `ios | android | desktop`.
   - Geo hints: read from common headers if present (e.g., `x-vercel-ip-country`, `cf-ipcountry`). No IP lookups here.
 
-- Redis integration (optional)
+- Redis integration
   - File: `lib/redis.js`
-  - Creates an `ioredis` client if `REDIS_URL` is set and the dep is installed. Otherwise functions are no-ops.
+- Requires `REDIS_URL` and `ioredis` to be available.
   - `logScanEvent({ slug, qrId, country, city, device })` increments keys:
     - `qr:slug:{slug}:hits` — total scans (integer)
     - `qr:slug:{slug}:hits:{YYYYMMDD}` — daily scans (integer)
@@ -36,7 +36,7 @@ This document explains the Week 2 changes in detail: the redirector route for pu
     - `qr:slug:{slug}:city` — hash: city distribution
     - `qr:slug:{slug}:meta` — hash: stores `qrId` (string)
   - `getSummary({ slug, days })` returns an object of counters for dashboards.
-  - Helper: `hasRedis()` to detect availability.
+ 
 
 - Analytics API
   - `GET /api/analytics/summary?slug={slug}&days=14`
@@ -85,7 +85,7 @@ This document explains the Week 2 changes in detail: the redirector route for pu
 ## Performance Considerations
 
 - Logging uses a Redis pipeline; it is best-effort and does not block the redirect.
-- If Redis is slow or unavailable, the request still redirects successfully.
+- If Redis is slow/unavailable, logging errors are ignored, redirect remains unaffected.
 - The redirect page disables caching via `Cache-Control` headers.
 
 ## Known Limitations (addressed in Week 3)

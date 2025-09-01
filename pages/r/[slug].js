@@ -123,7 +123,7 @@ export async function getServerSideProps(ctx) {
   const city = headers["x-vercel-ip-city"] || headers["x-real-city"] || "unknown";
   const device = detectDevice(headers["user-agent"] || "");
 
-  // fire-and-forget log; don't block redirect if redis is not configured
+  // fire-and-forget log; don't block redirect on logging errors
   logScanEvent({ slug, qrId: code._id?.toString?.(), country, city, device }).catch(() => {});
 
   ctx.res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
