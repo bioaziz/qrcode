@@ -62,3 +62,19 @@ Troubleshooting
 - Redirect URI mismatch: ensure exact match with provider console (including port).
 - Use an incognito window or clear cookies if flows get stuck.
 - Enable `NEXTAUTH_DEBUG=true` to see detailed NextAuth logs.
+
+## Documentation
+
+- Pages reference: `docs/PAGES.md`
+- API reference: `docs/API.md`
+- Weekly updates: `docs/WEEK-2.md`, `docs/WEEK-3.md`, `docs/WEEK-4.md`
+- Roadmap: `docs/ROADMAP.md`
+
+## How To Explore
+
+- Run locally: `npm run dev` (or `docker compose up --build` for port `3008`).
+- Designer (home): `http://localhost:3000/` or `http://localhost:3008/`.
+- My QRs: `http://localhost:3000/qrs` — create, preview, open, delete.
+- Studio QRs: `http://localhost:3000/studio/qrs` — manage and edit QRs.
+- Analytics: `http://localhost:3000/studio/analytics?slug=<your-slug>` — insights and charts.
+- Micro‑app: `http://localhost:3000/m/<your-slug>` — lightweight landing per QR.

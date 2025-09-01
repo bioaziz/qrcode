@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { getServerSession } from "next-auth/next";
 
 export default function QrStudio() {
   const { status } = useSession();
@@ -78,6 +79,5 @@ export async function getServerSideProps(context) {
   const { authOptions } = await import("@/pages/api/auth/[...nextauth]");
   const session = await getServerSession(context.req, context.res, authOptions);
   if (!session) return { redirect: { destination: "/auth/signin", permanent: false } };
-  if (!isAdminEmail(session.user?.email)) return { notFound: true };
   return { props: {} };
 }

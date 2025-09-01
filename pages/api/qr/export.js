@@ -9,8 +9,7 @@ function toCsv(rows) {
   for (const r of rows) {
     out.push([r._id, r.slug, r.type, r.meta?.name || '', r.createdAt].map(esc).join(","));
   }
-  return out.join("
-");
+  return out.join("\n");
 }
 
 export default async function handler(req, res) {
