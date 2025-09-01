@@ -12,6 +12,7 @@ export default function Analytics() {
   const [days, setDays] = useState(14);
   const [list, setList] = useState([]);
   const [raw, setRaw] = useState(null);
+  const [redisEnabled, setRedisEnabled] = useState(true);
   const [loading, setLoading] = useState(false);
 
   async function load() {
@@ -20,7 +21,10 @@ export default function Analytics() {
     try {
       const res = await fetch(`/api/analytics/summary?slug=${encodeURIComponent(slug)}&days=${encodeURIComponent(days * 2)}`);
       const json = await res.json();
-      if (json?.success) setRaw(json.data);
+      if (json?.success) {
+        setRaw(json.data);
+        if (typeof json.redisEnabled === 'boolean') setRedisEnabled(json.redisEnabled);
+      }
     } finally {
       setLoading(false);
     }
@@ -34,6 +38,14 @@ export default function Analytics() {
       fetch('/api/qr').then(r=>r.json()).then(js=>{ if (js?.success) setList(js.items || []); }).catch(()=>{});
     }
   }, [status]);
+
+  // Auto-load when slug or days change and user is authenticated
+  useEffect(() => {
+    if (status === "authenticated" && slug) {
+      load();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, slug, days]);
 
   const view = useMemo(() => {
     if (!raw) return null;
@@ -60,6 +72,12 @@ export default function Analytics() {
   if (status === "loading") return null;
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
+      {!redisEnabled && (
+        <div className="rounded-md border border-red-300 bg-red-50 text-red-900 px-4 py-3 text-sm">
+          Analytics store (Redis) is not configured. Data will show as 0 and geo buckets will be "unknown" locally.
+          Configure <code>REDIS_URL</code> or run via Docker to enable real-time analytics.
+        </div>
+      )}
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">Analytics</h1>
         <div className="flex gap-2 flex-wrap">

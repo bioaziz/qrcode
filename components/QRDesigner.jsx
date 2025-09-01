@@ -34,6 +34,7 @@ import {
     Shield,
 } from "lucide-react";
 import ContentTab from "@/components/qr/ContentTab";
+import { renderCustomQR } from "@/lib/customRenderer";
 
 let QRCodeStyling;
 // Lazy-load to avoid SSR issues
@@ -51,7 +52,7 @@ const DOT_TYPES = [
     "extra-rounded",
 ];
 
-const CORNER_SQUARE_TYPES = ["square", "extra-rounded"];
+const CORNER_SQUARE_TYPES = ["square", "extra-rounded", "circle"];
 const CORNER_DOT_TYPES = ["square", "dot"]; // library accepts these
 
 export default function QRDesigner({embedded = false, initialSnapshot = null, onSnapshotChange = null}) {
@@ -90,6 +91,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     const [quietZone, setQuietZone] = useState(4);
     const [imageUrl, setImageUrl] = useState("");
     const [imageSize, setImageSize] = useState(0.35); // ratio (0..1)
+    const [hideLogoBgDots, setHideLogoBgDots] = useState(false); // let transparent logos show QR dots
     const [error, setError] = useState("");
     // Save to DB
     const [qrName, setQrName] = useState("");
@@ -216,7 +218,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             imageOptions: {
                 crossOrigin: "anonymous",
                 imageSize,
-                hideBackgroundDots: true,
+                hideBackgroundDots: hideLogoBgDots,
                 margin: 2,
             },
             qrOptions: {
@@ -248,7 +250,8 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             },
             cornersSquareOptions: {
                 color: cornerSquareColor,
-                type: cornerSquareType,
+                // Map custom-only types to closest library type for non-custom path
+                type: (cornerSquareType === 'circle') ? 'extra-rounded' : cornerSquareType,
             },
             cornersDotOptions: {
                 color: cornerDotColor,
@@ -269,6 +272,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             bgGradRotation,
             imageUrl,
             imageSize,
+            hideLogoBgDots,
             errorCorrection,
             quietZone,
             dotColor,
@@ -325,20 +329,42 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     }, [mode, linkUrl, phone, email, emailSubject, emailBody, wifiSsid, wifiPass, wifiHidden, wifiType, data, firstName, lastName, contactPhone, contactEmail, org, url, note, street, city, state, zip, country]);
 
     useEffect(() => {
-        if (!ref.current || !QRCodeStyling) return;
-        if (!qrRef.current) {
-            qrRef.current = new QRCodeStyling(options);
-            qrRef.current.append(ref.current);
+        if (!ref.current) return;
+        const wantCustom = cornerSquareType === 'circle' ;
+        const ensureCanvasSize = () => {
+            const canvas = ref.current?.querySelector?.("canvas");
+            if (canvas) {
+                canvas.style.width = `${displaySize}px`;
+                canvas.style.height = `${displaySize}px`;
+            }
+        };
+        if (wantCustom) {
+            // Switch to custom renderer when circle eyes are requested
+            if (!qrRef.current || qrRef.current.kind !== 'custom') {
+                // Clear previous renderer DOM
+                ref.current.innerHTML = '';
+                const canvas = document.createElement('canvas');
+                ref.current.appendChild(canvas);
+                qrRef.current = { kind: 'custom', canvas };
+            }
+            const canvas = qrRef.current.canvas;
+            renderCustomQR(canvas, options);
+            ensureCanvasSize();
+            return;
+        }
+        // Default to qr-code-styling
+        if (!QRCodeStyling) return;
+        if (!qrRef.current || qrRef.current.kind !== 'styling') {
+            // Clear previous renderer DOM
+            ref.current.innerHTML = '';
+            const inst = new QRCodeStyling(options);
+            inst.append(ref.current);
+            qrRef.current = { kind: 'styling', inst };
         } else {
-            qrRef.current.update(options);
+            qrRef.current.inst.update(options);
         }
-        // Ensure the canvas scales responsively to the available width
-        const canvas = ref.current?.querySelector?.("canvas");
-        if (canvas) {
-            canvas.style.width = `${displaySize}px`;
-            canvas.style.height = `${displaySize}px`;
-        }
-    }, [options, displaySize]);
+        ensureCanvasSize();
+    }, [options, displaySize, cornerSquareType]);
 
     const onUpload = (e) => {
         const file = e.target.files?.[0];
@@ -352,9 +378,43 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         setImageUrl(url);
     };
 
+    const autoSaveDesign = async () => {
+        try {
+            const snapshot = buildSnapshot();
+            const res = await fetch('/api/design', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(snapshot) });
+            if (res.status === 401) {
+                toast.message('Sign in to save designs');
+            } else if (res.ok) {
+                // optional: silent success
+            }
+        } catch (_) {
+            // ignore errors; do not block download
+        }
+    };
+
     const download = async (ext) => {
         if (!qrRef.current) return;
-        await qrRef.current.download({extension: ext});
+        // Save design snapshot automatically
+        await autoSaveDesign();
+        if (qrRef.current.kind === 'styling' && qrRef.current.inst?.download) {
+            await qrRef.current.inst.download({ extension: ext });
+            return;
+        }
+        // Custom renderer path: only PNG supported directly
+        const canvas = ref.current?.querySelector?.('canvas');
+        if (!canvas) return;
+        if (ext === 'svg') {
+            // Fallback to PNG when SVG requested in custom mode
+            ext = 'png';
+        }
+        const blob = await new Promise((res) => canvas.toBlob(res));
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `qrcode.${ext}`;
+        a.click();
+        URL.revokeObjectURL(url);
     };
 
     const copyContent = async () => {
@@ -408,6 +468,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
 
     const downloadPDF = async () => {
         if (!qrRef.current) return;
+        await autoSaveDesign();
         try {
             const blob = await getPngBlob();
             const url = URL.createObjectURL(blob);
@@ -500,6 +561,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         errorCorrection,
         quietZone,
         imageSize,
+        hideLogoBgDots,
         // imageUrl intentionally skipped
     });
 
@@ -553,6 +615,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         setErrorCorrection(s.errorCorrection ?? "M");
         setQuietZone(s.quietZone ?? 4);
         setImageSize(s.imageSize ?? 0.35);
+        setHideLogoBgDots(!!s.hideLogoBgDots);
     };
 
     const savePreset = () => {
@@ -942,26 +1005,14 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                 <Slider min={0.15} max={0.45} step={0.01} value={[imageSize]}
                                         onValueChange={(val) => setImageSize(val?.[0] ?? 0.35)}/>
                             </div>
-                            <div className="flex flex-wrap gap-3">
-                                <Button type="button" onClick={() => {
-                                    download("png");
-                                    toast.success("PNG download started");
-                                }}>
-                                    Download PNG
-                                </Button>
-                                <Button type="button" variant="outline" onClick={() => {
-                                    download("svg");
-                                    toast.success("SVG download started");
-                                }}>
-                                    Download SVG
-                                </Button>
-                                <Button type="button" variant="outline" onClick={() => {
-                                    downloadPDF();
-                                    toast.success("PDF download started");
-                                }}>
-                                    Download PDF
-                                </Button>
+                            <div className="flex items-center justify-between gap-3">
+                                <div>
+                                    <Label className="block mb-1">Hide dots behind logo</Label>
+                                    <div className="text-xs opacity-70">Turn off for transparent PNGs to let QR dots show through.</div>
+                                </div>
+                                <Switch checked={hideLogoBgDots} onCheckedChange={setHideLogoBgDots} />
                             </div>
+                            
                         </TabsContent>
 
                     </Tabs>
@@ -975,94 +1026,232 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                     <div ref={ref} className="flex items-center justify-center"/>
                 </CardContent>
             </Card>
-            {!embedded && (
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-base flex items-center gap-2"><List
-                            className="size-4"/> Presets</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 w-full">
-                            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
-                                <div>
-                                    <Label className="mb-1 block">Save preset name</Label>
-                                    <Input value={presetName} onChange={(e) => setPresetName(e.target.value)}
-                                           placeholder="My preset"/>
-                                </div>
-                                <Button type="button" variant="outline" onClick={savePreset}>Save Preset</Button>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
-                                <div className="md:col-span-2">
-                                    <Select value={selectedPresetId} onValueChange={setSelectedPresetId}>
-                                        <SelectTrigger className="w-full"><SelectValue
-                                            placeholder="Select saved preset"/></SelectTrigger>
-                                        <SelectContent>
-                                            {savedPresets.length === 0 && (
-                                                <SelectItem value="none" disabled>No saved presets</SelectItem>
-                                            )}
-                                            {savedPresets.map((p) => (
-                                                <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="flex flex-wrap gap-2">
-                                    <Button type="button" variant="outline" onClick={loadPreset}>Load</Button>
-                                    <Button type="button" variant="outline" onClick={deletePreset}>Delete</Button>
-                                </div>
-                            </div>
+            
+            {/*{!embedded && (*/}
+            {/*    <Card className='lg:col-span-2'>*/}
+            {/*        <CardHeader className="pb-2">*/}
+            {/*            <CardTitle className="text-base flex items-center gap-2"><List*/}
+            {/*                className="size-4"/> Presets</CardTitle>*/}
+            {/*        </CardHeader>*/}
+            {/*        <CardContent>*/}
+            {/*            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 w-full">*/}
+            {/*                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 items-end">*/}
+            {/*                    <div>*/}
+            {/*                        <Label className="mb-1 block">Save preset name</Label>*/}
+            {/*                        <Input value={presetName} onChange={(e) => setPresetName(e.target.value)}*/}
+            {/*                               placeholder="My preset"/>*/}
+            {/*                    </div>*/}
+            {/*                    <Button type="button" variant="outline" onClick={savePreset}>Save Preset</Button>*/}
+            {/*                </div>*/}
+            {/*                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">*/}
+            {/*                    <div className="md:col-span-2">*/}
+            {/*                        <Select value={selectedPresetId} onValueChange={setSelectedPresetId}>*/}
+            {/*                            <SelectTrigger className="w-full"><SelectValue*/}
+            {/*                                placeholder="Select saved preset"/></SelectTrigger>*/}
+            {/*                            <SelectContent>*/}
+            {/*                                {savedPresets.length === 0 && (*/}
+            {/*                                    <SelectItem value="none" disabled>No saved presets</SelectItem>*/}
+            {/*                                )}*/}
+            {/*                                {savedPresets.map((p) => (*/}
+            {/*                                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>*/}
+            {/*                                ))}*/}
+            {/*                            </SelectContent>*/}
+            {/*                        </Select>*/}
+            {/*                    </div>*/}
+            {/*                    <div className="flex flex-wrap gap-2">*/}
+            {/*                        <Button type="button" variant="outline" onClick={loadPreset}>Load</Button>*/}
+            {/*                        <Button type="button" variant="outline" onClick={deletePreset}>Delete</Button>*/}
+            {/*                    </div>*/}
+            {/*                </div>*/}
 
-                            <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-3 w-full">
-                                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
-                                    <div>
-                                        <Label className="mb-1 block">Save to cloud (name)</Label>
-                                        <Input value={presetName} onChange={(e) => setPresetName(e.target.value)}
-                                               placeholder="Company default"/>
-                                    </div>
-                                    <Button type="button" variant="outline" onClick={async () => {
-                                        const snapshot = buildSnapshot();
-                                        const res = await fetch('/api/presets', {
-                                            method: 'POST',
-                                            headers: {'Content-Type': 'application/json'},
-                                            body: JSON.stringify({name: presetName || 'Untitled', snapshot})
-                                        });
-                                        if (res.ok) toast.success('Preset saved to cloud'); else toast.error('Failed to save');
-                                    }}>Save to Cloud</Button>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
-                                    <div className="md:col-span-2">
-                                        <select
-                                            className="w-full rounded-md border border-black/10 dark:border-white/15 bg-transparent px-2 py-2"
-                                            onChange={async (e) => {
-                                                const id = e.target.value;
-                                                if (!id) return;
-                                                const r = await fetch(`/api/presets/${id}`);
-                                                const js = await r.json();
-                                                if (js?.success) applySnapshot(js.item.snapshot);
-                                            }}>
-                                            <option value="">Load from cloud…</option>
-                                            {cloudPresets.map(p => (
-                                                <option key={p._id} value={p._id}>{p.name}</option>))}
-                                        </select>
-                                    </div>
-                                    <div className="flex flex-wrap gap-2">
-                                        <Button type="button" variant="outline" onClick={async () => {
-                                            if (!cloudSelectedId) return;
-                                            await fetch(`/api/presets/${cloudSelectedId}`, {method: "DELETE"});
-                                            refreshCloudPresets();
-                                            setCloudSelectedId("");
-                                        }}>Delete</Button>
-                                        <Button type="button" variant="outline"
-                                                onClick={refreshCloudPresets}>Refresh</Button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
+            {/*                <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-3 w-full">*/}
+            {/*                    <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 items-end">*/}
+            {/*                        <div>*/}
+            {/*                            <Label className="mb-1 block">Save to cloud (name)</Label>*/}
+            {/*                            <Input value={presetName} onChange={(e) => setPresetName(e.target.value)}*/}
+            {/*                                   placeholder="Company default"/>*/}
+            {/*                        </div>*/}
+            {/*                        <Button type="button" variant="outline" onClick={async () => {*/}
+            {/*                            const snapshot = buildSnapshot();*/}
+            {/*                            const res = await fetch('/api/presets', {*/}
+            {/*                                method: 'POST',*/}
+            {/*                                headers: {'Content-Type': 'application/json'},*/}
+            {/*                                body: JSON.stringify({name: presetName || 'Untitled', snapshot})*/}
+            {/*                            });*/}
+            {/*                            if (res.ok) toast.success('Preset saved to cloud'); else toast.error('Failed to save');*/}
+            {/*                        }}>Save to Cloud</Button>*/}
+            {/*                    </div>*/}
+            {/*                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">*/}
+            {/*                        <div className="md:col-span-2">*/}
+            {/*                            <select*/}
+            {/*                                className="w-full rounded-md border border-black/10 dark:border-white/15 bg-transparent px-2 py-2"*/}
+            {/*                                onChange={async (e) => {*/}
+            {/*                                    const id = e.target.value;*/}
+            {/*                                    if (!id) return;*/}
+            {/*                                    const r = await fetch(`/api/presets/${id}`);*/}
+            {/*                                    const js = await r.json();*/}
+            {/*                                    if (js?.success) applySnapshot(js.item.snapshot);*/}
+            {/*                                }}>*/}
+            {/*                                <option value="">Load from cloud…</option>*/}
+            {/*                                {cloudPresets.map(p => (*/}
+            {/*                                    <option key={p._id} value={p._id}>{p.name}</option>))}*/}
+            {/*                            </select>*/}
+            {/*                        </div>*/}
+            {/*                        <div className="flex flex-wrap gap-2">*/}
+            {/*                            <Button type="button" variant="outline" onClick={async () => {*/}
+            {/*                                if (!cloudSelectedId) return;*/}
+            {/*                                await fetch(`/api/presets/${cloudSelectedId}`, {method: "DELETE"});*/}
+            {/*                                refreshCloudPresets();*/}
+            {/*                                setCloudSelectedId("");*/}
+            {/*                            }}>Delete</Button>*/}
+            {/*                            <Button type="button" variant="outline"*/}
+            {/*                                    onClick={refreshCloudPresets}>Refresh</Button>*/}
+            {/*                        </div>*/}
+            {/*                    </div>*/}
+            {/*                </div>*/}
+            {/*            </div>*/}
+            {/*        </CardContent>*/}
+            {/*    </Card>*/}
+            {/*)}*/}
+
             {!embedded && (
-                <Card>
+    <Card className='lg:col-span-2'>
+        <CardHeader className="pb-4">
+            <CardTitle className="text-base flex items-center gap-2">
+                <List className="size-4"/> Presets
+            </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+            {/* Local Presets Section */}
+            <div>
+                <h3 className="text-sm font-medium mb-3 text-muted-foreground">Local Presets</h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {/* Save Local Preset */}
+                    <div className="space-y-3">
+                        <Label className="text-sm">Save new preset</Label>
+                        <div className="flex gap-2">
+                            <Input
+                                value={presetName}
+                                onChange={(e) => setPresetName(e.target.value)}
+                                placeholder="Enter preset name"
+                                className="flex-1"
+                            />
+                            <Button type="button" variant="outline" onClick={savePreset}>
+                                Save
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* Load/Manage Local Presets */}
+                    <div className="space-y-3">
+                        <Label className="text-sm">Manage saved presets</Label>
+                        <div className="flex gap-2">
+                            <Select value={selectedPresetId} onValueChange={setSelectedPresetId} className="flex-1">
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select preset" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {savedPresets.length === 0 && (
+                                        <SelectItem value="none" disabled>No saved presets</SelectItem>
+                                    )}
+                                    {savedPresets.map((p) => (
+                                        <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Button type="button" variant="outline" onClick={loadPreset} disabled={!selectedPresetId}>
+                                Load
+                            </Button>
+                            <Button type="button" variant="outline" onClick={deletePreset} disabled={!selectedPresetId}>
+                                Delete
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t"></div>
+
+            {/* Cloud Presets Section */}
+            <div>
+                <h3 className="text-sm font-medium mb-3 text-muted-foreground">Cloud Presets</h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {/* Save to Cloud */}
+                    <div className="space-y-3">
+                        <Label className="text-sm">Save to cloud</Label>
+                        <div className="flex gap-2">
+                            <Input
+                                value={presetName}
+                                onChange={(e) => setPresetName(e.target.value)}
+                                placeholder="Enter cloud preset name"
+                                className="flex-1"
+                            />
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={async () => {
+                                    const snapshot = buildSnapshot();
+                                    const res = await fetch('/api/presets', {
+                                        method: 'POST',
+                                        headers: {'Content-Type': 'application/json'},
+                                        body: JSON.stringify({name: presetName || 'Untitled', snapshot})
+                                    });
+                                    if (res.ok) toast.success('Preset saved to cloud');
+                                    else toast.error('Failed to save');
+                                }}
+                            >
+                                Save to Cloud
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* Load/Manage Cloud Presets */}
+                    <div className="space-y-3">
+                        <Label className="text-sm">Manage cloud presets</Label>
+                        <div className="flex gap-2">
+                            <select
+                                className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                value={cloudSelectedId}
+                                onChange={async (e) => {
+                                    const id = e.target.value;
+                                    setCloudSelectedId(id);
+                                    if (!id) return;
+                                    const r = await fetch(`/api/presets/${id}`);
+                                    const js = await r.json();
+                                    if (js?.success) applySnapshot(js.item.snapshot);
+                                }}
+                            >
+                                <option value="">Select cloud preset...</option>
+                                {cloudPresets.map(p => (
+                                    <option key={p._id} value={p._id}>{p.name}</option>
+                                ))}
+                            </select>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={async () => {
+                                    if (!cloudSelectedId) return;
+                                    await fetch(`/api/presets/${cloudSelectedId}`, {method: "DELETE"});
+                                    refreshCloudPresets();
+                                    setCloudSelectedId("");
+                                }}
+                                disabled={!cloudSelectedId}
+                            >
+                                Delete
+                            </Button>
+                            <Button type="button" variant="outline" onClick={refreshCloudPresets}>
+                                Refresh
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </CardContent>
+    </Card>
+)}
+            {!embedded && (
+                <Card className="lg:col-span-2">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-base">Save to Library</CardTitle>
                     </CardHeader>
@@ -1078,6 +1267,12 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                     View in My QR Codes
                                 </a>
                             )}
+
+                            <div className="flex flex-wrap gap-3 mt-4">
+                                <Button type="button" onClick={() => { download('png'); toast.success('PNG download started'); }}>Download PNG</Button>
+                                <Button type="button" variant="outline" onClick={() => { download('svg'); toast.success('SVG download started'); }}>Download SVG</Button>
+                                <Button type="button" variant="outline" onClick={() => { downloadPDF(); toast.success('PDF download started'); }}>Download PDF</Button>
+                            </div>
 
                             <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-3 w-full">
                                 <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
