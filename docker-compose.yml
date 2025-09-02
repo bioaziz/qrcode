@@ -42,3 +42,5 @@ volumes:
 
 networks:
   geniusbuy-network:
+    external: true
+    name: geniusbuy_geniusbuy-network # <— exact existing network name
