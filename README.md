@@ -56,6 +56,7 @@ Environment variables (in `.env`):
 - `INSTAGRAM_CLIENT_ID` / `INSTAGRAM_CLIENT_SECRET`
 - `MONGODB_URI=mongodb://localhost:27020/qrcode`
 - `NEXTAUTH_DEBUG=true` (optional, for verbose logs)
+- `GOOGLE_TRANSLATE_API_KEY=...` (required for translation features; set in production)
 
 Provider redirect URIs
 - Google
