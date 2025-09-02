@@ -74,7 +74,29 @@
     },
     "messages": {
       "contentCopied": "Contenu copié",
-      "imageCopied": "Image copiée"
+      "imageCopied": "Image copiée",
+      "qrSaved": "QR enregistré",
+      "presetSaved": "Préréglage enregistré dans le cloud",
+      "failedToSave": "Échec de l'enregistrement",
+      "downloadStarted": "Téléchargement {{format}} démarré"
+    },
+    "customizeTitle": "Personnaliser le code QR",
+    "downloadOptions": "Options de téléchargement",
+    "basicSettings": "Paramètres de base",
+    "appearance": "Apparence",
+    "qrName": "Nom du QR",
+    "qrNamePlaceholder": "Entrer le nom du QR",
+    "saving": "Enregistrement…",
+    "saveQr": "Enregistrer le QR",
+    "viewInMyQrs": "Voir dans Mes QR Codes",
+    "untitled": "Sans titre",
+    "quickSave": {
+      "title": "Paramètres d'enregistrement rapide",
+      "cloudSaveLabel": "Enregistrer les paramètres actuels dans le cloud",
+      "saveToCloud": "Enregistrer dans le cloud",
+      "cloudLoadLabel": "Charger les paramètres depuis le cloud",
+      "selectCloudPreset": "Sélectionner un préréglage cloud...",
+      "refresh": "Rafraîchir"
     },
     "contentTab": {
       "preset": "Préréglage",
@@ -140,6 +162,12 @@
       "stops3": "3 arrêts",
       "background": "Arrière-plan",
       "transparent": "Transparent",
+      "transparentBg": "Arrière-plan transparent",
+      "dotsHeading": "Points",
+      "backgroundColor": "Couleur de l'arrière-plan",
+      "start": "Début",
+      "middle": "Milieu",
+      "end": "Fin",
       "dotsGradientToggle": "Dégradé des points",
       "backgroundGradientToggle": "Dégradé de l'arrière-plan",
       "linear": "Linéaire",
