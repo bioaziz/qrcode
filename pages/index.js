@@ -1,8 +1,17 @@
 import { useSession } from "next-auth/react";
+import Head from "next/head";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { QrCode, Sparkles, LineChart, Layers, ShieldCheck, Settings2, Rocket } from "lucide-react";
+import {
+  QrCode,
+  Sparkles,
+  LineChart,
+  Layers,
+  ShieldCheck,
+  Settings2,
+  Rocket,
+} from "lucide-react";
 import { useTranslation } from "next-i18next";
 import i18nConfig from "../next-i18next.config.mjs";
 export default function Landing() {
@@ -36,8 +45,35 @@ export default function Landing() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-[#0b0d12] dark:to-[#0a0f1b]">
-      <main className="mx-auto max-w-6xl px-6 md:px-10 py-10 space-y-16">
+    <>
+      <Head>
+        <title>QR Code Generator – Gratuit au Bénin</title>
+        <meta
+          name="description"
+          content="Générez facilement vos QR codes personnalisés gratuitement au Bénin."
+        />
+        <meta
+          name="keywords"
+          content="QR code generator, QR code Benin, créer QR code, QR code gratuit"
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="QR Code Generator – Gratuit au Bénin" />
+        <meta
+          property="og:description"
+          content="Générateur de QR code rapide et gratuit pour les entreprises et particuliers au Bénin."
+        />
+        <meta property="og:image" content="https://qr.genius.bj/preview.png" />
+        <meta property="og:url" content="https://qr.genius.bj" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="QR Code Generator – Gratuit au Bénin" />
+        <meta
+          name="twitter:description"
+          content="Générez vos QR codes gratuitement en ligne au Bénin."
+        />
+        <meta name="twitter:image" content="https://qr.genius.bj/preview.png" />
+      </Head>
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-[#0b0d12] dark:to-[#0a0f1b]">
+        <main className="mx-auto max-w-6xl px-6 md:px-10 py-10 space-y-16">
         {/* Hero */}
         <section className="grid lg:grid-cols-2 gap-8 items-center">
           <div>
@@ -107,7 +143,8 @@ export default function Landing() {
           </div>
         </section>
       </main>
-    </div>
+      </div>
+    </>
   );
 }
 
