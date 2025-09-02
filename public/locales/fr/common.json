@@ -63,5 +63,138 @@
   "designer": {
     "title": "Concepteur de QR codes",
     "description": "Générez des QR codes pour texte, liens, téléphone, e-mail, Wi-Fi avec formes, dégradés"
+  },
+  "designerEditor": {
+    "tabs": {
+      "content": "Contenu",
+      "style": "Style",
+      "corners": "Coins",
+      "logo": "Logo",
+      "presets": "Préréglages"
+    },
+    "messages": {
+      "contentCopied": "Contenu copié",
+      "imageCopied": "Image copiée"
+    },
+    "contentTab": {
+      "preset": "Préréglage",
+      "selectPreset": "Choisir un préréglage",
+      "freeform": "Libre",
+      "link": "Lien",
+      "phone": "Téléphone",
+      "email": "Email",
+      "wifi": "Wi-Fi",
+      "mecard": "MeCard",
+      "vcard": "vCard",
+      "copyContent": "Copier le contenu",
+      "copyImage": "Copier l'image",
+      "content": "Contenu",
+      "contentPlaceholder": "Entrer texte, URL, téléphone, etc.",
+      "url": "URL",
+      "urlPlaceholder": "https://exemple.com",
+      "phoneLabel": "Téléphone",
+      "phonePlaceholder": "+123456789",
+      "emailLabel": "Email",
+      "emailPlaceholder": "utilisateur@exemple.com",
+      "subject": "Objet",
+      "subjectPlaceholder": "Bonjour",
+      "body": "Message",
+      "bodyPlaceholder": "Message...",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "contactPhone": "Téléphone",
+      "contactEmail": "Email",
+      "organization": "Organisation",
+      "street": "Rue",
+      "city": "Ville",
+      "state": "État",
+      "zip": "Code postal",
+      "country": "Pays",
+      "note": "Note",
+      "ssid": "SSID",
+      "ssidPlaceholder": "Nom du réseau",
+      "security": "Sécurité",
+      "securityPlaceholder": "Sécurité",
+      "wpa": "WPA/WPA2",
+      "wep": "WEP",
+      "nopass": "Sans mot de passe",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "motdepasse",
+      "hiddenNetwork": "Réseau caché"
+    },
+    "styleTab": {
+      "size": "Taille",
+      "quietZone": "Zone silencieuse",
+      "errorCorrection": "Correction d'erreur",
+      "levelPlaceholder": "Niveau",
+      "errorLow": "L (Faible)",
+      "errorMedium": "M",
+      "errorQuartile": "Q",
+      "errorHigh": "H (Élevé)",
+      "dotsType": "Type de points",
+      "typePlaceholder": "Type",
+      "dotsColor": "Couleur des points",
+      "dotsGradient": "Dégradé des points",
+      "rotation": "Rotation (radians)",
+      "stops2": "2 arrêts",
+      "stops3": "3 arrêts",
+      "background": "Arrière-plan",
+      "transparent": "Transparent",
+      "dotsGradientToggle": "Dégradé des points",
+      "backgroundGradientToggle": "Dégradé de l'arrière-plan",
+      "linear": "Linéaire",
+      "radial": "Radial"
+    },
+    "cornersTab": {
+      "cornerSquareLabel": "Carré d'angle",
+      "cornerSquareTypePlaceholder": "Type",
+      "cornerSquareColorLabel": "Couleur du carré d'angle",
+      "cornerDotLabel": "Point d'angle",
+      "cornerDotTypePlaceholder": "Type",
+      "cornerDotColorLabel": "Couleur du point d'angle"
+    },
+    "logoTab": {
+      "logoLabel": "Logo (optionnel)",
+      "remove": "Supprimer",
+      "logoSizeLabel": "Taille du logo",
+      "downloadPng": "Télécharger PNG",
+      "downloadSvg": "Télécharger SVG",
+      "downloadPdf": "Télécharger PDF"
+    },
+    "presetsTab": {
+      "savePresetNameLabel": "Nom du preset",
+      "presetNamePlaceholder": "Mon preset",
+      "savePresetButton": "Enregistrer le preset",
+      "selectPresetPlaceholder": "Sélectionner un preset enregistré",
+      "noPresets": "Aucun preset enregistré",
+      "loadButton": "Charger",
+      "deleteButton": "Supprimer"
+    }
+  },
+  "signin": {
+    "title": "Connexion",
+    "description": "Choisissez un fournisseur pour continuer",
+    "backToHome": "Retour à l'accueil",
+    "continueWith": "Continuer avec {{brand}}"
+  },
+  "micro": {
+    "badgePrefix": "QR",
+    "quickActions": "Actions rapides",
+    "openDestination": "Ouvrir la destination",
+    "openStudio": "Ouvrir le studio",
+    "startPayLater": "Lancer le flux Pay‑Later",
+    "details": "Détails",
+    "slug": "Slug :",
+    "type": "Type :",
+    "primaryUrl": "URL primaire :"
+  },
+  "adminFallbacks": {
+    "title": "Admin · Gestion des redirections",
+    "cardTitle": "Redirection globale de secours",
+    "destinationLabel": "URL de destination lorsque le QR est manquant/en pause",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "saved": "Enregistré",
+    "error": "Erreur"
   }
 }

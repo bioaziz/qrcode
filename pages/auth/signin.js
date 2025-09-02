@@ -3,10 +3,13 @@ import { useSession, signIn } from "next-auth/react";
 import { useRouter } from "next/router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "next-i18next";
+import i18nConfig from "../../next-i18next.config.mjs";
 
 export default function SignIn() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { t } = useTranslation("common");
 
   useEffect(() => {
     if (status === "authenticated") router.replace("/");
@@ -19,8 +22,8 @@ export default function SignIn() {
       <div className="w-full max-w-md">
         <Card>
           <CardHeader className="text-center">
-            <CardTitle>Sign in</CardTitle>
-            <CardDescription>Choose a provider to continue</CardDescription>
+            <CardTitle>{t("signin.title")}</CardTitle>
+            <CardDescription>{t("signin.description")}</CardDescription>
             {error ? (
               <p className="text-sm text-red-600 mt-2">{String(error)}</p>
             ) : null}
@@ -47,7 +50,7 @@ export default function SignIn() {
             {/*  Icon={IconInstagram}*/}
             {/*/>*/}
             <div className="text-center pt-2">
-              <Button variant="ghost" onClick={() => router.push("/")}>Back to home</Button>
+              <Button variant="ghost" onClick={() => router.push("/")}>{t("signin.backToHome")}</Button>
             </div>
           </CardContent>
         </Card>
@@ -57,12 +60,13 @@ export default function SignIn() {
 }
 
 function ProviderButton({ brand, onClick, Icon, color = "outline", className }) {
+  const { t } = useTranslation("common");
   return (
     <Button onClick={onClick} variant={color} className={`w-full justify-between ${className || ""}`}>
       <span className="shrink-0">
         <Icon className="w-5 h-5" />
       </span>
-      <span className="flex-1 text-center">Continue with {brand}</span>
+      <span className="flex-1 text-center">{t("signin.continueWith", { brand })}</span>
       <span className="w-5" />
     </Button>
   );
@@ -102,6 +106,7 @@ export async function getServerSideProps(context) {
   const { getServerSession } = await import("next-auth/next");
   const { authOptions } = await import("../api/auth/[...nextauth]");
   const session = await getServerSession(context.req, context.res, authOptions);
+  const { serverSideTranslations } = await import("next-i18next/serverSideTranslations");
 
   if (session) {
     return {
@@ -112,5 +117,5 @@ export async function getServerSideProps(context) {
     };
   }
 
-  return { props: {} };
+  return { props: { ...(await serverSideTranslations(context.locale, ["common"], i18nConfig)) } };
 }
