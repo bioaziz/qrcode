@@ -63,5 +63,64 @@
   "designer": {
     "title": "Concepteur de QR codes",
     "description": "Générez des QR codes pour texte, liens, téléphone, e-mail, Wi-Fi avec formes, dégradés"
+  },
+  "designerEditor": {
+    "tabs": {
+      "content": "Contenu",
+      "style": "Style",
+      "corners": "Coins",
+      "logo": "Logo",
+      "presets": "Préréglages"
+    },
+    "messages": {
+      "contentCopied": "Contenu copié",
+      "imageCopied": "Image copiée"
+    },
+    "contentTab": {
+      "preset": "Préréglage",
+      "selectPreset": "Choisir un préréglage",
+      "freeform": "Libre",
+      "link": "Lien",
+      "phone": "Téléphone",
+      "email": "Email",
+      "wifi": "Wi-Fi",
+      "mecard": "MeCard",
+      "vcard": "vCard",
+      "copyContent": "Copier le contenu",
+      "copyImage": "Copier l'image",
+      "content": "Contenu",
+      "contentPlaceholder": "Entrer texte, URL, téléphone, etc.",
+      "url": "URL",
+      "urlPlaceholder": "https://exemple.com",
+      "phoneLabel": "Téléphone",
+      "phonePlaceholder": "+123456789",
+      "emailLabel": "Email",
+      "emailPlaceholder": "utilisateur@exemple.com",
+      "subject": "Objet",
+      "subjectPlaceholder": "Bonjour",
+      "body": "Message",
+      "bodyPlaceholder": "Message...",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "contactPhone": "Téléphone",
+      "contactEmail": "Email",
+      "organization": "Organisation",
+      "street": "Rue",
+      "city": "Ville",
+      "state": "État",
+      "zip": "Code postal",
+      "country": "Pays",
+      "note": "Note",
+      "ssid": "SSID",
+      "ssidPlaceholder": "Nom du réseau",
+      "security": "Sécurité",
+      "securityPlaceholder": "Sécurité",
+      "wpa": "WPA/WPA2",
+      "wep": "WEP",
+      "nopass": "Sans mot de passe",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "motdepasse",
+      "hiddenNetwork": "Réseau caché"
+    }
   }
 }
