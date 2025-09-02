@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "next-i18next";
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown, Globe } from "lucide-react";
 
