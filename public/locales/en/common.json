@@ -1,0 +1,85 @@
+{
+  "brand": "QR Generator",
+  "nav": {
+    "home": "Home",
+    "designer": "Designer",
+    "myQrs": "My QRs",
+    "signOut": "Sign out",
+    "signIn": "Sign in"
+  },
+  "landing": {
+    "badge": "Introducing Genius QR",
+    "title": "Smarter, flexible QR codes with real‑time routing and analytics",
+    "description": "Design beautiful QR codes, then direct each scan dynamically based on device, time, or A/B tests. Measure performance with built‑in analytics.",
+    "ctaMyQrs": "Go to My QRs",
+    "ctaGetStarted": "Get Started",
+    "ctaOpenDesigner": "Open Designer",
+    "featureHeading": "Why Genius QR",
+    "features": {
+      "dynamicRouting": {
+        "title": "Dynamic routing",
+        "desc": "Send iOS to App Store, Android to Play, and desktop to your site. Add time‑based campaigns, geo rules, and fallbacks."
+      },
+      "analytics": {
+        "title": "Built‑in analytics",
+        "desc": "Track total and daily scans with device, country, and city distributions. Export CSV for deeper analysis."
+      },
+      "presets": {
+        "title": "Designer presets",
+        "desc": "Save styles to cloud presets and reuse across campaigns. Export high‑quality PNG, SVG, and PDF."
+      },
+      "beautiful": {
+        "title": "Beautiful codes",
+        "desc": "Fine‑tune dots, corners, gradients, quiet zones, and logos with robust error correction."
+      },
+      "reliable": {
+        "title": "Reliable redirects",
+        "desc": "Resilient redirects with optional global fallback URL when a code is paused or archived."
+      },
+      "fastSetup": {
+        "title": "Fast setup",
+        "desc": "Start in minutes. Create, style, and share your first QR without friction."
+      }
+    },
+    "ctaSection": {
+      "title": "Ready to create your first Genius QR?",
+      "desc": "Sign in to manage QRs and see real‑time analytics.",
+      "ctaOpenDashboard": "Open Dashboard",
+      "ctaGetStarted": "Get Started",
+      "ctaOpenDesigner": "Open Designer"
+    },
+    "designerPreview": {
+      "title": "Designer Preview",
+      "customStylesTitle": "Custom Styles",
+      "customStylesDesc": "Dots, corners, gradients, and logos with error correction.",
+      "dynamicDestinationsTitle": "Dynamic Destinations",
+      "dynamicDestinationsDesc": "Rules by device/time/geo, A/B tests, rotations.",
+      "instantAnalyticsTitle": "Instant Analytics",
+      "instantAnalyticsDesc": "Scans counted in real time with device and geo breakdowns.",
+      "shareExportTitle": "Share & Export",
+      "shareExportDesc": "Export PNG/SVG/PDF, save designs, and reuse presets."
+    }
+  },
+  "designer": {
+    "title": "QR Code Designer",
+    "description": "Generate QR codes for text, links, phone, email, Wi‑Fi with custom shapes, gradients, and logos."
+  },
+  "qrs": {
+    "title": "My QR Codes",
+    "searchPlaceholder": "Search by name or slug…",
+    "search": "Search",
+    "preview": "Preview",
+    "open": "Open",
+    "delete": "Delete",
+    "deleting": "Deleting…",
+    "confirmDelete": "Delete this QR? It will be archived.",
+    "qrPreviewTitle": "QR preview",
+    "qrPreviewDescription": "Quick look at data and actions.",
+    "encodesRedirect": "Encodes redirect URL",
+    "openRedirect": "Open Redirect",
+    "openMicro": "Open Micro‑app",
+    "testResolve": "Test resolve",
+    "destination": "Destination:",
+    "slug": "Slug:"
+  }
+}
