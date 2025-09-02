@@ -107,6 +107,8 @@
     "saving": "Saving…",
     "saveQr": "Save QR",
     "viewInMyQrs": "View in My QR Codes",
+    "saveAndExport": "Save & Export",
+    "saveToLibrary": "Save to Library",
     "untitled": "Untitled",
     "quickSave": {
       "title": "Quick Save Settings",
@@ -197,7 +199,16 @@
       "cornerSquareColorLabel": "Corner square color",
       "cornerDotLabel": "Corner dot",
       "cornerDotTypePlaceholder": "Type",
-      "cornerDotColorLabel": "Corner dot color"
+      "cornerDotColorLabel": "Corner dot color",
+      "cornerSquareTypes": {
+        "square": "Square",
+        "extra-rounded": "Extra rounded",
+        "circle": "Circle"
+      },
+      "cornerDotTypes": {
+        "square": "Square",
+        "dot": "Dot"
+      }
     },
     "logoTab": {
       "logoLabel": "Logo (optional)",
@@ -205,9 +216,13 @@
       "logoSizeLabel": "Logo size",
       "downloadPng": "Download PNG",
       "downloadSvg": "Download SVG",
-      "downloadPdf": "Download PDF"
+      "downloadPdf": "Download PDF",
+      "logoAlt": "logo"
     },
     "presetsTab": {
+      "localTitle": "Local Presets",
+      "manageLabel": "Manage saved presets",
+      "cloudTitle": "Cloud Presets",
       "savePresetNameLabel": "Save preset name",
       "presetNamePlaceholder": "My preset",
       "savePresetButton": "Save Preset",

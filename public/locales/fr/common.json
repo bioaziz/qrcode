@@ -89,6 +89,8 @@
     "saving": "Enregistrement…",
     "saveQr": "Enregistrer le QR",
     "viewInMyQrs": "Voir dans Mes QR Codes",
+    "saveAndExport": "Enregistrer et exporter",
+    "saveToLibrary": "Enregistrer dans la bibliothèque",
     "untitled": "Sans titre",
     "quickSave": {
       "title": "Paramètres d'enregistrement rapide",
@@ -179,7 +181,16 @@
       "cornerSquareColorLabel": "Couleur du carré d'angle",
       "cornerDotLabel": "Point d'angle",
       "cornerDotTypePlaceholder": "Type",
-      "cornerDotColorLabel": "Couleur du point d'angle"
+      "cornerDotColorLabel": "Couleur du point d'angle",
+      "cornerSquareTypes": {
+        "square": "Carré",
+        "extra-rounded": "Extra arrondi",
+        "circle": "Cercle"
+      },
+      "cornerDotTypes": {
+        "square": "Carré",
+        "dot": "Point"
+      }
     },
     "logoTab": {
       "logoLabel": "Logo (optionnel)",
@@ -187,9 +198,13 @@
       "logoSizeLabel": "Taille du logo",
       "downloadPng": "Télécharger PNG",
       "downloadSvg": "Télécharger SVG",
-      "downloadPdf": "Télécharger PDF"
+      "downloadPdf": "Télécharger PDF",
+      "logoAlt": "logo"
     },
     "presetsTab": {
+      "localTitle": "Préréglages locaux",
+      "manageLabel": "Gérer les préréglages enregistrés",
+      "cloudTitle": "Préréglages cloud",
       "savePresetNameLabel": "Nom du preset",
       "presetNamePlaceholder": "Mon preset",
       "savePresetButton": "Enregistrer le preset",
