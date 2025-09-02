@@ -29,15 +29,6 @@ services:
       - /app/.next
     env_file:
       - .env
-    environment:
-      # In Docker, refer to Mongo by service name
-      - MONGODB_URI=mongodb://mongo:27017/qrcode
-      - NEXTAUTH_URL=http://localhost:3008
-      - NEXTAUTH_DEBUG=true
-      - REDIS_URL=redis://redis:6379/0
-      # Ensure file watching works reliably inside containers
-      - CHOKIDAR_USEPOLLING=true
-      - WATCHPACK_POLLING=true
     command: sh -c "npm run dev"
 
 volumes:
