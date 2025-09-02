@@ -1012,5 +1012,21 @@ export default function QrCodeMobileMoney() {
                 <span className="text-yellow-500">📱</span>
                 <span className="text-sm text-gray-600">MTN Mobile Money</span>
               </div>
-              <div className="flex items-center space-x-2">
-                <span className="
+                <div className="flex items-center space-x-2">
+                  <span className="text-blue-500">💙</span>
+                  <span className="text-sm text-gray-600">Moov Money</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-green-600">🌟</span>
+                  <span className="text-sm text-gray-600">Celtiis Cash</span>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500">
+                Données marché 2024. Vérifiez toujours les tarifs auprès de votre opérateur.
+              </p>
+            </div>
+          </footer>
+        </main>
+      </>
+    );
+}
