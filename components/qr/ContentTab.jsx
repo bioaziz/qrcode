@@ -139,7 +139,7 @@ export default function ContentTab(props) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <Label className="mb-1 flex items-center gap-2" htmlFor="ssid"><WifiIcon className="size-4"/> {t("designerEditor.contentTab.ssid")}</Label>
-            <Input id="ssid" value={wifiSsid} onChange={(e) => setWifiSsid(e.target.value)} placeholder={t("designerEditor.contentTab.ssidPlaceholder","Network name")} />
+            <Input id="ssid" value={wifiSsid} onChange={(e) => setWifiSsid(e.target.value)} placeholder={t("designerEditor.contentTab.ssidPlaceholder")} />
           </div>
           <div>
             <Label className="mb-1 flex items-center gap-2"><Shield className="size-4"/> {t("designerEditor.contentTab.security")}</Label>
