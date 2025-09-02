@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import ContentTab from "@/components/qr/ContentTab";
 import {renderCustomQR} from "@/lib/customRenderer";
+import { useTranslation } from "next-i18next";
 
 let QRCodeStyling;
 // Lazy-load to avoid SSR issues
@@ -58,6 +59,7 @@ const CORNER_DOT_TYPES = ["square", "dot"]; // library accepts these
 export default function QRDesigner({embedded = false, initialSnapshot = null, onSnapshotChange = null}) {
     const ref = useRef(null);
     const qrRef = useRef(null);
+    const { t } = useTranslation("common");
 
     // Controls
     const [data, setData] = useState("");
@@ -710,19 +712,19 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                         <TabsList className="grid w-full grid-cols-4">
                             <TabsTrigger value="content" className="flex items-center gap-2">
                                 <QrCode className="size-4"/>
-                                <span className="hidden sm:inline">Content</span>
+                                <span className="hidden sm:inline">{t("designerEditor.tabs.content")}</span>
                             </TabsTrigger>
                             <TabsTrigger value="style" className="flex items-center gap-2">
                                 <Palette className="size-4"/>
-                                <span className="hidden sm:inline">Style</span>
+                                <span className="hidden sm:inline">{t("designerEditor.tabs.style")}</span>
                             </TabsTrigger>
                             <TabsTrigger value="corners" className="flex items-center gap-2">
                                 <Shapes className="size-4"/>
-                                <span className="hidden sm:inline">Corners</span>
+                                <span className="hidden sm:inline">{t("designerEditor.tabs.corners")}</span>
                             </TabsTrigger>
                             <TabsTrigger value="logo" className="flex items-center gap-2">
                                 <ImageIcon className="size-4"/>
-                                <span className="hidden sm:inline">Logo</span>
+                                <span className="hidden sm:inline">{t("designerEditor.tabs.logo")}</span>
                             </TabsTrigger>
                         </TabsList>
 
@@ -754,11 +756,11 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                 validation={validation}
                                 copyContent={() => {
                                     copyContent();
-                                    toast.success("Content copied");
+                                    toast.success(t("designerEditor.messages.contentCopied"));
                                 }}
                                 copyImage={() => {
                                     copyImage();
-                                    toast.success("Image copied");
+                                    toast.success(t("designerEditor.messages.imageCopied"));
                                 }}
                             />
                         </TabsContent>
