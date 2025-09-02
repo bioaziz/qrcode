@@ -3,10 +3,13 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { QrCode, Sparkles, LineChart, Layers, ShieldCheck, Settings2, Rocket } from "lucide-react";
+import { useTranslation } from "next-i18next";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
 export default function Landing() {
   const { data: session } = useSession();
   const ctaHref = session ? "/qrs" : "/auth/signin";
+  const { t } = useTranslation("common");
 
   const Feature = ({ icon: Icon, title, desc }) => (
     <Card className="bg-white/60 dark:bg-white/5 backdrop-blur border-black/10 dark:border-white/10">
@@ -32,41 +35,41 @@ export default function Landing() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-black/10 dark:border-white/10 px-3 py-1 text-xs text-black/70 dark:text-white/70 mb-4">
               <Sparkles className="size-3.5" />
-              Introducing Genius QR
+              {t('landing.introducing')}
             </div>
             <h1 className="text-3xl md:text-5xl font-semibold leading-tight tracking-tight">
-              Smarter, flexible QR codes with real‑time routing and analytics
+              {t('landing.heroTitle')}
             </h1>
             <p className="mt-4 text-black/70 dark:text-white/70 text-base leading-relaxed">
-              Design beautiful QR codes, then direct each scan dynamically based on device, time, or A/B tests. Measure performance with built‑in analytics.
+              {t('landing.heroSubtitle')}
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Link href={ctaHref}><Button size="lg">{session ? "Go to My QRs" : "Get Started"}</Button></Link>
-              <Link href="/designer"><Button size="lg" variant="outline">Open Designer</Button></Link>
+              <Link href={ctaHref}><Button size="lg">{session ? t('landing.ctaGoToMyQrs') : t('landing.ctaGetStarted')}</Button></Link>
+              <Link href="/designer"><Button size="lg" variant="outline">{t('landing.ctaOpenDesigner')}</Button></Link>
             </div>
           </div>
           <div className="relative">
             <div className="rounded-xl border border-black/10 dark:border-white/10 bg-white/70 dark:bg-white/5 p-6 backdrop-blur">
               <div className="flex items-center gap-3 mb-4">
                 <div className="rounded-md bg-black/5 dark:bg-white/10 p-2"><QrCode className="size-5" /></div>
-                <div className="font-medium">Designer Preview</div>
+                <div className="font-medium">{t('landing.designerPreview')}</div>
               </div>
               <div className="grid sm:grid-cols-2 gap-4 text-sm">
                 <div className="rounded-lg border border-black/10 dark:border-white/10 p-4">
-                  <div className="font-medium mb-1">Custom Styles</div>
-                  <div className="text-black/70 dark:text-white/70">Dots, corners, gradients, and logos with error correction.</div>
+                  <div className="font-medium mb-1">{t('landing.features.customStylesTitle')}</div>
+                  <div className="text-black/70 dark:text-white/70">{t('landing.features.customStylesDesc')}</div>
                 </div>
                 <div className="rounded-lg border border-black/10 dark:border-white/10 p-4">
-                  <div className="font-medium mb-1">Dynamic Destinations</div>
-                  <div className="text-black/70 dark:text-white/70">Rules by device/time/geo, A/B tests, rotations.</div>
+                  <div className="font-medium mb-1">{t('landing.features.dynamicDestinationsTitle')}</div>
+                  <div className="text-black/70 dark:text-white/70">{t('landing.features.dynamicDestinationsDesc')}</div>
                 </div>
                 <div className="rounded-lg border border-black/10 dark:border-white/10 p-4">
-                  <div className="font-medium mb-1">Instant Analytics</div>
-                  <div className="text-black/70 dark:text-white/70">Scans counted in real time with device and geo breakdowns.</div>
+                  <div className="font-medium mb-1">{t('landing.features.instantAnalyticsTitle')}</div>
+                  <div className="text-black/70 dark:text-white/70">{t('landing.features.instantAnalyticsDesc')}</div>
                 </div>
                 <div className="rounded-lg border border-black/10 dark:border-white/10 p-4">
-                  <div className="font-medium mb-1">Share & Export</div>
-                  <div className="text-black/70 dark:text-white/70">Export PNG/SVG/PDF, save designs, and reuse presets.</div>
+                  <div className="font-medium mb-1">{t('landing.features.shareExportTitle')}</div>
+                  <div className="text-black/70 dark:text-white/70">{t('landing.features.shareExportDesc')}</div>
                 </div>
               </div>
             </div>
@@ -76,29 +79,37 @@ export default function Landing() {
 
         {/* Features */}
         <section className="space-y-6">
-          <h2 className="text-xl md:text-2xl font-semibold">Why Genius QR</h2>
+          <h2 className="text-xl md:text-2xl font-semibold">{t('landing.features.sectionTitle')}</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Feature icon={Settings2} title="Dynamic routing" desc="Send iOS to App Store, Android to Play, and desktop to your site. Add time‑based campaigns, geo rules, and fallbacks." />
-            <Feature icon={LineChart} title="Built‑in analytics" desc="Track total and daily scans with device, country, and city distributions. Export CSV for deeper analysis." />
-            <Feature icon={Layers} title="Designer presets" desc="Save styles to cloud presets and reuse across campaigns. Export high‑quality PNG, SVG, and PDF." />
-            <Feature icon={QrCode} title="Beautiful codes" desc="Fine‑tune dots, corners, gradients, quiet zones, and logos with robust error correction." />
-            <Feature icon={ShieldCheck} title="Reliable redirects" desc="Resilient redirects with optional global fallback URL when a code is paused or archived." />
-            <Feature icon={Rocket} title="Fast setup" desc="Start in minutes. Create, style, and share your first QR without friction." />
+            <Feature icon={Settings2} title={t('landing.features.dynamicRoutingTitle')} desc={t('landing.features.dynamicRoutingDesc')} />
+            <Feature icon={LineChart} title={t('landing.features.builtinAnalyticsTitle')} desc={t('landing.features.builtinAnalyticsDesc')} />
+            <Feature icon={Layers} title={t('landing.features.designerPresetsTitle')} desc={t('landing.features.designerPresetsDesc')} />
+            <Feature icon={QrCode} title={t('landing.features.beautifulCodesTitle')} desc={t('landing.features.beautifulCodesDesc')} />
+            <Feature icon={ShieldCheck} title={t('landing.features.reliableRedirectsTitle')} desc={t('landing.features.reliableRedirectsDesc')} />
+            <Feature icon={Rocket} title={t('landing.features.fastSetupTitle')} desc={t('landing.features.fastSetupDesc')} />
           </div>
         </section>
 
         {/* CTA */}
         <section className="rounded-xl border border-black/10 dark:border-white/10 bg-white/70 dark:bg-white/5 p-6 flex items-center justify-between flex-col sm:flex-row gap-4">
           <div>
-            <div className="text-lg font-semibold">Ready to create your first Genius QR?</div>
-            <div className="text-sm text-black/70 dark:text-white/70">Sign in to manage QRs and see real‑time analytics.</div>
+            <div className="text-lg font-semibold">{t('landing.ctaSectionTitle')}</div>
+            <div className="text-sm text-black/70 dark:text-white/70">{t('landing.ctaSectionSubtitle')}</div>
           </div>
           <div className="flex gap-3">
-            <Link href={ctaHref}><Button size="lg">{session ? "Open Dashboard" : "Get Started"}</Button></Link>
-            <Link href="/designer"><Button size="lg" variant="outline">Open Designer</Button></Link>
+            <Link href={ctaHref}><Button size="lg">{session ? t('landing.ctaOpenDashboard') : t('landing.ctaGetStarted')}</Button></Link>
+            <Link href="/designer"><Button size="lg" variant="outline">{t('landing.ctaOpenDesigner')}</Button></Link>
           </div>
         </section>
       </main>
     </div>
   );
+}
+
+export async function getStaticProps({ locale }) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale, ['common'])),
+    },
+  };
 }
