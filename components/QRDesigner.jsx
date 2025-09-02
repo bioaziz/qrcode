@@ -1130,42 +1130,42 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 <Card className='lg:col-span-2'>
                     <CardHeader className="pb-4">
                         <CardTitle className="text-base flex items-center gap-2">
-                            <List className="size-4"/> Presets
+                            <List className="size-4"/> {t("designerEditor.tabs.presets")}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         {/* Local Presets Section */}
                         <div>
-                            <h3 className="text-sm font-medium mb-3 text-muted-foreground">Local Presets</h3>
+                            <h3 className="text-sm font-medium mb-3 text-muted-foreground">{t("designerEditor.presetsTab.localTitle")}</h3>
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                 {/* Save Local Preset */}
                                 <div className="space-y-3">
-                                    <Label className="text-sm">Save new preset</Label>
+                                    <Label className="text-sm">{t("designerEditor.presetsTab.savePresetNameLabel")}</Label>
                                     <div className="flex gap-2">
                                         <Input
                                             value={presetName}
                                             onChange={(e) => setPresetName(e.target.value)}
-                                            placeholder="Enter preset name"
+                                            placeholder={t("designerEditor.presetsTab.presetNamePlaceholder")}
                                             className="flex-1"
                                         />
                                         <Button type="button" variant="outline" onClick={savePreset}>
-                                            Save
+                                            {t("designerEditor.presetsTab.savePresetButton")}
                                         </Button>
                                     </div>
                                 </div>
 
                                 {/* Load/Manage Local Presets */}
                                 <div className="space-y-3">
-                                    <Label className="text-sm">Manage saved presets</Label>
+                                    <Label className="text-sm">{t("designerEditor.presetsTab.manageLabel")}</Label>
                                     <div className="flex gap-2">
                                         <Select value={selectedPresetId} onValueChange={setSelectedPresetId}
                                                 className="flex-1">
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Select preset"/>
+                                                <SelectValue placeholder={t("designerEditor.presetsTab.selectPresetPlaceholder")}/>
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {savedPresets.length === 0 && (
-                                                    <SelectItem value="none" disabled>No saved presets</SelectItem>
+                                                    <SelectItem value="none" disabled>{t("designerEditor.presetsTab.noPresets")}</SelectItem>
                                                 )}
                                                 {savedPresets.map((p) => (
                                                     <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
@@ -1174,11 +1174,11 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                         </Select>
                                         <Button type="button" variant="outline" onClick={loadPreset}
                                                 disabled={!selectedPresetId}>
-                                            Load
+                                            {t("designerEditor.presetsTab.loadButton")}
                                         </Button>
                                         <Button type="button" variant="outline" onClick={deletePreset}
                                                 disabled={!selectedPresetId}>
-                                            Delete
+                                            {t("designerEditor.presetsTab.deleteButton")}
                                         </Button>
                                     </div>
                                 </div>
@@ -1190,16 +1190,16 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
 
                         {/* Cloud Presets Section */}
                         <div>
-                            <h3 className="text-sm font-medium mb-3 text-muted-foreground">Cloud Presets</h3>
+                            <h3 className="text-sm font-medium mb-3 text-muted-foreground">{t("designerEditor.presetsTab.cloudTitle")}</h3>
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                 {/* Save to Cloud */}
                                 <div className="space-y-3">
-                                    <Label className="text-sm">Save to cloud</Label>
+                                    <Label className="text-sm">{t("designerEditor.quickSave.cloudSaveLabel")}</Label>
                                     <div className="flex gap-2">
                                         <Input
                                             value={presetName}
                                             onChange={(e) => setPresetName(e.target.value)}
-                                            placeholder="Enter cloud preset name"
+                                            placeholder={t("designerEditor.presetsTab.presetNamePlaceholder")}
                                             className="flex-1"
                                         />
                                         <Button
@@ -1212,18 +1212,18 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                                     headers: {'Content-Type': 'application/json'},
                                                     body: JSON.stringify({name: presetName || t('designerEditor.untitled'), snapshot})
                                                 });
-                                                if (res.ok) toast.success('Preset saved to cloud');
-                                                else toast.error('Failed to save');
+                                                if (res.ok) toast.success(t("designerEditor.messages.presetSaved"));
+                                                else toast.error(t("designerEditor.messages.failedToSave"));
                                             }}
                                         >
-                                            Save to Cloud
+                                            {t("designerEditor.quickSave.saveToCloud")}
                                         </Button>
                                     </div>
                                 </div>
 
                                 {/* Load/Manage Cloud Presets */}
                                 <div className="space-y-3">
-                                    <Label className="text-sm">Manage cloud presets</Label>
+                                    <Label className="text-sm">{t("designerEditor.quickSave.cloudLoadLabel")}</Label>
                                     <div className="flex gap-2">
                                         <select
                                             className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -1237,7 +1237,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                                 if (js?.success) applySnapshot(js.item.snapshot);
                                             }}
                                         >
-                                            <option value="">Select cloud preset...</option>
+                                            <option value="">{t("designerEditor.quickSave.selectCloudPreset")}</option>
                                             {cloudPresets.map(p => (
                                                 <option key={p._id} value={p._id}>{p.name}</option>
                                             ))}
@@ -1253,10 +1253,10 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                             }}
                                             disabled={!cloudSelectedId}
                                         >
-                                            Delete
+                                            {t("designerEditor.presetsTab.deleteButton")}
                                         </Button>
                                         <Button type="button" variant="outline" onClick={refreshCloudPresets}>
-                                            Refresh
+                                            {t("designerEditor.quickSave.refresh")}
                                         </Button>
                                     </div>
                                 </div>
@@ -1269,12 +1269,12 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             {!embedded && (
                 <Card className="lg:col-span-2">
                     <CardHeader className="pb-4">
-                        <CardTitle className="text-base">Save & Export</CardTitle>
+                        <CardTitle className="text-base">{t("designerEditor.saveAndExport")}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         {/* Save QR to Library Section */}
                         <div>
-                            <h3 className="text-sm font-medium mb-3 text-muted-foreground">Save to Library</h3>
+                            <h3 className="text-sm font-medium mb-3 text-muted-foreground">{t("designerEditor.saveToLibrary")}</h3>
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">
                                 <div className="lg:col-span-2">
                                     <Label className="mb-2 block text-sm">{t("designerEditor.qrName")}</Label>

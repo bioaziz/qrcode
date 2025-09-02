@@ -89,6 +89,8 @@
     "saving": "Enregistrement…",
     "saveQr": "Enregistrer le QR",
     "viewInMyQrs": "Voir dans Mes QR Codes",
+    "saveAndExport": "Enregistrer et exporter",
+    "saveToLibrary": "Enregistrer dans la bibliothèque",
     "untitled": "Sans titre",
     "quickSave": {
       "title": "Paramètres d'enregistrement rapide",
@@ -190,6 +192,9 @@
       "downloadPdf": "Télécharger PDF"
     },
     "presetsTab": {
+      "localTitle": "Préréglages locaux",
+      "manageLabel": "Gérer les préréglages enregistrés",
+      "cloudTitle": "Préréglages cloud",
       "savePresetNameLabel": "Nom du preset",
       "presetNamePlaceholder": "Mon preset",
       "savePresetButton": "Enregistrer le preset",

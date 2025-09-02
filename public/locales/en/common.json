@@ -107,6 +107,8 @@
     "saving": "Saving…",
     "saveQr": "Save QR",
     "viewInMyQrs": "View in My QR Codes",
+    "saveAndExport": "Save & Export",
+    "saveToLibrary": "Save to Library",
     "untitled": "Untitled",
     "quickSave": {
       "title": "Quick Save Settings",
@@ -208,6 +210,9 @@
       "downloadPdf": "Download PDF"
     },
     "presetsTab": {
+      "localTitle": "Local Presets",
+      "manageLabel": "Manage saved presets",
+      "cloudTitle": "Cloud Presets",
       "savePresetNameLabel": "Save preset name",
       "presetNamePlaceholder": "My preset",
       "savePresetButton": "Save Preset",
