@@ -6,6 +6,7 @@ import NavBar from "@/components/NavBar";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { appWithTranslation } from "next-i18next";
+import i18nConfig from "../next-i18next.config.mjs";
 
 function App({ Component, pageProps: { session, ...pageProps } }) {
   const router = useRouter();
@@ -34,4 +35,4 @@ function App({ Component, pageProps: { session, ...pageProps } }) {
   );
 }
 
-export default appWithTranslation(App);
+export default appWithTranslation(App, i18nConfig);

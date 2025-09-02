@@ -1,1 +1,67 @@
-{}
+{
+  "brand": "QR Generator",
+  "nav": {
+    "home": "Accueil",
+    "designer": "Designer",
+    "myQrs": "Mes QR",
+    "signOut": "Se déconnecter",
+    "signIn": "Se connecter"
+  },
+  "landing": {
+    "badge": "Découvrez Genius QR",
+    "title": "Des QR codes plus intelligents et flexibles avec routage et analyses en temps réel",
+    "description": "Créez de superbes QR codes, puis orientez chaque scan dynamiquement selon l’appareil, l’heure ou des tests A/B. Mesurez les performances avec des analyses intégrées.",
+    "ctaMyQrs": "Aller à Mes QR",
+    "ctaGetStarted": "Commencer",
+    "ctaOpenDesigner": "Ouvrir le Designer",
+    "featureHeading": "Pourquoi Genius QR",
+    "features": {
+      "dynamicRouting": {
+        "title": "Routage dynamique",
+        "desc": "Envoyez iOS vers l’App Store, Android vers Play et le bureau vers votre site. Ajoutez des campagnes temporelles, des règles géo et des solutions de repli."
+      },
+      "analytics": {
+        "title": "Analyses intégrées",
+        "desc": "Suivez les scans totaux et quotidiens avec répartition par appareil, pays et ville. Exportez en CSV pour une analyse approfondie."
+      },
+      "presets": {
+        "title": "Préréglages du Designer",
+        "desc": "Enregistrez des styles dans le cloud et réutilisez-les entre campagnes. Export de haute qualité en PNG, SVG et PDF."
+      },
+      "beautiful": {
+        "title": "QR codes élégants",
+        "desc": "Ajustez points, coins, dégradés, zones de silence et logos avec une correction d’erreur robuste."
+      },
+      "reliable": {
+        "title": "Redirections fiables",
+        "desc": "Redirections résilientes avec URL de repli globale optionnelle quand un code est en pause ou archivé."
+      },
+      "fastSetup": {
+        "title": "Mise en route rapide",
+        "desc": "Démarrez en quelques minutes. Créez, stylisez et partagez votre premier QR sans friction."
+      }
+    },
+    "ctaSection": {
+      "title": "Prêt à créer votre premier Genius QR ?",
+      "desc": "Connectez-vous pour gérer vos QR et voir des analyses en temps réel.",
+      "ctaOpenDashboard": "Ouvrir le tableau de bord",
+      "ctaGetStarted": "Commencer",
+      "ctaOpenDesigner": "Ouvrir le Designer"
+    },
+    "designerPreview": {
+      "title": "Aperçu du Designer",
+      "customStylesTitle": "Styles personnalisés",
+      "customStylesDesc": "Points, coins, dégradés et logos avec correction d’erreur.",
+      "dynamicDestinationsTitle": "Destinations dynamiques",
+      "dynamicDestinationsDesc": "Règles par appareil/temps/géo, tests A/B, rotations.",
+      "instantAnalyticsTitle": "Analyses instantanées",
+      "instantAnalyticsDesc": "Scans comptés en temps réel avec répartition par appareil et zone géographique.",
+      "shareExportTitle": "Partage & Export",
+      "shareExportDesc": "Export PNG/SVG/PDF, enregistrement des designs et réutilisation des préréglages."
+    }
+  },
+  "designer": {
+    "title": "Concepteur de QR codes",
+    "description": "Générez des QR codes pour texte, liens, téléphone, e-mail, Wi-Fi avec formes, dégradés"
+  }
+}

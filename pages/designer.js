@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
+import i18nConfig from "../next-i18next.config.mjs";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,7 +51,7 @@ export async function getServerSideProps(context) {
   return {
     props: {
       session,
-      ...(await serverSideTranslations(context.locale, ["common"])),
+      ...(await serverSideTranslations(context.locale, ["common"], i18nConfig)),
     },
   };
 }

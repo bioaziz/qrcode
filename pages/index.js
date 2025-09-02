@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { QrCode, Sparkles, LineChart, Layers, ShieldCheck, Settings2, Rocket } from "lucide-react";
 import { useTranslation } from "next-i18next";
-
+import i18nConfig from "../next-i18next.config.mjs";
 export default function Landing() {
   const { data: session } = useSession();
   const { t } = useTranslation("common");
@@ -115,7 +115,7 @@ export async function getServerSideProps({ locale }) {
   const { serverSideTranslations } = await import("next-i18next/serverSideTranslations");
   return {
     props: {
-      ...(await serverSideTranslations(locale, ["common"])),
+      ...(await serverSideTranslations(locale, ["common"],  i18nConfig )),
     },
   };
 }
