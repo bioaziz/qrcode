@@ -7,13 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { useTranslation } from "next-i18next";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 const QRMini = dynamic(() => import("@/components/QRMini"), { ssr: false });
 
 export default function UserQrs() {
   const { status } = useSession();
-  const { t } = useTranslation('common');
   const [query, setQuery] = useState("");
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -65,7 +62,7 @@ export default function UserQrs() {
 
   async function deleteQr(item) {
     if (!item?._id) return;
-    const ok = window.confirm(t('qrs.deleteConfirm'));
+    const ok = window.confirm("Delete this QR? It will be archived.");
     if (!ok) return;
     setDeletingId(item._id);
     try {
@@ -84,10 +81,10 @@ export default function UserQrs() {
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <h1 className="text-2xl font-semibold">{t('qrs.title')}</h1>
+        <h1 className="text-2xl font-semibold">My QR Codes</h1>
         <div className="flex gap-2 w-full sm:w-auto">
-          <Input placeholder={t('qrs.searchPlaceholder')} value={query} onChange={(e) => setQuery(e.target.value)} />
-          <Button onClick={fetchList} disabled={loading}>{t('qrs.search')}</Button>
+          <Input placeholder="Search by name or slug…" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <Button onClick={fetchList} disabled={loading}>Search</Button>
         </div>
       </div>
 
@@ -103,11 +100,11 @@ export default function UserQrs() {
               </div>
             </CardHeader>
             <CardContent className="space-y-2 flex-1">
-              <div className="text-sm opacity-70">{t('qrs.slug')}: <code className="break-all">{it.slug}</code></div>
+              <div className="text-sm opacity-70">Slug: <code className="break-all">{it.slug}</code></div>
               <div className="flex gap-2 pt-2 flex-wrap">
-                <Button size="sm" onClick={() => openPreview(it)}>{t('qrs.preview')}</Button>
-                <Link href={`/r/${it.slug}`} target="_blank"><Button size="sm" variant="outline">{t('qrs.open')}</Button></Link>
-                <Button size="sm" variant="outline" onClick={() => deleteQr(it)} disabled={deletingId === it._id}>{deletingId === it._id ? t('qrs.deleting') : t('qrs.delete')}</Button>
+                <Button size="sm" onClick={() => openPreview(it)}>Preview</Button>
+                <Link href={`/r/${it.slug}`} target="_blank"><Button size="sm" variant="outline">Open</Button></Link>
+                <Button size="sm" variant="outline" onClick={() => deleteQr(it)} disabled={deletingId === it._id}>{deletingId === it._id ? "Deleting…" : "Delete"}</Button>
               </div>
             </CardContent>
           </Card>
@@ -117,22 +114,22 @@ export default function UserQrs() {
       <Dialog open={!!openId} onOpenChange={(v) => !v && closePreview()}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>{t('qrs.previewTitle')}</DialogTitle>
-            <DialogDescription>{t('qrs.previewDesc')}</DialogDescription>
+            <DialogTitle>QR preview</DialogTitle>
+            <DialogDescription>Quick look at data and actions.</DialogDescription>
           </DialogHeader>
           {selected && (
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-2">
                 <div>
                   <div className="font-medium">{selected?.meta?.name || selected.slug}</div>
-                  <div className="text-xs opacity-70">{t('qrs.slug')}: {selected.slug}</div>
+                  <div className="text-xs opacity-70">Slug: {selected.slug}</div>
                 </div>
                 <Badge>{selected.type}</Badge>
               </div>
               <div className="flex items-center gap-4">
                 <QRMini text={(typeof window !== "undefined") ? `${window.location.origin}/r/${selected.slug}` : `/r/${selected.slug}`} size={120} />
                 <div className="text-xs opacity-70">
-                  {t('qrs.encodesRedirect')}
+                  Encodes redirect URL
                   <div className="font-mono text-[11px] break-all">{(typeof window !== "undefined") ? `${window.location.origin}/r/${selected.slug}` : `/r/${selected.slug}`}</div>
                 </div>
               </div>
@@ -145,15 +142,15 @@ export default function UserQrs() {
                 }, null, 2)}</pre>
               </div>
               <div className="flex flex-wrap gap-2 pt-1">
-                <Link href={`/r/${selected.slug}`} target="_blank"><Button size="sm">{t('qrs.openRedirect')}</Button></Link>
-                <Link href={`/m/${selected.slug}`}><Button size="sm" variant="outline">{t('qrs.openMicro')}</Button></Link>
-                <Button size="sm" variant="outline" onClick={() => deleteQr(selected)} disabled={deletingId === selected?._id}>{deletingId === selected?._id ? t('qrs.deleting') : t('qrs.delete')}</Button>
-                <Button size="sm" variant="outline" onClick={doTestResolve} disabled={testing}>{t('qrs.testResolve')}</Button>
+                <Link href={`/r/${selected.slug}`} target="_blank"><Button size="sm">Open Redirect</Button></Link>
+                <Link href={`/m/${selected.slug}`}><Button size="sm" variant="outline">Open Micro‑app</Button></Link>
+                <Button size="sm" variant="outline" onClick={() => deleteQr(selected)} disabled={deletingId === selected?._id}>{deletingId === selected?._id ? "Deleting…" : "Delete"}</Button>
+                <Button size="sm" variant="outline" onClick={doTestResolve} disabled={testing}>Test resolve</Button>
               </div>
             </div>
           )}
           {testDest && (
-            <div className="text-xs"><span className="opacity-70">{t('qrs.destination')}</span> <span className="break-all underline">{testDest}</span></div>
+            <div className="text-xs"><span className="opacity-70">Destination:</span> <span className="break-all underline">{testDest}</span></div>
           )}
         </DialogContent>
       </Dialog>
@@ -161,19 +158,4 @@ export default function UserQrs() {
   );
 }
 
-export async function getServerSideProps(context) {
-  const { getServerSession } = await import("next-auth/next");
-  const { authOptions } = await import("@/pages/api/auth/[...nextauth]");
-  const session = await getServerSession(context.req, context.res, authOptions);
-
-  if (!session) {
-    return { redirect: { destination: "/auth/signin", permanent: false } };
-  }
-
-  return {
-    props: {
-      session,
-      ...(await serverSideTranslations(context.locale, ['common'])),
-    },
-  };
-}
+export { getServerSideProps } from "@/pages/index";
