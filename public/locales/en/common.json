@@ -92,7 +92,29 @@
     },
     "messages": {
       "contentCopied": "Content copied",
-      "imageCopied": "Image copied"
+      "imageCopied": "Image copied",
+      "qrSaved": "QR saved",
+      "presetSaved": "Preset saved to cloud",
+      "failedToSave": "Failed to save",
+      "downloadStarted": "{{format}} download started"
+    },
+    "customizeTitle": "Customize QR Code",
+    "downloadOptions": "Download Options",
+    "basicSettings": "Basic Settings",
+    "appearance": "Appearance",
+    "qrName": "QR name",
+    "qrNamePlaceholder": "Enter QR name",
+    "saving": "Saving…",
+    "saveQr": "Save QR",
+    "viewInMyQrs": "View in My QR Codes",
+    "untitled": "Untitled",
+    "quickSave": {
+      "title": "Quick Save Settings",
+      "cloudSaveLabel": "Save current settings to cloud",
+      "saveToCloud": "Save to Cloud",
+      "cloudLoadLabel": "Load settings from cloud",
+      "selectCloudPreset": "Select cloud preset...",
+      "refresh": "Refresh"
     },
     "contentTab": {
       "preset": "Preset",
@@ -158,6 +180,12 @@
       "stops3": "3 stops",
       "background": "Background",
       "transparent": "Transparent",
+      "transparentBg": "Transparent background",
+      "dotsHeading": "Dots",
+      "backgroundColor": "Background color",
+      "start": "Start",
+      "middle": "Middle",
+      "end": "End",
       "dotsGradientToggle": "Dots gradient",
       "backgroundGradientToggle": "Background gradient",
       "linear": "Linear",

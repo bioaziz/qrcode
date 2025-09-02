@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   QrCode,
+  Sparkles,
+
+  
   LineChart,
   Layers,
   ShieldCheck,
@@ -89,6 +92,7 @@ export default function Landing() {
             }),
           }}
         />
+
       </Head>
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-[#0b0d12] dark:to-[#0a0f1b]">
         <main className="mx-auto max-w-6xl px-6 md:px-10 py-10 space-y-16">

@@ -662,7 +662,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         try {
             setSavingDb(true);
             setSavedQr(null);
-            const name = qrName.trim() || "Untitled";
+            const name = qrName.trim() || t("designerEditor.untitled");
             const designBody = buildSnapshot();
             let designRef = null;
             try {
@@ -690,12 +690,12 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             const jsQ = await resQ.json();
             if (jsQ?.success) {
                 setSavedQr(jsQ.item);
-                toast.success("QR saved");
+                toast.success(t("designerEditor.messages.qrSaved"));
             } else {
-                toast.error(jsQ?.message || "Failed to save");
+                toast.error(jsQ?.message || t("designerEditor.messages.failedToSave"));
             }
         } catch (e) {
-            toast.error("Failed to save");
+            toast.error(t("designerEditor.messages.failedToSave"));
         } finally {
             setSavingDb(false);
         }
@@ -705,7 +705,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-8">
             <Card className="">
                 <CardHeader className="pb-4">
-                    <CardTitle className="text-base">Customize QR Code</CardTitle>
+                    <CardTitle className="text-base">{t("designerEditor.customizeTitle")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <Tabs defaultValue="content">
@@ -768,11 +768,11 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                         <TabsContent value="style" className="space-y-6 mt-6">
                             {/* Basic Settings */}
                             <div>
-                                <h3 className="text-sm font-medium mb-4 text-muted-foreground">Basic Settings</h3>
+                                <h3 className="text-sm font-medium mb-4 text-muted-foreground">{t("designerEditor.basicSettings")}</h3>
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-end">
                                     <div>
                                         <Label className="block mb-2 flex items-center gap-2">
-                                            <Maximize2 className="size-4"/> Size: {size}px
+                                            <Maximize2 className="size-4"/> {t("designerEditor.styleTab.size")}: {size}px
                                         </Label>
                                         <div className="h-10 flex items-center">
                                             <Slider min={128} max={512} value={[size]}
@@ -782,7 +782,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                     </div>
                                     <div>
                                         <Label className="block mb-2 flex items-center gap-2">
-                                            <Maximize2 className="size-4"/> Quiet zone: {quietZone}px
+                                            <Maximize2 className="size-4"/> {t("designerEditor.styleTab.quietZone")}: {quietZone}px
                                         </Label>
                                         <div className="h-10 flex items-center">
                                             <Slider min={0} max={32} value={[quietZone]}
@@ -792,17 +792,17 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                     </div>
                                     <div>
                                         <Label className="block mb-2 flex items-center gap-2">
-                                            <Shield className="size-4"/> Error correction
+                                            <Shield className="size-4"/> {t("designerEditor.styleTab.errorCorrection")}
                                         </Label>
                                         <Select value={errorCorrection} onValueChange={setErrorCorrection}>
                                             <SelectTrigger className="w-full h-10">
-                                                <SelectValue placeholder="Level"/>
+                                                <SelectValue placeholder={t("designerEditor.styleTab.levelPlaceholder")}/>
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="L">L (Lowest)</SelectItem>
-                                                <SelectItem value="M">M</SelectItem>
-                                                <SelectItem value="Q">Q</SelectItem>
-                                                <SelectItem value="H">H (Highest)</SelectItem>
+                                                <SelectItem value="L">{t("designerEditor.styleTab.errorLow")}</SelectItem>
+                                                <SelectItem value="M">{t("designerEditor.styleTab.errorMedium")}</SelectItem>
+                                                <SelectItem value="Q">{t("designerEditor.styleTab.errorQuartile")}</SelectItem>
+                                                <SelectItem value="H">{t("designerEditor.styleTab.errorHigh")}</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -811,39 +811,37 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
 
                             {/* Appearance */}
                             <div>
-                                <h3 className="text-sm font-medium mb-4 text-muted-foreground">Appearance</h3>
+                                <h3 className="text-sm font-medium mb-4 text-muted-foreground">{t("designerEditor.appearance")}</h3>
 
                                 {/* Toggle Controls */}
                                 <div className="flex flex-wrap items-center gap-6 mb-6 p-4 bg-muted/30 rounded-lg">
                                     <div className="flex items-center gap-2">
                                         <Switch id="bg-transparent" checked={bgTransparent}
                                                 onCheckedChange={setBgTransparent}/>
-                                        <Label htmlFor="bg-transparent" className="text-sm">Transparent
-                                            background</Label>
+                                        <Label htmlFor="bg-transparent" className="text-sm">{t("designerEditor.styleTab.transparentBg")}</Label>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Switch id="dots-gradient" checked={dotGradEnabled}
                                                 onCheckedChange={setDotGradEnabled}/>
-                                        <Label htmlFor="dots-gradient" className="text-sm">Dots gradient</Label>
+                                        <Label htmlFor="dots-gradient" className="text-sm">{t("designerEditor.styleTab.dotsGradientToggle")}</Label>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Switch id="bg-gradient" checked={bgGradEnabled}
                                                 onCheckedChange={setBgGradEnabled} disabled={bgTransparent}/>
-                                        <Label htmlFor="bg-gradient" className="text-sm">Background gradient</Label>
-                                    </div>
+                                        <Label htmlFor="bg-gradient" className="text-sm">{t("designerEditor.styleTab.backgroundGradientToggle")}</Label>
                                 </div>
 
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     {/* Dots Configuration */}
                                     <div className="space-y-4">
-                                        <h4 className="text-sm font-medium">Dots</h4>
+                                        <h4 className="text-sm font-medium">{t("designerEditor.styleTab.dotsHeading")}</h4>
                                         <div>
                                             <Label className="block mb-2 flex items-center gap-2">
-                                                <Shapes className="size-4"/> Dots type
+                                                <Shapes className="size-4"/> {t("designerEditor.styleTab.dotsType")}
                                             </Label>
                                             <Select value={dotType} onValueChange={setDotType}>
                                                 <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Type"/>
+                                                    <SelectValue placeholder={t("designerEditor.styleTab.typePlaceholder")}/>
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {DOT_TYPES.map((t) => (
@@ -856,7 +854,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                         {!dotGradEnabled ? (
                                             <div>
                                                 <Label className="block mb-2 flex items-center gap-2">
-                                                    <Palette className="size-4"/> Dots color
+                                                    <Palette className="size-4"/> {t("designerEditor.styleTab.dotsColor")}
                                                 </Label>
                                                 <Input type="color" value={dotColor}
                                                        onChange={(e) => setDotColor(e.target.value)}
@@ -865,35 +863,35 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                         ) : (
                                             <div className="space-y-3">
                                                 <Label className="block flex items-center gap-2">
-                                                    <Palette className="size-4"/> Dots gradient
+                                                    <Palette className="size-4"/> {t("designerEditor.styleTab.dotsGradient")}
                                                 </Label>
                                                 <div className="grid grid-cols-2 gap-2">
                                                     <Input type="color" value={dotGradStart}
                                                            onChange={(e) => setDotGradStart(e.target.value)}
-                                                           placeholder="Start"/>
+                                                           placeholder={t("designerEditor.styleTab.start")}/>
                                                     {dotGradStops === 3 && (
                                                         <Input type="color" value={dotGradMid}
                                                                onChange={(e) => setDotGradMid(e.target.value)}
-                                                               placeholder="Middle"/>
+                                                               placeholder={t("designerEditor.styleTab.middle")}/>
                                                     )}
                                                     <Input type="color" value={dotGradEnd}
                                                            onChange={(e) => setDotGradEnd(e.target.value)}
-                                                           placeholder="End"/>
+                                                           placeholder={t("designerEditor.styleTab.end")}/>
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-2">
                                                     <Select value={dotGradType} onValueChange={setDotGradType}>
                                                         <SelectTrigger>
-                                                            <SelectValue placeholder="Type"/>
+                                                            <SelectValue placeholder={t("designerEditor.styleTab.typePlaceholder")}/>
                                                         </SelectTrigger>
                                                         <SelectContent>
-                                                            <SelectItem value="linear">Linear</SelectItem>
-                                                            <SelectItem value="radial">Radial</SelectItem>
+                                                            <SelectItem value="linear">{t("designerEditor.styleTab.linear")}</SelectItem>
+                                                            <SelectItem value="radial">{t("designerEditor.styleTab.radial")}</SelectItem>
                                                         </SelectContent>
                                                     </Select>
                                                     <div>
                                                         <Input type="number" step={0.1} value={dotGradRotation}
                                                                onChange={(e) => setDotGradRotation(parseFloat(e.target.value) || 0)}
-                                                               placeholder="Rotation"/>
+                                                               placeholder={t("designerEditor.styleTab.rotation")}/>
                                                     </div>
                                                 </div>
                                                 <RadioGroup className="flex items-center gap-4"
@@ -901,11 +899,11 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                                             onValueChange={(v) => setDotGradStops(parseInt(v, 10))}>
                                                     <div className="flex items-center gap-2">
                                                         <RadioGroupItem id="dotstops-2" value="2"/>
-                                                        <Label htmlFor="dotstops-2" className="text-sm">2 stops</Label>
+                    <Label htmlFor="dotstops-2" className="text-sm">{t("designerEditor.styleTab.stops2")}</Label>
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <RadioGroupItem id="dotstops-3" value="3"/>
-                                                        <Label htmlFor="dotstops-3" className="text-sm">3 stops</Label>
+                    <Label htmlFor="dotstops-3" className="text-sm">{t("designerEditor.styleTab.stops3")}</Label>
                                                     </div>
                                                 </RadioGroup>
                                             </div>
@@ -914,11 +912,11 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
 
                                     {/* Background Configuration */}
                                     <div className="space-y-4">
-                                        <h4 className="text-sm font-medium">Background</h4>
+                                        <h4 className="text-sm font-medium">{t("designerEditor.styleTab.background")}</h4>
                                         {!bgGradEnabled ? (
                                             <div>
                                                 <Label className="block mb-2 flex items-center gap-2">
-                                                    <Palette className="size-4"/> Background color
+                                                    <Palette className="size-4"/> {t("designerEditor.styleTab.backgroundColor")}
                                                 </Label>
                                                 <Input type="color" value={bgColor}
                                                        onChange={(e) => setBgColor(e.target.value)}
@@ -928,40 +926,40 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                         ) : (
                                             <div className="space-y-3">
                                                 <Label className="block flex items-center gap-2">
-                                                    <Palette className="size-4"/> Background gradient
+                                                    <Palette className="size-4"/> {t("designerEditor.styleTab.backgroundGradientToggle")}
                                                 </Label>
                                                 <div className="grid grid-cols-2 gap-2">
                                                     <Input type="color" value={bgGradStart}
                                                            onChange={(e) => setBgGradStart(e.target.value)}
                                                            disabled={bgTransparent}
-                                                           placeholder="Start"/>
+                                                           placeholder={t("designerEditor.styleTab.start")}/>
                                                     {bgGradStops === 3 && (
                                                         <Input type="color" value={bgGradMid}
                                                                onChange={(e) => setBgGradMid(e.target.value)}
                                                                disabled={bgTransparent}
-                                                               placeholder="Middle"/>
+                                                               placeholder={t("designerEditor.styleTab.middle")}/>
                                                     )}
                                                     <Input type="color" value={bgGradEnd}
                                                            onChange={(e) => setBgGradEnd(e.target.value)}
                                                            disabled={bgTransparent}
-                                                           placeholder="End"/>
+                                                           placeholder={t("designerEditor.styleTab.end")}/>
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-2">
                                                     <Select value={bgGradType} onValueChange={setBgGradType}
                                                             disabled={bgTransparent}>
                                                         <SelectTrigger>
-                                                            <SelectValue placeholder="Type"/>
+                                                            <SelectValue placeholder={t("designerEditor.styleTab.typePlaceholder")}/>
                                                         </SelectTrigger>
                                                         <SelectContent>
-                                                            <SelectItem value="linear">Linear</SelectItem>
-                                                            <SelectItem value="radial">Radial</SelectItem>
+                                                            <SelectItem value="linear">{t("designerEditor.styleTab.linear")}</SelectItem>
+                                                            <SelectItem value="radial">{t("designerEditor.styleTab.radial")}</SelectItem>
                                                         </SelectContent>
                                                     </Select>
                                                     <div>
                                                         <Input type="number" step={0.1} value={bgGradRotation}
                                                                onChange={(e) => setBgGradRotation(parseFloat(e.target.value) || 0)}
                                                                disabled={bgTransparent}
-                                                               placeholder="Rotation"/>
+                                                               placeholder={t("designerEditor.styleTab.rotation")}/>
                                                     </div>
                                                 </div>
                                                 <RadioGroup className="flex items-center gap-4"
@@ -970,17 +968,18 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                                             disabled={bgTransparent}>
                                                     <div className="flex items-center gap-2">
                                                         <RadioGroupItem id="bgstops-2" value="2"/>
-                                                        <Label htmlFor="bgstops-2" className="text-sm">2 stops</Label>
+                    <Label htmlFor="bgstops-2" className="text-sm">{t("designerEditor.styleTab.stops2")}</Label>
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <RadioGroupItem id="bgstops-3" value="3"/>
-                                                        <Label htmlFor="bgstops-3" className="text-sm">3 stops</Label>
+                    <Label htmlFor="bgstops-3" className="text-sm">{t("designerEditor.styleTab.stops3")}</Label>
                                                     </div>
                                                 </RadioGroup>
                                             </div>
                                         )}
                                     </div>
                                 </div>
+                              </div>
                             </div>
                         </TabsContent>
 
@@ -1211,7 +1210,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                                 const res = await fetch('/api/presets', {
                                                     method: 'POST',
                                                     headers: {'Content-Type': 'application/json'},
-                                                    body: JSON.stringify({name: presetName || 'Untitled', snapshot})
+                                                    body: JSON.stringify({name: presetName || t('designerEditor.untitled'), snapshot})
                                                 });
                                                 if (res.ok) toast.success('Preset saved to cloud');
                                                 else toast.error('Failed to save');
@@ -1278,22 +1277,22 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                             <h3 className="text-sm font-medium mb-3 text-muted-foreground">Save to Library</h3>
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">
                                 <div className="lg:col-span-2">
-                                    <Label className="mb-2 block text-sm">QR name</Label>
+                                    <Label className="mb-2 block text-sm">{t("designerEditor.qrName")}</Label>
                                     <Input
                                         value={qrName}
                                         onChange={(e) => setQrName(e.target.value)}
-                                        placeholder="Enter QR name"
+                                        placeholder={t("designerEditor.qrNamePlaceholder")}
                                         className="w-full"
                                     />
                                 </div>
                                 <div className="flex flex-col gap-2">
                                     <Button onClick={saveQrToDb} disabled={savingDb} className="w-full">
-                                        {savingDb ? "Saving…" : "Save QR"}
+                                        {savingDb ? t("designerEditor.saving") : t("designerEditor.saveQr")}
                                     </Button>
                                     {savedQr?.slug && (
                                         <a className="text-sm text-center underline text-muted-foreground hover:text-foreground transition-colors"
                                            href="/qrs">
-                                            View in My QR Codes
+                                            {t("designerEditor.viewInMyQrs")}
                                         </a>
                                     )}
                                 </div>
@@ -1305,36 +1304,36 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
 
                         {/* Download Section */}
                         <div>
-                            <h3 className="text-sm font-medium mb-3 text-muted-foreground">Download Options</h3>
+                            <h3 className="text-sm font-medium mb-3 text-muted-foreground">{t("designerEditor.downloadOptions")}</h3>
                             <div className="flex flex-wrap gap-3">
                                 <Button
                                     type="button"
                                     onClick={() => {
                                         download('png');
-                                        toast.success('PNG download started');
+                                        toast.success(t("designerEditor.messages.downloadStarted", { format: 'PNG' }));
                                     }}
                                 >
-                                    Download PNG
+                                    {t("designerEditor.logoTab.downloadPng")}
                                 </Button>
                                 <Button
                                     type="button"
                                     variant="outline"
                                     onClick={() => {
                                         download('svg');
-                                        toast.success('SVG download started');
+                                        toast.success(t("designerEditor.messages.downloadStarted", { format: 'SVG' }));
                                     }}
                                 >
-                                    Download SVG
+                                    {t("designerEditor.logoTab.downloadSvg")}
                                 </Button>
                                 <Button
                                     type="button"
                                     variant="outline"
                                     onClick={() => {
                                         downloadPDF();
-                                        toast.success('PDF download started');
+                                        toast.success(t("designerEditor.messages.downloadStarted", { format: 'PDF' }));
                                     }}
                                 >
-                                    Download PDF
+                                    {t("designerEditor.logoTab.downloadPdf")}
                                 </Button>
                             </div>
                         </div>
@@ -1344,16 +1343,16 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
 
                         {/* Quick Save Preset Section */}
                         <div>
-                            <h3 className="text-sm font-medium mb-3 text-muted-foreground">Quick Save Settings</h3>
+                            <h3 className="text-sm font-medium mb-3 text-muted-foreground">{t("designerEditor.quickSave.title")}</h3>
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                 {/* Save to Cloud */}
                                 <div className="space-y-3">
-                                    <Label className="text-sm">Save current settings to cloud</Label>
+                                    <Label className="text-sm">{t("designerEditor.quickSave.cloudSaveLabel")}</Label>
                                     <div className="flex gap-2">
                                         <Input
                                             value={presetName}
                                             onChange={(e) => setPresetName(e.target.value)}
-                                            placeholder="Enter preset name"
+                                            placeholder={t("designerEditor.presetsTab.presetNamePlaceholder")}
                                             className="flex-1"
                                         />
                                         <Button
@@ -1364,20 +1363,20 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                                 const res = await fetch('/api/presets', {
                                                     method: 'POST',
                                                     headers: {'Content-Type': 'application/json'},
-                                                    body: JSON.stringify({name: presetName || 'Untitled', snapshot})
+                                                    body: JSON.stringify({name: presetName || t('designerEditor.untitled'), snapshot})
                                                 });
-                                                if (res.ok) toast.success('Preset saved to cloud');
-                                                else toast.error('Failed to save');
+                                                if (res.ok) toast.success(t("designerEditor.messages.presetSaved"));
+                                                else toast.error(t("designerEditor.messages.failedToSave"));
                                             }}
                                         >
-                                            Save to Cloud
+                                            {t("designerEditor.quickSave.saveToCloud")}
                                         </Button>
                                     </div>
                                 </div>
 
                                 {/* Load from Cloud */}
                                 <div className="space-y-3">
-                                    <Label className="text-sm">Load settings from cloud</Label>
+                                    <Label className="text-sm">{t("designerEditor.quickSave.cloudLoadLabel")}</Label>
                                     <div className="flex gap-2">
                                         <select
                                             className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -1391,7 +1390,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                                 if (js?.success) applySnapshot(js.item.snapshot);
                                             }}
                                         >
-                                            <option value="">Select cloud preset...</option>
+                                            <option value="">{t("designerEditor.quickSave.selectCloudPreset")}</option>
                                             {cloudPresets.map(p => (
                                                 <option key={p._id} value={p._id}>{p.name}</option>
                                             ))}
@@ -1407,10 +1406,10 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                             }}
                                             disabled={!cloudSelectedId}
                                         >
-                                            Delete
+                                            {t("designerEditor.presetsTab.deleteButton")}
                                         </Button>
                                         <Button type="button" variant="outline" onClick={refreshCloudPresets}>
-                                            Refresh
+                                            {t("designerEditor.quickSave.refresh")}
                                         </Button>
                                     </div>
                                 </div>
