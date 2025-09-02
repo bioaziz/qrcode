@@ -31,7 +31,7 @@ export const authOptions = {
           email,
           image: user?.image,
           provider: account?.provider,
-          providerAccountId: account?.providerAccountId
+          providerAccountId: account?.providerAccountId || account?.providerAccountId || account?.sub || account?.id,
         };
 
         // Upsert by email when available; otherwise fall back to provider id
