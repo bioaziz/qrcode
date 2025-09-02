@@ -181,7 +181,16 @@
       "cornerSquareColorLabel": "Couleur du carré d'angle",
       "cornerDotLabel": "Point d'angle",
       "cornerDotTypePlaceholder": "Type",
-      "cornerDotColorLabel": "Couleur du point d'angle"
+      "cornerDotColorLabel": "Couleur du point d'angle",
+      "cornerSquareTypes": {
+        "square": "Carré",
+        "extra-rounded": "Extra arrondi",
+        "circle": "Cercle"
+      },
+      "cornerDotTypes": {
+        "square": "Carré",
+        "dot": "Point"
+      }
     },
     "logoTab": {
       "logoLabel": "Logo (optionnel)",
@@ -189,7 +198,8 @@
       "logoSizeLabel": "Taille du logo",
       "downloadPng": "Télécharger PNG",
       "downloadSvg": "Télécharger SVG",
-      "downloadPdf": "Télécharger PDF"
+      "downloadPdf": "Télécharger PDF",
+      "logoAlt": "logo"
     },
     "presetsTab": {
       "localTitle": "Préréglages locaux",

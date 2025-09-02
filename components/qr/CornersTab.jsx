@@ -22,8 +22,10 @@ export default function CornersTab({
         <Select value={cornerSquareType} onValueChange={setCornerSquareType}>
           <SelectTrigger className="w-full"><SelectValue placeholder={t("designerEditor.cornersTab.cornerSquareTypePlaceholder")} /></SelectTrigger>
           <SelectContent>
-            {cornerSquareTypes.map((t) => (
-              <SelectItem key={t} value={t}>{t}</SelectItem>
+            {cornerSquareTypes.map((type) => (
+              <SelectItem key={type} value={type}>
+                {t(`designerEditor.cornersTab.cornerSquareTypes.${type}`)}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -37,8 +39,10 @@ export default function CornersTab({
         <Select value={cornerDotType} onValueChange={setCornerDotType}>
           <SelectTrigger className="w-full"><SelectValue placeholder={t("designerEditor.cornersTab.cornerDotTypePlaceholder")} /></SelectTrigger>
           <SelectContent>
-            {cornerDotTypes.map((t) => (
-              <SelectItem key={t} value={t}>{t}</SelectItem>
+            {cornerDotTypes.map((type) => (
+              <SelectItem key={type} value={type}>
+                {t(`designerEditor.cornersTab.cornerDotTypes.${type}`)}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>

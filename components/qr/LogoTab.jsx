@@ -17,7 +17,7 @@ export default function LogoTab({ onUpload, error, imageUrl, setImageUrl, imageS
         {error && <p className="text-red-600 text-sm mt-1">{error}</p>}
         {imageUrl && (
           <div className="flex items-center gap-3 mt-2 text-xs text-black/60 dark:text-white/60">
-            <img src={imageUrl} alt="logo" className="h-8 w-8 object-contain rounded" />
+            <img src={imageUrl} alt={t("designerEditor.logoTab.logoAlt")} className="h-8 w-8 object-contain rounded" />
             <Button type="button" variant="outline" size="sm" onClick={() => setImageUrl("")}>{t("designerEditor.logoTab.remove")}</Button>
           </div>
         )}
