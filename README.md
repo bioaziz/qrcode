@@ -32,17 +32,17 @@ Just edit the files and refresh the browser. No build step is required.
 
 
 ## Translations
+## Translations
 
-Populate French translation files from the English originals using the Google
-Translate API. Set `GOOGLE_TRANSLATE_API_KEY` in `.env.local` and run:
+Populate French translation files from the English originals using the Google Translate API. Set `GOOGLE_TRANSLATE_API_KEY` in `.env.local` and run:
 
 ```
 node scripts/generate-translations.js
 ```
 
-This reads `public/locales/en/*.json` and writes any missing keys to the
-matching `public/locales/fr/*.json` files while preserving existing entries.
+This reads `public/locales/en/*.json` and writes any missing keys to the matching `public/locales/fr/*.json` files while preserving existing entries.
 
+Use the language dropdown in the top navigation bar to switch between English and French. Your choice is stored in cookies and localStorage so it persists across visits.
 
 ## Auth Setup (NextAuth)
 
@@ -50,6 +50,8 @@ Local development is configured on port `3008`.
 
 Environment variables (in `.env`):
 - `NEXTAUTH_URL=http://localhost:3008`
+
+
 - `NEXTAUTH_SECRET=...` (strong random string)
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`
 - `FACEBOOK_CLIENT_ID` / `FACEBOOK_CLIENT_SECRET`

@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import NavBar from "@/components/NavBar";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+import { appWithTranslation } from "next-i18next";
 
 function App({ Component, pageProps: { session, ...pageProps } }) {
   const router = useRouter();
@@ -33,4 +34,4 @@ function App({ Component, pageProps: { session, ...pageProps } }) {
   );
 }
 
-export default (App);
+export default appWithTranslation(App);
