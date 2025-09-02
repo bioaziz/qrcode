@@ -39,13 +39,13 @@ export default function SignIn() {
               onClick={() => signIn("facebook", { callbackUrl: "/" })}
               Icon={IconFacebook}
             />
-            <ProviderButton
-              brand="Instagram"
-              color="outline"
-              className="border-[#E4405F] text-[#E4405F] hover:bg-[#E4405F]/5"
-              onClick={() => signIn("instagram", { callbackUrl: "/" })}
-              Icon={IconInstagram}
-            />
+            {/*<ProviderButton*/}
+            {/*  brand="Instagram"*/}
+            {/*  color="outline"*/}
+            {/*  className="border-[#E4405F] text-[#E4405F] hover:bg-[#E4405F]/5"*/}
+            {/*  onClick={() => signIn("instagram", { callbackUrl: "/" })}*/}
+            {/*  Icon={IconInstagram}*/}
+            {/*/>*/}
             <div className="text-center pt-2">
               <Button variant="ghost" onClick={() => router.push("/")}>Back to home</Button>
             </div>
@@ -87,15 +87,15 @@ function IconFacebook(props) {
 }
 
 
-function IconInstagram(props) {
-  return (
-    <svg viewBox="0 0 24 24" {...props}>
-      <rect x="3" y="3" width="18" height="18" rx="5" fill="#E4405F" />
-      <circle cx="12" cy="12" r="4.5" fill="#fff" />
-      <circle cx="17.5" cy="6.5" r="1.2" fill="#fff" />
-    </svg>
-  );
-}
+// function IconInstagram(props) {
+//   return (
+//     <svg viewBox="0 0 24 24" {...props}>
+//       <rect x="3" y="3" width="18" height="18" rx="5" fill="#E4405F" />
+//       <circle cx="12" cy="12" r="4.5" fill="#fff" />
+//       <circle cx="17.5" cy="6.5" r="1.2" fill="#fff" />
+//     </svg>
+//   );
+// }
 
 // If already authenticated, redirect away from the sign-in page server-side
 export async function getServerSideProps(context) {

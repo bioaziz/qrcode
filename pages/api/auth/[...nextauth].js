@@ -16,10 +16,10 @@ export const authOptions = {
       clientId: process.env.FACEBOOK_CLIENT_ID,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
     }),
-    InstagramProvider({
-      clientId: process.env.INSTAGRAM_CLIENT_ID,
-      clientSecret: process.env.INSTAGRAM_CLIENT_SECRET,
-    }),
+    // InstagramProvider({
+    //   clientId: process.env.INSTAGRAM_CLIENT_ID,
+    //   clientSecret: process.env.INSTAGRAM_CLIENT_SECRET,
+    // }),
   ],
   callbacks: {
     async signIn({ user, account }) {
@@ -31,7 +31,7 @@ export const authOptions = {
           email,
           image: user?.image,
           provider: account?.provider,
-          providerAccountId: account?.providerAccountId || account?.providerAccountId || account?.sub || account?.id,
+          providerAccountId: account?.providerAccountId
         };
 
         // Upsert by email when available; otherwise fall back to provider id
