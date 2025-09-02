@@ -13,6 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useMessages } from "@/lib/i18n";
+import { useTranslation } from "next-i18next";
+
 
 export default function NavBar() {
   const { data: session } = useSession();
@@ -21,6 +23,7 @@ export default function NavBar() {
   const path = router?.pathname || "";
   const onDesigner = path === "/designer";
   const onQrs = path === "/qrs";
+  const { t } = useTranslation("common");
 
   function changeLocale(locale) {
     if (typeof window !== "undefined") {
@@ -38,6 +41,10 @@ export default function NavBar() {
           <nav className="hidden sm:flex items-center gap-2 ml-4">
             {path !== "/" && <Link href="/" className="text-sm opacity-80 hover:opacity-100">{t.home}</Link>}
             {!onDesigner && <Link href="/designer" className="text-sm opacity-80 hover:opacity-100">{t.designer}</Link>}
+          <Link href="/" className="text-base font-semibold">{t('brand')}</Link>
+          <nav className="hidden sm:flex items-center gap-2 ml-4">
+            {path !== "/" && <Link href="/" className="text-sm opacity-80 hover:opacity-100">{t('nav.home')}</Link>}
+            {!onDesigner && <Link href="/designer" className="text-sm opacity-80 hover:opacity-100">{t('nav.designer')}</Link>}
           </nav>
         </div>
         <div className="flex items-center gap-3">
@@ -66,6 +73,14 @@ export default function NavBar() {
             </>
           ) : (
             <Button variant="outline" size="sm" onClick={() => signIn()}>{t.signIn}</Button>
+                  <Link href="/qrs"><Button variant="outline" size="sm">{t('nav.myQrs')}</Button></Link>
+                )}
+              </div>
+              <Button variant="outline" size="sm" onClick={() => signOut()}>{t('nav.signOut')}</Button>
+            </>
+          ) : (
+            <Button variant="outline" size="sm" onClick={() => signIn()}>{t('nav.signIn')}</Button>
+
           )}
         </div>
       </div>
