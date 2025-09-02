@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://qr.genius.bj
+
+# Sitemaps
+Sitemap: https://qr.genius.bj/sitemap.xml
