@@ -979,6 +979,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                         )}
                                     </div>
                                 </div>
+                              </div>
                             </div>
                         </TabsContent>
 
