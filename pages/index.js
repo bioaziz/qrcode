@@ -1,8 +1,16 @@
 import { useSession } from "next-auth/react";
+import Head from "next/head";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { QrCode, Sparkles, LineChart, Layers, ShieldCheck, Settings2, Rocket } from "lucide-react";
+import {
+  QrCode,
+  LineChart,
+  Layers,
+  ShieldCheck,
+  Settings2,
+  Rocket,
+} from "lucide-react";
 import { useTranslation } from "next-i18next";
 import i18nConfig from "../next-i18next.config.mjs";
 export default function Landing() {
@@ -36,25 +44,83 @@ export default function Landing() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-[#0b0d12] dark:to-[#0a0f1b]">
-      <main className="mx-auto max-w-6xl px-6 md:px-10 py-10 space-y-16">
+    <>
+      <Head>
+        <title>QR Code Generator – Gratuit au Bénin</title>
+        <meta
+          name="description"
+          content="Générez facilement vos QR codes personnalisés gratuitement au Bénin."
+        />
+        <meta
+          name="keywords"
+          content="QR code generator, QR code Benin, créer QR code, QR code gratuit"
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="QR Code Generator – Gratuit au Bénin" />
+        <meta
+          property="og:description"
+          content="Générateur de QR code rapide et gratuit pour les entreprises et particuliers au Bénin."
+        />
+        <meta property="og:image" content="https://qr.genius.bj/preview.png" />
+        <meta property="og:url" content="https://qr.genius.bj" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="QR Code Generator – Gratuit au Bénin" />
+        <meta
+          name="twitter:description"
+          content="Générez vos QR codes gratuitement en ligne au Bénin."
+        />
+        <meta name="twitter:image" content="https://qr.genius.bj/preview.png" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: [
+                {
+                  "@type": "Question",
+                  name: "Comment créer un QR Code gratuit au Bénin ?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Allez sur qr.genius.bj, entrez vos informations et générez instantanément un QR Code.",
+                  },
+                },
+              ],
+            }),
+          }}
+        />
+      </Head>
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-[#0b0d12] dark:to-[#0a0f1b]">
+        <main className="mx-auto max-w-6xl px-6 md:px-10 py-10 space-y-16">
         {/* Hero */}
         <section className="grid lg:grid-cols-2 gap-8 items-center">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-black/10 dark:border-white/10 px-3 py-1 text-xs text-black/70 dark:text-white/70 mb-4">
-              <Sparkles className="size-3.5" />
-              {t("landing.badge")}
-            </div>
             <h1 className="text-3xl md:text-5xl font-semibold leading-tight tracking-tight">
-              {t("landing.title")}
+              QR Code Generator gratuit au Bénin
             </h1>
             <p className="mt-4 text-black/70 dark:text-white/70 text-base leading-relaxed">
-              {t("landing.description")}
+              Créez des QR codes pour mobile money, entreprises, menus de restaurant et événements. Idéal pour les professionnels à Cotonou et dans toute l’Afrique de l’Ouest.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Link href={ctaHref}><Button size="lg">{session ? t("landing.ctaMyQrs") : t("landing.ctaGetStarted")}</Button></Link>
-              <Link href="/designer"><Button size="lg" variant="outline">{t("landing.ctaOpenDesigner")}</Button></Link>
+              <Link href="/designer">
+                <Button size="lg">Générer un QR code maintenant</Button>
+              </Link>
             </div>
+            <p className="mt-4 text-sm text-black/70 dark:text-white/70">
+              Ressources utiles :
+              <Link href="/blog/qr-code-gratuit-benin" className="underline ml-1">
+                Créer un QR Code gratuit
+              </Link>
+              ,
+              <Link href="/blog/qr-code-mobile-money" className="underline ml-1">
+                QR Code Mobile Money
+              </Link>
+              ,
+              <Link href="/blog/qr-code-entreprises-benin" className="underline ml-1">
+                QR Codes pour entreprises béninoises
+              </Link>
+              .
+            </p>
           </div>
           <div className="relative">
             <div className="rounded-xl border border-black/10 dark:border-white/10 bg-white/70 dark:bg-white/5 p-6 backdrop-blur">
@@ -107,7 +173,8 @@ export default function Landing() {
           </div>
         </section>
       </main>
-    </div>
+      </div>
+    </>
   );
 }
 
