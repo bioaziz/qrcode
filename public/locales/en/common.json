@@ -5,7 +5,10 @@
     "designer": "Designer",
     "myQrs": "My QRs",
     "signOut": "Sign out",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "blog": "Blog",
+    "about": "About",
+    "contact": "Contact"
   },
   "landing": {
     "badge": "Introducing Genius QR",
@@ -257,5 +260,18 @@
     "saving": "Saving…",
     "saved": "Saved",
     "error": "Error"
+  },
+  "blog": {
+    "title": "Blog",
+    "description": "Latest articles",
+    "readMore": "Read more"
+  },
+  "contact": {
+    "title": "Contact",
+    "description": "Feel free to reach out to us."
+  },
+  "about": {
+    "title": "About",
+    "description": "Learn more about us."
   }
 }

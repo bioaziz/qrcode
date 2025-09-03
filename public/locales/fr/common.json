@@ -5,7 +5,10 @@
     "designer": "Designer",
     "myQrs": "Mes QR",
     "signOut": "Se déconnecter",
-    "signIn": "Se connecter"
+    "signIn": "Se connecter",
+    "blog": "Blog",
+    "about": "À propos",
+    "contact": "Contact"
   },
   "landing": {
     "badge": "Découvrez Genius QR",
@@ -239,5 +242,18 @@
     "saving": "Enregistrement…",
     "saved": "Enregistré",
     "error": "Erreur"
+  },
+  "blog": {
+    "title": "Blog",
+    "description": "Derniers articles",
+    "readMore": "Lire la suite"
+  },
+  "contact": {
+    "title": "Contact",
+    "description": "N'hésitez pas à nous contacter."
+  },
+  "about": {
+    "title": "À propos",
+    "description": "En savoir plus sur nous."
   }
 }
