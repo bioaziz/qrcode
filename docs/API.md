@@ -131,6 +131,30 @@ Conventions
 - Purpose: Returns a dummy URL for a pay‑later session (to be replaced in Week 4).
 - Response: `{ success, url }`.
 
+## Public QR Generation
+
+### `GET /api/v1/qrcode`
+- Auth: None (`sig` and `exp` can be used for HMAC-signed links).
+- Query params mirror styling options: `data` (required), `size`, `margin`, `ec`, `format=png|svg`, `fg`, `bg`, `gradient`, `gFrom`, `gTo`, `gAngle`, `logo`, `download`.
+- Caching: `Cache-Control: public, max-age=31536000, immutable`.
+- Example: `<img src="/api/v1/qrcode?data=Hello">`.
+- Signed URLs: compute `sig` via `lib/sign.signQuery({ data, exp })` and append to the query string.
+
+### `POST /api/v1/qrcode`
+- Auth: `Authorization: Bearer <API_KEY>`.
+- Body: JSON with the same styling fields as GET plus `return: "binary" | "data-url"` (default `binary`).
+- Response: binary image or `{ dataUrl }`.
+- Example:
+  ```bash
+  curl -H "Authorization: Bearer $API_KEY" -H "Content-Type: application/json" \
+    -d '{"data":"Hello"}' \
+    https://example.com/api/v1/qrcode --output qr.png
+  ```
+
+### `GET /api/health`
+- Auth: None.
+- Response: `{ ok: true }`.
+
 # Helper Libraries (used by API/pages)
 
 ## `lib/redis.js`
