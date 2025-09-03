@@ -107,6 +107,9 @@ export default function NavBar() {
 
   const onDesigner = pathname === "/designer";
   const onQrs = pathname === "/qrs";
+  const onBlog = pathname.startsWith("/blog");
+  const onContact = pathname === "/contact";
+  const onAbout = pathname === "/about";
 
   // Use a stable default so SSR/CSR always match even if i18n isn't ready yet
   const brand = t("brand", "QR Generator");
@@ -146,6 +149,30 @@ export default function NavBar() {
                 className="px-3 py-2 text-sm font-medium rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
               >
                 {t("nav.designer", "Designer")}
+              </Link>
+            )}
+            {!onBlog && (
+              <Link
+                href="/blog"
+                className="px-3 py-2 text-sm font-medium rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+              >
+                {t("nav.blog", "Blog")}
+              </Link>
+            )}
+            {!onAbout && (
+              <Link
+                href="/about"
+                className="px-3 py-2 text-sm font-medium rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+              >
+                {t("nav.about", "About")}
+              </Link>
+            )}
+            {!onContact && (
+              <Link
+                href="/contact"
+                className="px-3 py-2 text-sm font-medium rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+              >
+                {t("nav.contact", "Contact")}
               </Link>
             )}
           </nav>
