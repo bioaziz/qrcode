@@ -906,7 +906,7 @@ export default function QrCodeHistory() {
           </p>
 
           <div className="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
-            <Link href="/generator"
+            <Link href="/designer"
                   className="inline-block bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors text-lg shadow-lg">
               🚀 Créer mon QR Code gratuit
             </Link>
