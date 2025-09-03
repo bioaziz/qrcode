@@ -255,5 +255,9 @@
   "about": {
     "title": "À propos",
     "description": "En savoir plus sur nous."
+  },
+  "api": {
+    "invalidSignature": "Signature invalide ou manquante",
+    "expired": "URL expirée"
   }
 }

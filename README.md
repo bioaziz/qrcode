@@ -21,6 +21,21 @@ Simple, privacy-friendly QR code generator that runs entirely in your browser. C
 
 No data is sent to a server; everything happens locally in your browser.
 
+### API
+
+The project also exposes a REST endpoint for generating QR codes:
+
+```html
+<img src="/api/v1/qrcode?data=Hello">
+```
+
+```bash
+curl -H "Authorization: Bearer $API_KEY" -H "Content-Type: application/json" \
+  -d '{"data":"Hello"}' https://example.com/api/v1/qrcode --output qr.png
+```
+
+`lib/sign.js` can be used to create signed GET URLs with an `exp` timestamp and `sig`.
+
 ## Notes
 
 - This app uses the lightweight `qrcodejs` library from a CDN. If you are offline or behind a firewall, the UI will show a message that the library could not load.

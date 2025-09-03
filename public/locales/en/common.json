@@ -273,5 +273,9 @@
   "about": {
     "title": "About",
     "description": "Learn more about us."
+  },
+  "api": {
+    "invalidSignature": "Invalid or missing signature",
+    "expired": "URL has expired"
   }
 }
