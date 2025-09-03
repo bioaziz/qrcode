@@ -6,7 +6,7 @@ export default function QrCodeRestaurantMenu() {
     <>
       <Head>
         <title>QR Code pour Menu de Restaurant — Créez des menus digitaux (Bénin)</title>
-        <meta name="description" content="Guide pour créer un menu de restaurant avec QR code : PDF, page web, multilingue, conseils d'impression. Idéal pour Cotonou, Porto-Novo et tout le Bénin." />
+          <meta name="description" content="Guide pour créer un menu de restaurant avec QR code : PDF, page web, multilingue, conseils d&apos;impression. Idéal pour Cotonou, Porto-Novo et tout le Bénin." />
         <meta name="keywords" content="QR code menu restaurant, QR code menu PDF, QR code Bénin, Cotonou, menu digital" />
         <meta property="og:type" content="article" />
         <meta property="og:title" content="QR Code pour Menu de Restaurant au Bénin" />
@@ -51,6 +51,20 @@ export default function QrCodeRestaurantMenu() {
           </ul>
         </section>
 
+        {/* Benefits */}
+        <section className="space-y-4">
+          <h2 className="text-2xl font-bold">Avantages pour votre établissement</h2>
+            <p className="text-gray-700">
+              Un menu digital réduit les coûts d’impression, facilite les mises à jour et
+              offre une expérience moderne à vos clients.
+            </p>
+          <p className="text-gray-700">
+            Vous pouvez également y intégrer des photos appétissantes, des informations
+            sur les allergènes ou des suggestions de boissons pour augmenter le panier
+            moyen.
+          </p>
+        </section>
+
         {/* How-to */}
         <section className="space-y-6">
           <h2 className="text-2xl font-bold">Comment créer votre QR Menu (3 options)</h2>
@@ -59,6 +73,33 @@ export default function QrCodeRestaurantMenu() {
             <li><strong>QR → Page web :</strong> hébergez le menu sur une URL (Google Drive / page site), liez l’URL.</li>
             <li><strong>QR dynamique :</strong> utilisez un lien court (ex: <code>https://qr.genius.bj/s/menu-2025</code>) modifiable sans réimprimer.</li>
           </ol>
+          <p className="text-gray-700">
+            Chaque option peut être personnalisée avec votre logo et des couleurs
+            cohérentes à votre identité visuelle.
+          </p>
+        </section>
+
+        {/* Multilingual */}
+        <section className="bg-gray-50 p-6 rounded-lg space-y-4">
+          <h2 className="text-2xl font-bold">Menus multilingues & saisonniers</h2>
+          <p className="text-gray-700">
+            Proposez facilement plusieurs langues pour accueillir touristes et
+            expatriés. Un QR dynamique permet de basculer entre français, anglais ou
+            langues locales.
+          </p>
+          <p className="text-gray-700">
+            Pour les menus de fêtes ou les plats du jour, changez simplement le
+            contenu lié au QR sans réimprimer vos supports.
+          </p>
+        </section>
+
+        {/* Feedback */}
+        <section className="space-y-4">
+          <h2 className="text-2xl font-bold">Collecter des avis & statistiques</h2>
+            <p className="text-gray-700">
+              En utilisant des liens traçables, vous saurez combien de clients consultent
+              votre carte et pourrez leur proposer un formulaire d’avis après le repas.
+            </p>
         </section>
 
         {/* Printing */}
