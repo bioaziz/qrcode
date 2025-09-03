@@ -4,7 +4,7 @@ const path = require('path');
 const {Translate} = require('@google-cloud/translate').v2;
 
 // Load environment variables from .env.local if present
-const envPath = path.resolve(process.cwd(), '.env.local');
+const envPath = path.resolve(process.cwd(), '.env');
 if (fs.existsSync(envPath)) {
   const envContent = fs.readFileSync(envPath, 'utf8');
   for (const line of envContent.split('\n')) {
