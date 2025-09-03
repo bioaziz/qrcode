@@ -112,6 +112,9 @@ export default function Landing() {
             </div>
             <p className="mt-4 text-sm text-black/70 dark:text-white/70">
               Ressources utiles :
+              <Link href="/blog/qr-code-histoire" className="underline ml-1">
+                Histoire des QR codes
+              </Link>
               <Link href="/blog/qr-code-gratuit-benin" className="underline ml-1">
                 Créer un QR Code gratuit
               </Link>
