@@ -1,5 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 
 export default function QrCodeHistory() {
@@ -235,8 +236,9 @@ export default function QrCodeHistory() {
                 <div className="bg-purple-50 border-l-4 border-purple-500 p-4">
                   <h4 className="font-semibold text-purple-800 mb-2">📊 Problème des codes-barres</h4>
                   <p className="text-purple-700 text-sm">
-                    Les codes-barres traditionnels ne stockent que 20 caractères et nécessitent
-                    plusieurs codes pour les pièces complexes.
+                    Les codes-barres traditionnels ne stockent qu'une vingtaine de caractères.
+                    Dans les usines, certains opérateurs devaient scanner près de 1 000 codes
+                    par jour pour une seule pièce complexe, ralentissant la production.
                   </p>
                 </div>
               </div>
@@ -246,7 +248,7 @@ export default function QrCodeHistory() {
               <h3 className="text-2xl font-semibold text-gray-800 mb-4">🧠 L'inspiration de Masahiro Hara</h3>
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
                 <div className="flex items-center space-x-3 mb-4">
-                  <span className="text-4xl">👨‍💻</span>
+                  <Image src="/hara.svg" alt="Masahiro Hara" width={64} height={64} />
                   <div>
                     <h4 className="font-semibold text-yellow-800">Masahiro Hara</h4>
                     <p className="text-yellow-700 text-sm">Ingénieur chez Denso Wave</p>
@@ -262,11 +264,45 @@ export default function QrCodeHistory() {
                   <h5 className="font-medium text-gray-800">🎯 Objectifs de développement :</h5>
                   <ul className="text-sm text-gray-700 space-y-1">
                     <li>• Lecture ultra-rapide (Quick Response)</li>
-                    <li>• Capacité 100x supérieure aux codes-barres</li>
-                    <li>• Résistance aux dommages physiques</li>
+                    <li>• Capacité 100x supérieure aux codes-barres (jusqu'à 7 000 caractères)</li>
+                    <li>• Résistance aux dommages physiques grâce à la correction d'erreurs</li>
                     <li>• Lecture depuis tous les angles</li>
+                    <li>• Support des caractères Kanji et Kana</li>
                     <li>• Gratuit et open-source</li>
                   </ul>
+                </div>
+
+                <div className="mt-4 space-y-4">
+                  <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4">
+                    <h4 className="font-semibold text-yellow-800 mb-2">👥 Une équipe de deux personnes
+                    </h4>
+                    <p className="text-yellow-700 text-sm">
+                      Hara et un seul collègue ont travaillé pendant 18 mois pour concevoir
+                      un code compact et rapide, capable d'être imprimé sur de petites pièces.
+                    </p>
+                  </div>
+
+                  <div className="bg-green-50 border-l-4 border-green-500 p-4">
+                    <h4 className="font-semibold text-green-800 mb-2">🔍 Motif 1:1:3:1:1 unique
+                    </h4>
+                    <p className="text-green-700 text-sm mb-2">
+                      En analysant d'innombrables imprimés, l'équipe a découvert le rapport
+                      1:1:3:1:1 de bandes noires et blanches, rarement présent ailleurs.
+                      Ce motif placé dans trois coins permet aux scanners de repérer
+                      instantanément le code quel que soit l'angle.
+                    </p>
+                    <Image src="/position-pattern.svg" alt="Motif de détection 1:1:3:1:1" width={200} height={40} />
+                  </div>
+
+                  <div className="bg-gray-50 border-l-4 border-gray-500 p-4">
+                    <h4 className="font-semibold text-gray-800 mb-2">👷‍♂️ Résistance à la saleté
+                    </h4>
+                    <p className="text-gray-700 text-sm">
+                      Grâce à l'utilisation de zones de correction, un QR code reste lisible
+                      même lorsqu'il est partiellement tétaché ou endommagé – un atout
+                      majeur dans les usines exposées à l'huile ou à la poussière.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -762,6 +798,39 @@ export default function QrCodeHistory() {
           </div>
         </section>
 
+        {/* Modern Variants */}
+        <section className="space-y-6">
+          <h2 className="text-3xl font-bold text-gray-900 border-b-2 border-blue-500 pb-2">
+            🆕 Variantes modernes
+          </h2>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="bg-white p-6 rounded-lg border">
+              <h3 className="font-semibold text-gray-800 mb-2">🔒 SQRC</h3>
+              <p className="text-gray-600 text-sm">
+                QR code à lecture restreinte qui permet de cacher des données sensibles
+                pour des applications où la sécurité est primordiale.
+              </p>
+            </div>
+
+            <div className="bg-white p-6 rounded-lg border">
+              <h3 className="font-semibold text-gray-800 mb-2">🖼️ Frame QR</h3>
+              <p className="text-gray-600 text-sm">
+                Variante avec zone de design libre permettant d'intégrer un visuel
+                au centre du code pour des campagnes marketing créatives.
+              </p>
+            </div>
+
+            <div className="bg-white p-6 rounded-lg border">
+              <h3 className="font-semibold text-gray-800 mb-2">☁️ Q-revo</h3>
+              <p className="text-gray-600 text-sm">
+                Service cloud liant génération, distribution, lecture et stockage des
+                QR codes pour le traçage, l'authentification ou encore les paiements.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* Future Perspectives */}
         <section className="space-y-6">
           <h2 className="text-3xl font-bold text-gray-900 border-b-2 border-blue-500 pb-2">
@@ -860,10 +929,10 @@ export default function QrCodeHistory() {
           <div className="grid md:grid-cols-3 gap-6">
             <div className="bg-white p-6 rounded-lg border border-yellow-200 text-center">
               <div className="text-4xl mb-4">🥇</div>
-              <h3 className="text-xl font-semibold mb-3 text-yellow-800">Prix European Inventor (2014)</h3>
+              <h3 className="text-xl font-semibold mb-3 text-yellow-800">European Inventor Award (2014)</h3>
               <p className="text-yellow-700 text-sm">
-                Masahiro Hara récompensé par l'Office européen des brevets
-                pour l'impact de son invention.
+                L'équipe de Denso Wave remporte le <em>Popular Prize</em> du public,
+                soulignant l'impact mondial du QR code.
               </p>
             </div>
 
