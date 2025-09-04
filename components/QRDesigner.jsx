@@ -1,6 +1,6 @@
 "use client";
 
-import {useEffect, useMemo, useRef, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {
@@ -34,6 +34,7 @@ import {
     Shield,
 } from "lucide-react";
 import ContentTab from "@/components/qr/ContentTab";
+import BorderTab from "@/components/qr/BorderTab";
 import {renderCustomQR} from "@/lib/customRenderer";
 import { useTranslation } from "next-i18next";
 
@@ -85,6 +86,15 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     const [bgGradEnd, setBgGradEnd] = useState("#e5e5e5");
     const [bgGradStops, setBgGradStops] = useState(2); // 2 or 3
     const [bgGradRotation, setBgGradRotation] = useState(0);
+    const [borderWidth, setBorderWidth] = useState(0);
+    const [borderColor, setBorderColor] = useState("#000000");
+    const [borderRadius, setBorderRadius] = useState(0);
+    const [borderText, setBorderText] = useState("Scan me");
+    const [borderTextColor, setBorderTextColor] = useState("#000000");
+    const [borderFont, setBorderFont] = useState("16px sans-serif");
+    const [borderLogo, setBorderLogo] = useState("");
+    const [borderLogoSize, setBorderLogoSize] = useState(0.15);
+    const [patternColor, setPatternColor] = useState("#111111");
     const [cornerSquareType, setCornerSquareType] = useState("square");
     const [cornerSquareColor, setCornerSquareColor] = useState("#111111");
     const [cornerDotType, setCornerDotType] = useState("dot");
@@ -123,6 +133,29 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     const [state, setState] = useState("");
     const [zip, setZip] = useState("");
     const [country, setCountry] = useState("");
+
+    const drawBorder = useCallback((canvas) => {
+        if (!canvas || borderWidth <= 0) return;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        const dpr = (typeof window !== "undefined" && window.devicePixelRatio) ? window.devicePixelRatio : 1;
+        const w = canvas.width / dpr;
+        const h = canvas.height / dpr;
+        ctx.save();
+        ctx.scale(dpr, dpr);
+        ctx.strokeStyle = borderColor;
+        ctx.lineWidth = borderWidth / dpr;
+        const rr = Math.min(borderRadius, Math.min(w, h) / 2);
+        ctx.beginPath();
+        ctx.moveTo(borderWidth / 2 + rr, borderWidth / 2);
+        ctx.arcTo(w - borderWidth / 2, borderWidth / 2, w - borderWidth / 2, h - borderWidth / 2, rr);
+        ctx.arcTo(w - borderWidth / 2, h - borderWidth / 2, borderWidth / 2, h - borderWidth / 2, rr);
+        ctx.arcTo(borderWidth / 2, h - borderWidth / 2, borderWidth / 2, borderWidth / 2, rr);
+        ctx.arcTo(borderWidth / 2, borderWidth / 2, w - borderWidth / 2, borderWidth / 2, rr);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.restore();
+    }, [borderWidth, borderColor, borderRadius]);
 
     // Compose data based on preset mode (hoisted as function for early use)
     function presetData() {
@@ -260,6 +293,17 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 color: cornerDotColor,
                 type: cornerDotType,
             },
+            borderOptions: {
+                size: borderWidth,
+                color: borderColor,
+                radius: borderRadius,
+                borderText,
+                borderTextColor,
+                borderFont,
+                borderLogo,
+                borderLogoSize,
+                patternColor,
+            },
         }),
         [
             size,
@@ -291,6 +335,15 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             cornerSquareType,
             cornerDotColor,
             cornerDotType,
+            borderWidth,
+            borderColor,
+            borderRadius,
+            borderText,
+            borderTextColor,
+            borderFont,
+            borderLogo,
+            borderLogoSize,
+            patternColor,
         ]
     );
 
@@ -367,7 +420,11 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             qrRef.current.inst.update(options);
         }
         ensureCanvasSize();
-    }, [options, displaySize, cornerSquareType]);
+        const canvas = ref.current?.querySelector?.('canvas');
+        if (canvas) {
+            setTimeout(() => drawBorder(canvas), 0);
+        }
+    }, [options, displaySize, cornerSquareType, drawBorder]);
 
     const onUpload = (e) => {
         const file = e.target.files?.[0];
@@ -379,6 +436,14 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         setError("");
         const url = URL.createObjectURL(file);
         setImageUrl(url);
+    };
+
+    const onBorderLogoUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith("image/")) return;
+        const url = URL.createObjectURL(file);
+        setBorderLogo(url);
     };
 
     const autoSaveDesign = async () => {
@@ -403,11 +468,10 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         if (!qrRef.current) return;
         // Save design snapshot automatically
         await autoSaveDesign();
-        if (qrRef.current.kind === 'styling' && qrRef.current.inst?.download) {
+        if (qrRef.current.kind === 'styling' && ext === 'svg' && qrRef.current.inst?.download) {
             await qrRef.current.inst.download({extension: ext});
             return;
         }
-        // Custom renderer path: only PNG supported directly
         const canvas = ref.current?.querySelector?.('canvas');
         if (!canvas) return;
         if (ext === 'svg') {
@@ -569,6 +633,14 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         quietZone,
         imageSize,
         hideLogoBgDots,
+        borderWidth,
+        borderColor,
+        borderRadius,
+        borderText,
+        borderTextColor,
+        borderFont,
+        borderLogoSize,
+        patternColor,
         // imageUrl intentionally skipped
     });
 
@@ -623,6 +695,14 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         setQuietZone(s.quietZone ?? 4);
         setImageSize(s.imageSize ?? 0.35);
         setHideLogoBgDots(!!s.hideLogoBgDots);
+        setBorderWidth(s.borderWidth ?? 0);
+        setBorderColor(s.borderColor ?? "#000000");
+        setBorderRadius(s.borderRadius ?? 0);
+        setBorderText(s.borderText ?? "Scan me");
+        setBorderTextColor(s.borderTextColor ?? "#000000");
+        setBorderFont(s.borderFont ?? "16px sans-serif");
+        setBorderLogoSize(s.borderLogoSize ?? 0.15);
+        setPatternColor(s.patternColor ?? "#111111");
     };
 
     const savePreset = () => {
@@ -709,7 +789,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <Tabs defaultValue="content">
-                        <TabsList className="grid w-full grid-cols-4">
+                        <TabsList className="grid w-full grid-cols-5">
                             <TabsTrigger value="content" className="flex items-center gap-2">
                                 <QrCode className="size-4"/>
                                 <span className="hidden sm:inline">{t("designerEditor.tabs.content")}</span>
@@ -721,6 +801,10 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                             <TabsTrigger value="corners" className="flex items-center gap-2">
                                 <Shapes className="size-4"/>
                                 <span className="hidden sm:inline">{t("designerEditor.tabs.corners")}</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="border" className="flex items-center gap-2">
+                                <SquareIcon className="size-4"/>
+                                <span className="hidden sm:inline">{t("designerEditor.tabs.border")}</span>
                             </TabsTrigger>
                             <TabsTrigger value="logo" className="flex items-center gap-2">
                                 <ImageIcon className="size-4"/>
@@ -1062,6 +1146,21 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                     </div>
                                 </div>
                             </div>
+                        </TabsContent>
+
+                        <TabsContent value="border" className="space-y-6 mt-6">
+                            <BorderTab
+                                borderWidth={borderWidth} setBorderWidth={setBorderWidth}
+                                borderColor={borderColor} setBorderColor={setBorderColor}
+                                borderRadius={borderRadius} setBorderRadius={setBorderRadius}
+                                borderText={borderText} setBorderText={setBorderText}
+                                borderTextColor={borderTextColor} setBorderTextColor={setBorderTextColor}
+                                borderFont={borderFont} setBorderFont={setBorderFont}
+                                borderLogo={borderLogo} setBorderLogo={setBorderLogo}
+                                borderLogoSize={borderLogoSize} setBorderLogoSize={setBorderLogoSize}
+                                patternColor={patternColor} setPatternColor={setPatternColor}
+                                onBorderLogoUpload={onBorderLogoUpload}
+                            />
                         </TabsContent>
 
                         <TabsContent value="logo" className="space-y-6 mt-6">
