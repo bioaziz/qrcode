@@ -11,6 +11,7 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
+
 import { useTranslation } from "next-i18next";
 
 export default function BorderTab({
@@ -95,6 +96,7 @@ export default function BorderTab({
             <Button type="button" variant="outline" size="sm" onClick={() => setBorderLogo("")}>{t("designerEditor.borderTab.removeLogo")}</Button>
           </div>
         )}
+
       </div>
     </div>
   );

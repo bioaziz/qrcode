@@ -227,6 +227,7 @@
       "removeLogo": "Remove",
       "logoSize": "Logo size",
       "patternColor": "Pattern color"
+
     },
     "logoTab": {
       "logoLabel": "Logo (optional)",

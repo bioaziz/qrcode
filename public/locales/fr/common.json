@@ -209,6 +209,7 @@
       "removeLogo": "Supprimer",
       "logoSize": "Taille du logo",
       "patternColor": "Couleur du motif"
+
     },
     "logoTab": {
       "logoLabel": "Logo (optionnel)",

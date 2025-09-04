@@ -303,6 +303,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 borderLogo,
                 borderLogoSize,
                 patternColor,
+
             },
         }),
         [
@@ -344,6 +345,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             borderLogo,
             borderLogoSize,
             patternColor,
+
         ]
     );
 
@@ -641,6 +643,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         borderFont,
         borderLogoSize,
         patternColor,
+
         // imageUrl intentionally skipped
     });
 
@@ -703,6 +706,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         setBorderFont(s.borderFont ?? "16px sans-serif");
         setBorderLogoSize(s.borderLogoSize ?? 0.15);
         setPatternColor(s.patternColor ?? "#111111");
+
     };
 
     const savePreset = () => {
@@ -1160,6 +1164,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                 borderLogoSize={borderLogoSize} setBorderLogoSize={setBorderLogoSize}
                                 patternColor={patternColor} setPatternColor={setPatternColor}
                                 onBorderLogoUpload={onBorderLogoUpload}
+
                             />
                         </TabsContent>
 
