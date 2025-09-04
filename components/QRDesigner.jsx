@@ -138,7 +138,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         ctx.save();
         ctx.scale(dpr, dpr);
         ctx.strokeStyle = borderColor;
-        ctx.lineWidth = borderWidth;
+        ctx.lineWidth = borderWidth / dpr;
         const rr = Math.min(borderRadius, Math.min(w, h) / 2);
         ctx.beginPath();
         ctx.moveTo(borderWidth / 2 + rr, borderWidth / 2);
