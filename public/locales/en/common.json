@@ -237,6 +237,7 @@
       "remove": "Remove",
       "logoSize": "Logo Size",
       "logoAngle": "Logo Position"
+
     },
     "logoTab": {
       "logoLabel": "Logo (optional)",

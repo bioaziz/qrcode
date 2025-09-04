@@ -311,6 +311,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 borderLogoSize,
                 borderLogoAngle,
                 patternColor,
+
             },
         }),
         [
@@ -356,6 +357,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             borderLogoSize,
             borderLogoAngle,
             patternColor,
+
         ]
     );
 
@@ -438,6 +440,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         }
     }, [options, displaySize, cornerSquareType, circularBorder, drawBorder]);
 
+
     const onUpload = (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -458,6 +461,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             return;
         }
         setError("");
+
         const url = URL.createObjectURL(file);
         setBorderLogo(url);
     };
@@ -734,6 +738,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         setBorderLogoSize(s.borderLogoSize ?? 24);
         setBorderLogoAngle(s.borderLogoAngle ?? 0);
         setPatternColor(s.patternColor ?? "#f0f0f0");
+
     };
 
     const savePreset = () => {
@@ -1195,6 +1200,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                 patternColor={patternColor} setPatternColor={setPatternColor}
                                 onBorderLogoUpload={onBorderLogoUpload}
                                 onRemoveBorderLogo={onRemoveBorderLogo}
+
                             />
                         </TabsContent>
 

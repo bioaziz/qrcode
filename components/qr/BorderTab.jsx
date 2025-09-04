@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useTranslation } from "next-i18next";
 import { Type, Image as ImageIcon, Palette } from "lucide-react";
 
+
 export default function BorderTab({
   borderWidth, setBorderWidth,
   borderColor, setBorderColor,
@@ -267,6 +268,7 @@ export default function BorderTab({
           </div>
         </>
       )}
+
     </div>
   );
 }
