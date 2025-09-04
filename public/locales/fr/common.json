@@ -199,7 +199,17 @@
     "borderTab": {
       "width": "Largeur de la bordure",
       "color": "Couleur de la bordure",
-      "radius": "Rayon de la bordure"
+      "radius": "Rayon de la bordure",
+      "text": "Texte de la bordure",
+      "textPlaceholder": "Scannez-moi",
+      "textColor": "Couleur du texte",
+      "font": "Police",
+      "textSize": "Taille du texte",
+      "logoLabel": "Logo de la bordure",
+      "removeLogo": "Supprimer",
+      "logoSize": "Taille du logo",
+      "patternColor": "Couleur du motif"
+
     },
     "logoTab": {
       "logoLabel": "Logo (optionnel)",

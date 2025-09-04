@@ -217,7 +217,17 @@
     "borderTab": {
       "width": "Border width",
       "color": "Border color",
-      "radius": "Border radius"
+      "radius": "Border radius",
+      "text": "Border text",
+      "textPlaceholder": "Scan me",
+      "textColor": "Text color",
+      "font": "Font",
+      "textSize": "Text size",
+      "logoLabel": "Border logo",
+      "removeLogo": "Remove",
+      "logoSize": "Logo size",
+      "patternColor": "Pattern color"
+
     },
     "logoTab": {
       "logoLabel": "Logo (optional)",

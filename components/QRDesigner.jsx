@@ -89,6 +89,12 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     const [borderWidth, setBorderWidth] = useState(0);
     const [borderColor, setBorderColor] = useState("#000000");
     const [borderRadius, setBorderRadius] = useState(0);
+    const [borderText, setBorderText] = useState("Scan me");
+    const [borderTextColor, setBorderTextColor] = useState("#000000");
+    const [borderFont, setBorderFont] = useState("16px sans-serif");
+    const [borderLogo, setBorderLogo] = useState("");
+    const [borderLogoSize, setBorderLogoSize] = useState(0.15);
+    const [patternColor, setPatternColor] = useState("#111111");
     const [cornerSquareType, setCornerSquareType] = useState("square");
     const [cornerSquareColor, setCornerSquareColor] = useState("#111111");
     const [cornerDotType, setCornerDotType] = useState("dot");
@@ -291,6 +297,13 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 size: borderWidth,
                 color: borderColor,
                 radius: borderRadius,
+                borderText,
+                borderTextColor,
+                borderFont,
+                borderLogo,
+                borderLogoSize,
+                patternColor,
+
             },
         }),
         [
@@ -326,6 +339,13 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             borderWidth,
             borderColor,
             borderRadius,
+            borderText,
+            borderTextColor,
+            borderFont,
+            borderLogo,
+            borderLogoSize,
+            patternColor,
+
         ]
     );
 
@@ -418,6 +438,14 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         setError("");
         const url = URL.createObjectURL(file);
         setImageUrl(url);
+    };
+
+    const onBorderLogoUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith("image/")) return;
+        const url = URL.createObjectURL(file);
+        setBorderLogo(url);
     };
 
     const autoSaveDesign = async () => {
@@ -610,6 +638,12 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         borderWidth,
         borderColor,
         borderRadius,
+        borderText,
+        borderTextColor,
+        borderFont,
+        borderLogoSize,
+        patternColor,
+
         // imageUrl intentionally skipped
     });
 
@@ -667,6 +701,12 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         setBorderWidth(s.borderWidth ?? 0);
         setBorderColor(s.borderColor ?? "#000000");
         setBorderRadius(s.borderRadius ?? 0);
+        setBorderText(s.borderText ?? "Scan me");
+        setBorderTextColor(s.borderTextColor ?? "#000000");
+        setBorderFont(s.borderFont ?? "16px sans-serif");
+        setBorderLogoSize(s.borderLogoSize ?? 0.15);
+        setPatternColor(s.patternColor ?? "#111111");
+
     };
 
     const savePreset = () => {
@@ -1117,6 +1157,14 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                 borderWidth={borderWidth} setBorderWidth={setBorderWidth}
                                 borderColor={borderColor} setBorderColor={setBorderColor}
                                 borderRadius={borderRadius} setBorderRadius={setBorderRadius}
+                                borderText={borderText} setBorderText={setBorderText}
+                                borderTextColor={borderTextColor} setBorderTextColor={setBorderTextColor}
+                                borderFont={borderFont} setBorderFont={setBorderFont}
+                                borderLogo={borderLogo} setBorderLogo={setBorderLogo}
+                                borderLogoSize={borderLogoSize} setBorderLogoSize={setBorderLogoSize}
+                                patternColor={patternColor} setPatternColor={setPatternColor}
+                                onBorderLogoUpload={onBorderLogoUpload}
+
                             />
                         </TabsContent>
 
