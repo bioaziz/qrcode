@@ -89,12 +89,16 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     const [borderWidth, setBorderWidth] = useState(0);
     const [borderColor, setBorderColor] = useState("#000000");
     const [borderRadius, setBorderRadius] = useState(0);
+    // Circular border state
+    const [circularBorder, setCircularBorder] = useState(false);
     const [borderText, setBorderText] = useState("Scan me");
-    const [borderTextColor, setBorderTextColor] = useState("#000000");
-    const [borderFont, setBorderFont] = useState("16px sans-serif");
+    const [borderTextColor, setBorderTextColor] = useState("#333333");
+    const [borderFont, setBorderFont] = useState("Arial");
+    const [borderFontSize, setBorderFontSize] = useState(14);
     const [borderLogo, setBorderLogo] = useState("");
-    const [borderLogoSize, setBorderLogoSize] = useState(0.15);
-    const [patternColor, setPatternColor] = useState("#111111");
+    const [borderLogoSize, setBorderLogoSize] = useState(24);
+    const [borderLogoAngle, setBorderLogoAngle] = useState(0);
+    const [patternColor, setPatternColor] = useState("#f0f0f0");
     const [cornerSquareType, setCornerSquareType] = useState("square");
     const [cornerSquareColor, setCornerSquareColor] = useState("#111111");
     const [cornerDotType, setCornerDotType] = useState("dot");
@@ -297,11 +301,15 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 size: borderWidth,
                 color: borderColor,
                 radius: borderRadius,
+                // New circular border options
+                circularBorder,
                 borderText,
                 borderTextColor,
                 borderFont,
+                borderFontSize,
                 borderLogo,
                 borderLogoSize,
+                borderLogoAngle,
                 patternColor,
 
             },
@@ -339,11 +347,15 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             borderWidth,
             borderColor,
             borderRadius,
+            // New circular border dependencies
+            circularBorder,
             borderText,
             borderTextColor,
             borderFont,
+            borderFontSize,
             borderLogo,
             borderLogoSize,
+            borderLogoAngle,
             patternColor,
 
         ]
@@ -388,7 +400,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
 
     useEffect(() => {
         if (!ref.current) return;
-        const wantCustom = cornerSquareType === 'circle';
+        const wantCustom = cornerSquareType === 'circle' || circularBorder;
         const ensureCanvasSize = () => {
             const canvas = ref.current?.querySelector?.("canvas");
             if (canvas) {
@@ -397,7 +409,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             }
         };
         if (wantCustom) {
-            // Switch to custom renderer when circle eyes are requested
+            // Switch to custom renderer when circle eyes or circular border are requested
             if (!qrRef.current || qrRef.current.kind !== 'custom') {
                 // Clear previous renderer DOM
                 ref.current.innerHTML = '';
@@ -426,7 +438,8 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         if (canvas) {
             setTimeout(() => drawBorder(canvas), 0);
         }
-    }, [options, displaySize, cornerSquareType, drawBorder]);
+    }, [options, displaySize, cornerSquareType, circularBorder, drawBorder]);
+
 
     const onUpload = (e) => {
         const file = e.target.files?.[0];
@@ -443,9 +456,21 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     const onBorderLogoUpload = (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        if (!file.type.startsWith("image/")) return;
+        if (!file.type.startsWith("image/")) {
+            setError("Please select an image file.");
+            return;
+        }
+        setError("");
+
         const url = URL.createObjectURL(file);
         setBorderLogo(url);
+    };
+
+    const onRemoveBorderLogo = () => {
+        if (borderLogo) {
+            URL.revokeObjectURL(borderLogo);
+            setBorderLogo("");
+        }
     };
 
     const autoSaveDesign = async () => {
@@ -638,12 +663,15 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         borderWidth,
         borderColor,
         borderRadius,
+        // New circular border properties
+        circularBorder,
         borderText,
         borderTextColor,
         borderFont,
+        borderFontSize,
         borderLogoSize,
+        borderLogoAngle,
         patternColor,
-
         // imageUrl intentionally skipped
     });
 
@@ -701,11 +729,15 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         setBorderWidth(s.borderWidth ?? 0);
         setBorderColor(s.borderColor ?? "#000000");
         setBorderRadius(s.borderRadius ?? 0);
+        // New circular border properties
+        setCircularBorder(!!s.circularBorder);
         setBorderText(s.borderText ?? "Scan me");
-        setBorderTextColor(s.borderTextColor ?? "#000000");
-        setBorderFont(s.borderFont ?? "16px sans-serif");
-        setBorderLogoSize(s.borderLogoSize ?? 0.15);
-        setPatternColor(s.patternColor ?? "#111111");
+        setBorderTextColor(s.borderTextColor ?? "#333333");
+        setBorderFont(s.borderFont ?? "Arial");
+        setBorderFontSize(s.borderFontSize ?? 14);
+        setBorderLogoSize(s.borderLogoSize ?? 24);
+        setBorderLogoAngle(s.borderLogoAngle ?? 0);
+        setPatternColor(s.patternColor ?? "#f0f0f0");
 
     };
 
@@ -1157,13 +1189,17 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                 borderWidth={borderWidth} setBorderWidth={setBorderWidth}
                                 borderColor={borderColor} setBorderColor={setBorderColor}
                                 borderRadius={borderRadius} setBorderRadius={setBorderRadius}
+                                circularBorder={circularBorder} setCircularBorder={setCircularBorder}
                                 borderText={borderText} setBorderText={setBorderText}
                                 borderTextColor={borderTextColor} setBorderTextColor={setBorderTextColor}
                                 borderFont={borderFont} setBorderFont={setBorderFont}
+                                borderFontSize={borderFontSize} setBorderFontSize={setBorderFontSize}
                                 borderLogo={borderLogo} setBorderLogo={setBorderLogo}
                                 borderLogoSize={borderLogoSize} setBorderLogoSize={setBorderLogoSize}
+                                borderLogoAngle={borderLogoAngle} setBorderLogoAngle={setBorderLogoAngle}
                                 patternColor={patternColor} setPatternColor={setPatternColor}
                                 onBorderLogoUpload={onBorderLogoUpload}
+                                onRemoveBorderLogo={onRemoveBorderLogo}
 
                             />
                         </TabsContent>
