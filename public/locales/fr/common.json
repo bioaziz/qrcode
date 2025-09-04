@@ -72,6 +72,7 @@
       "content": "Contenu",
       "style": "Style",
       "corners": "Coins",
+      "border": "Bordure",
       "logo": "Logo",
       "presets": "Préréglages"
     },
@@ -194,6 +195,11 @@
         "square": "Carré",
         "dot": "Point"
       }
+    },
+    "borderTab": {
+      "width": "Largeur de la bordure",
+      "color": "Couleur de la bordure",
+      "radius": "Rayon de la bordure"
     },
     "logoTab": {
       "logoLabel": "Logo (optionnel)",

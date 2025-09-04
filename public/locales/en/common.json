@@ -90,6 +90,7 @@
       "content": "Content",
       "style": "Style",
       "corners": "Corners",
+      "border": "Border",
       "logo": "Logo",
       "presets": "Presets"
     },
@@ -212,6 +213,11 @@
         "square": "Square",
         "dot": "Dot"
       }
+    },
+    "borderTab": {
+      "width": "Border width",
+      "color": "Border color",
+      "radius": "Border radius"
     },
     "logoTab": {
       "logoLabel": "Logo (optional)",
