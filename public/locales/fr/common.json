@@ -72,7 +72,6 @@
       "content": "Contenu",
       "style": "Style",
       "corners": "Coins",
-      "border": "Bordure",
       "logo": "Logo",
       "presets": "Préréglages"
     },
@@ -195,31 +194,6 @@
         "square": "Carré",
         "dot": "Point"
       }
-    },
-    "borderTab": {
-      "width": "Largeur de la bordure",
-      "color": "Couleur de la bordure",
-      "radius": "Rayon de la bordure",
-      "traditional": "Bordure Traditionnelle",
-      "circularBorder": "Activer la Bordure Circulaire",
-      "circularBorderDesc": "Ajouter une bordure circulaire décorative autour du QR code",
-      "circularSettings": "Paramètres de Bordure Circulaire",
-      "patternColor": "Couleur du Motif",
-      "patternColorDesc": "Couleur des points décoratifs dans l'anneau de bordure",
-      "borderText": "Texte de Bordure",
-      "textContent": "Contenu du Texte",
-      "textPlaceholder": "Scannez-moi",
-      "textColor": "Couleur du Texte",
-      "font": "Police de Caractères",
-      "fontSize": "Taille de Police",
-      "borderLogo": "Logo de Bordure",
-      "uploadLogo": "Télécharger un Logo",
-      "logoUploaded": "Logo téléchargé",
-      "logoReady": "Prêt à utiliser sur la bordure",
-      "remove": "Supprimer",
-      "logoSize": "Taille du Logo",
-      "logoAngle": "Position du Logo"
-
     },
     "logoTab": {
       "logoLabel": "Logo (optionnel)",
