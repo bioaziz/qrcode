@@ -88,7 +88,7 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
   position: relative;
   display: grid;
   place-items: center;
-  min-height: 320px;
+  height: 1024px;
   padding: 16px;
   border: 1px dashed var(--border);
   border-radius: 12px;
