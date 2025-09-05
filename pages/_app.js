@@ -1,6 +1,5 @@
 import "@/styles/globals.css";
 import "@melloware/coloris/dist/coloris.css";
-import Coloris from "@melloware/coloris";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
@@ -29,7 +28,9 @@ function App({ Component, pageProps: { session, ...pageProps } }) {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    Coloris.init();
+    import("coloris").then(({ default: Coloris }) => {
+      Coloris.init();
+    });
   }, []);
   return (
     <SessionProvider session={session}>
