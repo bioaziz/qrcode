@@ -57,6 +57,10 @@ const DOT_TYPES = [
 const CORNER_SQUARE_TYPES = ["square", "extra-rounded", "circle"];
 const CORNER_DOT_TYPES = ["square", "dot"]; // library accepts these
 
+// Maximum QR code preview size in pixels. Keep in sync with the non-React version
+// (script.js) where the QR size is clamped to this value.
+const MAX_PREVIEW = 1024;
+
 export default function QRDesigner({embedded = false, initialSnapshot = null, onSnapshotChange = null}) {
     const ref = useRef(null);
     const qrRef = useRef(null);
@@ -1263,9 +1267,13 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             <Card className="flex items-center justify-center">
                 <CardContent
                     className="flex items-center justify-center p-4"
-                    style={{width: displaySize + 24, height: displaySize + 24}}
+                    style={{width: displaySize + 24, height: MAX_PREVIEW + 24}}
                 >
-                    <div ref={ref} className="flex items-center justify-center"/>
+                    <div
+                        ref={ref}
+                        className="flex items-center justify-center"
+                        style={{width: displaySize, height: displaySize}}
+                    />
                 </CardContent>
             </Card>
             {!embedded && (
