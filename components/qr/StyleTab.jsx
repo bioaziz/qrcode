@@ -79,20 +79,20 @@ export default function StyleTab(props) {
         {!dotGradEnabled && (
           <div className="min-w-0">
             <label className="block text-sm font-medium mb-1 flex flex-wrap items-center gap-2"><Palette className="size-4"/> {t("designerEditor.styleTab.dotsColor")}</label>
-            <Input type="color" value={dotColor} onChange={(e) => setDotColor(e.target.value)} className="h-10 w-full cursor-pointer" />
+            <Input type="text" data-coloris value={dotColor} onChange={(e) => setDotColor(e.target.value)} className="h-10 w-full" />
           </div>
         )}
         {dotGradEnabled && (
           <div className="space-y-2 min-w-0">
             <label className="block text-sm font-medium flex flex-wrap items-center gap-2"><Palette className="size-4"/> {t("designerEditor.styleTab.dotsGradient")}</label>
             <div className="grid grid-cols-2 gap-2">
-              <Input type="color" value={dotGradStart} onChange={(e) => setDotGradStart(e.target.value)} />
+              <Input type="text" data-coloris value={dotGradStart} onChange={(e) => setDotGradStart(e.target.value)} />
               {dotGradStops === 3 ? (
-                <Input type="color" value={dotGradMid} onChange={(e) => setDotGradMid(e.target.value)} />
+                <Input type="text" data-coloris value={dotGradMid} onChange={(e) => setDotGradMid(e.target.value)} />
               ) : (
                 <div />
               )}
-              <Input type="color" value={dotGradEnd} onChange={(e) => setDotGradEnd(e.target.value)} />
+              <Input type="text" data-coloris value={dotGradEnd} onChange={(e) => setDotGradEnd(e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Select value={dotGradType} onValueChange={setDotGradType}>
@@ -123,18 +123,18 @@ export default function StyleTab(props) {
         <div className="min-w-0">
           <label className="block text-sm font-medium mb-1 flex flex-wrap items-center gap-2"><Palette className="size-4"/> {t("designerEditor.styleTab.background")}</label>
           {!bgGradEnabled && (
-            <Input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="h-10 w-full cursor-pointer" disabled={bgTransparent} />
+            <Input type="text" data-coloris value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="h-10 w-full" disabled={bgTransparent} />
           )}
           {bgGradEnabled && (
             <div className="space-y-2">
               <div className="grid grid-cols-2 gap-2">
-                <Input type="color" value={bgGradStart} onChange={(e) => setBgGradStart(e.target.value)} disabled={bgTransparent} />
+                <Input type="text" data-coloris value={bgGradStart} onChange={(e) => setBgGradStart(e.target.value)} disabled={bgTransparent} />
                 {bgGradStops === 3 ? (
-                  <Input type="color" value={bgGradMid} onChange={(e) => setBgGradMid(e.target.value)} disabled={bgTransparent} />
+                  <Input type="text" data-coloris value={bgGradMid} onChange={(e) => setBgGradMid(e.target.value)} disabled={bgTransparent} />
                 ) : (
                   <div />
                 )}
-                <Input type="color" value={bgGradEnd} onChange={(e) => setBgGradEnd(e.target.value)} disabled={bgTransparent} />
+                <Input type="text" data-coloris value={bgGradEnd} onChange={(e) => setBgGradEnd(e.target.value)} disabled={bgTransparent} />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <Select value={bgGradType} onValueChange={setBgGradType} disabled={bgTransparent}>

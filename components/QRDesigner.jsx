@@ -974,9 +974,9 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                                 <Label className="block mb-2 flex items-center gap-2">
                                                     <Palette className="size-4"/> {t("designerEditor.styleTab.dotsColor")}
                                                 </Label>
-                                                <Input type="color" value={dotColor}
+                                                <Input type="text" data-coloris value={dotColor}
                                                        onChange={(e) => setDotColor(e.target.value)}
-                                                       className="h-10 w-full cursor-pointer"/>
+                                                       className="h-10 w-full"/>
                                             </div>
                                         ) : (
                                             <div className="space-y-3">
@@ -984,15 +984,15 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                                     <Palette className="size-4"/> {t("designerEditor.styleTab.dotsGradient")}
                                                 </Label>
                                                 <div className="grid grid-cols-2 gap-2">
-                                                    <Input type="color" value={dotGradStart}
+                                                    <Input type="text" data-coloris value={dotGradStart}
                                                            onChange={(e) => setDotGradStart(e.target.value)}
                                                            placeholder={t("designerEditor.styleTab.start")}/>
                                                     {dotGradStops === 3 && (
-                                                        <Input type="color" value={dotGradMid}
+                                                        <Input type="text" data-coloris value={dotGradMid}
                                                                onChange={(e) => setDotGradMid(e.target.value)}
                                                                placeholder={t("designerEditor.styleTab.middle")}/>
                                                     )}
-                                                    <Input type="color" value={dotGradEnd}
+                                                    <Input type="text" data-coloris value={dotGradEnd}
                                                            onChange={(e) => setDotGradEnd(e.target.value)}
                                                            placeholder={t("designerEditor.styleTab.end")}/>
                                                 </div>
@@ -1036,9 +1036,9 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                                 <Label className="block mb-2 flex items-center gap-2">
                                                     <Palette className="size-4"/> {t("designerEditor.styleTab.backgroundColor")}
                                                 </Label>
-                                                <Input type="color" value={bgColor}
+                                                <Input type="text" data-coloris value={bgColor}
                                                        onChange={(e) => setBgColor(e.target.value)}
-                                                       className="h-10 w-full cursor-pointer"
+                                                       className="h-10 w-full"
                                                        disabled={bgTransparent}/>
                                             </div>
                                         ) : (
@@ -1047,17 +1047,17 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                                     <Palette className="size-4"/> {t("designerEditor.styleTab.backgroundGradientToggle")}
                                                 </Label>
                                                 <div className="grid grid-cols-2 gap-2">
-                                                    <Input type="color" value={bgGradStart}
+                                                    <Input type="text" data-coloris value={bgGradStart}
                                                            onChange={(e) => setBgGradStart(e.target.value)}
                                                            disabled={bgTransparent}
                                                            placeholder={t("designerEditor.styleTab.start")}/>
                                                     {bgGradStops === 3 && (
-                                                        <Input type="color" value={bgGradMid}
+                                                        <Input type="text" data-coloris value={bgGradMid}
                                                                onChange={(e) => setBgGradMid(e.target.value)}
                                                                disabled={bgTransparent}
                                                                placeholder={t("designerEditor.styleTab.middle")}/>
                                                     )}
-                                                    <Input type="color" value={bgGradEnd}
+                                                    <Input type="text" data-coloris value={bgGradEnd}
                                                            onChange={(e) => setBgGradEnd(e.target.value)}
                                                            disabled={bgTransparent}
                                                            placeholder={t("designerEditor.styleTab.end")}/>
@@ -1146,9 +1146,9 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                         <Label className="block mb-2 flex items-center gap-2">
                                             <Palette className="size-4"/> Color
                                         </Label>
-                                        <Input type="color" value={cornerSquareColor}
+                                        <Input type="text" data-coloris value={cornerSquareColor}
                                                onChange={(e) => setCornerSquareColor(e.target.value)}
-                                               className="h-10 w-full cursor-pointer"/>
+                                               className="h-10 w-full"/>
                                     </div>
                                 </div>
 
@@ -1174,9 +1174,9 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                         <Label className="block mb-2 flex items-center gap-2">
                                             <Palette className="size-4"/> Color
                                         </Label>
-                                        <Input type="color" value={cornerDotColor}
+                                        <Input type="text" data-coloris value={cornerDotColor}
                                                onChange={(e) => setCornerDotColor(e.target.value)}
-                                               className="h-10 w-full cursor-pointer"/>
+                                               className="h-10 w-full"/>
                                     </div>
                                 </div>
                             </div>
