@@ -272,8 +272,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             },
             cornersSquareOptions: {
                 color: cornerSquareColor,
-                // Map custom-only types to closest library type for non-custom path
-                type: (cornerSquareType === 'circle') ? 'extra-rounded' : cornerSquareType,
+                type: cornerSquareType,
             },
             cornersDotOptions: {
                 color: cornerDotColor,
@@ -411,14 +410,24 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         }
         // Default to qr-code-styling
         if (!QRCodeStyling) return;
+        const libOptions = {
+            ...options,
+            cornersSquareOptions: {
+                ...options.cornersSquareOptions,
+                type:
+                    options.cornersSquareOptions?.type === 'circle'
+                        ? 'extra-rounded'
+                        : options.cornersSquareOptions?.type,
+            },
+        };
         if (!qrRef.current || qrRef.current.kind !== 'styling') {
             // Clear previous renderer DOM
             ref.current.innerHTML = '';
-            const inst = new QRCodeStyling(options);
+            const inst = new QRCodeStyling(libOptions);
             inst.append(ref.current);
             qrRef.current = {kind: 'styling', inst};
         } else {
-            qrRef.current.inst.update(options);
+            qrRef.current.inst.update(libOptions);
         }
         ensureCanvasSize();
     }, [options, displaySize, cornerSquareType, circularBorder]);
