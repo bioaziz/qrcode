@@ -96,7 +96,9 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     const [borderLogoSize, setBorderLogoSize] = useState(24);
     const [borderLogoAngle, setBorderLogoAngle] = useState(0);
     const [patternColor, setPatternColor] = useState("#f0f0f0");
-
+    const [ringBackgroundColor, setRingBackgroundColor] = useState("#ffffff");
+    const [innerRadius, setInnerRadius] = useState(0);
+    const [outerRadius, setOuterRadius] = useState(0);
     const [cornerSquareType, setCornerSquareType] = useState("square");
     const [cornerSquareColor, setCornerSquareColor] = useState("#111111");
     const [cornerDotType, setCornerDotType] = useState("dot");
@@ -273,6 +275,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 type: cornerDotType,
             },
             borderOptions: {
+                // Circular border options
                 circularBorder,
                 borderText,
                 borderTextColor,
@@ -280,11 +283,12 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 borderFontSize,
                 borderLogo,
                 borderLogoSize,
-                borderLogoAngle,
-                patternColor,
-
-            },
-        }),
+            borderLogoAngle,
+            patternColor,
+            ringBackgroundColor,
+            innerRadius,
+            outerRadius,
+        },
         [
             size,
             data,
@@ -315,7 +319,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             cornerSquareType,
             cornerDotColor,
             cornerDotType,
-
+            // Circular border dependencies
             circularBorder,
             borderText,
             borderTextColor,
@@ -325,6 +329,9 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             borderLogoSize,
             borderLogoAngle,
             patternColor,
+            ringBackgroundColor,
+            innerRadius,
+            outerRadius,
         ]
     );
 
@@ -402,7 +409,6 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         }
         ensureCanvasSize();
     }, [options, displaySize, cornerSquareType, circularBorder]);
-
 
     const onUpload = (e) => {
         const file = e.target.files?.[0];
@@ -631,6 +637,10 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         borderLogoSize,
         borderLogoAngle,
         patternColor,
+        ringBackgroundColor,
+        innerRadius,
+        outerRadius,
+
         // imageUrl intentionally skipped
     });
 
@@ -694,6 +704,9 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         setBorderLogoSize(s.borderLogoSize ?? 24);
         setBorderLogoAngle(s.borderLogoAngle ?? 0);
         setPatternColor(s.patternColor ?? "#f0f0f0");
+        setRingBackgroundColor(s.ringBackgroundColor ?? "#ffffff");
+        setInnerRadius(s.innerRadius ?? 0);
+        setOuterRadius(s.outerRadius ?? 0);
     };
 
     const savePreset = () => {
@@ -1148,12 +1161,16 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                 borderFontSize={borderFontSize} setBorderFontSize={setBorderFontSize}
                                 borderLogo={borderLogo} setBorderLogo={setBorderLogo}
                                 borderLogoSize={borderLogoSize} setBorderLogoSize={setBorderLogoSize}
-                                borderLogoAngle={borderLogoAngle} setBorderLogoAngle={setBorderLogoAngle}
-                                patternColor={patternColor} setPatternColor={setPatternColor}
-                                onBorderLogoUpload={onBorderLogoUpload}
-                                onRemoveBorderLogo={onRemoveBorderLogo}
-                            />
-                        </TabsContent>
+        borderLogoAngle={borderLogoAngle} setBorderLogoAngle={setBorderLogoAngle}
+        patternColor={patternColor} setPatternColor={setPatternColor}
+        ringBackgroundColor={ringBackgroundColor} setRingBackgroundColor={setRingBackgroundColor}
+        innerRadius={innerRadius} setInnerRadius={setInnerRadius}
+        outerRadius={outerRadius} setOuterRadius={setOuterRadius}
+        onBorderLogoUpload={onBorderLogoUpload}
+        onRemoveBorderLogo={onRemoveBorderLogo}
+    />
+</TabsContent>
+
 
                         <TabsContent value="logo" className="space-y-6 mt-6">
                             <h3 className="text-sm font-medium mb-4 text-muted-foreground">Logo Settings</h3>

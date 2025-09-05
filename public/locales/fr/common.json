@@ -202,6 +202,10 @@
       "circularSettings": "Paramètres de Bordure Circulaire",
       "patternColor": "Couleur du Motif",
       "patternColorDesc": "Couleur des points décoratifs dans l'anneau de bordure",
+      "ringBackground": "Fond de l'anneau",
+      "innerRadius": "Rayon intérieur",
+      "outerRadius": "Rayon extérieur",
+
       "borderText": "Texte de Bordure",
       "textContent": "Contenu du Texte",
       "textPlaceholder": "Scannez-moi",

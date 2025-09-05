@@ -20,6 +20,10 @@ export default function BorderTab({
   borderLogoSize, setBorderLogoSize,
   borderLogoAngle, setBorderLogoAngle,
   patternColor, setPatternColor,
+  ringBackgroundColor, setRingBackgroundColor,
+  innerRadius, setInnerRadius,
+  outerRadius, setOuterRadius,
+
   onBorderLogoUpload,
   onRemoveBorderLogo
 }) {
@@ -61,7 +65,46 @@ export default function BorderTab({
             <h4 className="text-sm font-medium mb-4 text-muted-foreground">
               {t("designerEditor.borderTab.circularSettings")}
             </h4>
-            
+
+            {/* Ring Background Color */}
+            <div className="mb-6">
+              <Label className="block mb-2 flex items-center gap-2">
+                {t("designerEditor.borderTab.ringBackground")}
+              </Label>
+              <Input
+                type="color"
+                value={ringBackgroundColor}
+                onChange={(e) => setRingBackgroundColor(e.target.value)}
+                className="h-10 w-32 cursor-pointer"
+              />
+            </div>
+
+            {/* Radius Controls */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+              <div>
+                <Label className="block mb-1 text-sm">
+                  {t("designerEditor.borderTab.innerRadius")}: {innerRadius}px
+                </Label>
+                <Slider
+                  min={0}
+                  max={200}
+                  value={[innerRadius]}
+                  onValueChange={(v) => setInnerRadius(v?.[0] ?? 0)}
+                />
+              </div>
+              <div>
+                <Label className="block mb-1 text-sm">
+                  {t("designerEditor.borderTab.outerRadius")}: {outerRadius}px
+                </Label>
+                <Slider
+                  min={0}
+                  max={200}
+                  value={[outerRadius]}
+                  onValueChange={(v) => setOuterRadius(v?.[0] ?? 0)}
+                />
+              </div>
+            </div>
+
             {/* Pattern Color */}
             <div className="mb-6">
               <Label className="block mb-2 flex items-center gap-2">
@@ -73,7 +116,6 @@ export default function BorderTab({
                 value={patternColor} 
                 onChange={(e) => setPatternColor(e.target.value)} 
                 className="h-10 w-32 cursor-pointer" 
-
               />
               <p className="text-xs text-muted-foreground mt-1">
                 {t("designerEditor.borderTab.patternColorDesc")}
