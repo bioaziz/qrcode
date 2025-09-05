@@ -31,7 +31,7 @@ export default function BorderTab({
   onBorderLogoUpload,
   onRemoveBorderLogo
 }) {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation("common", { keyPrefix: "designerEditor.borderTab" });
 
   const fontOptions = [
     'Arial',
@@ -50,10 +50,10 @@ export default function BorderTab({
       <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
         <div>
           <Label className="font-medium text-sm">
-            {t("designerEditor.borderTab.circularBorder")}
+            {t("circularBorder")}
           </Label>
           <p className="text-xs text-muted-foreground mt-1">
-            {t("designerEditor.borderTab.circularBorderDesc")}
+            {t("circularBorderDesc")}
           </p>
         </div>
         <Switch 
@@ -67,13 +67,13 @@ export default function BorderTab({
         <>
           <div className="border-t pt-6">
             <h4 className="text-sm font-medium mb-4 text-muted-foreground">
-              {t("designerEditor.borderTab.circularSettings")}
+              {t("circularSettings")}
             </h4>
 
             {/* Ring Background Color */}
             <div className="mb-6">
               <Label className="block mb-2 flex items-center gap-2">
-                {t("designerEditor.borderTab.ringBackground")}
+                {t("ringBackground")}
               </Label>
               <Input
                 type="color"
@@ -87,7 +87,7 @@ export default function BorderTab({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
               <div>
                 <Label className="block mb-1 text-sm">
-                  {t("designerEditor.borderTab.innerRadius")}: {innerRadius}px
+                  {t("innerRadius")}: {innerRadius}px
                 </Label>
                 <Slider
                   min={0}
@@ -98,7 +98,7 @@ export default function BorderTab({
               </div>
               <div>
                 <Label className="block mb-1 text-sm">
-                  {t("designerEditor.borderTab.outerRadius")}: {outerRadius}px
+                  {t("outerRadius")}: {outerRadius}px
                 </Label>
                 <Slider
                   min={0}
@@ -113,7 +113,7 @@ export default function BorderTab({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
               <div>
                 <Label className="block mb-1 text-sm">
-                  {t("designerEditor.borderTab.innerBorderWidth")}: {innerBorderWidth}px
+                  {t("innerBorderWidth")}: {innerBorderWidth}px
                 </Label>
                 <Slider
                   min={0}
@@ -124,7 +124,7 @@ export default function BorderTab({
               </div>
               <div>
                 <Label className="block mb-1 text-sm">
-                  {t("designerEditor.borderTab.innerBorderColor")}
+                  {t("innerBorderColor")}
                 </Label>
                 <Input
                   type="color"
@@ -137,7 +137,7 @@ export default function BorderTab({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
               <div>
                 <Label className="block mb-1 text-sm">
-                  {t("designerEditor.borderTab.outerBorderWidth")}: {outerBorderWidth}px
+                  {t("outerBorderWidth")}: {outerBorderWidth}px
                 </Label>
                 <Slider
                   min={0}
@@ -148,7 +148,7 @@ export default function BorderTab({
               </div>
               <div>
                 <Label className="block mb-1 text-sm">
-                  {t("designerEditor.borderTab.outerBorderColor")}
+                  {t("outerBorderColor")}
                 </Label>
                 <Input
                   type="color"
@@ -163,7 +163,7 @@ export default function BorderTab({
             <div className="mb-6">
               <Label className="block mb-2 flex items-center gap-2">
                 <Palette className="size-4" />
-                {t("designerEditor.borderTab.patternColor")}
+                {t("patternColor")}
               </Label>
               <Input 
                 type="color" 
@@ -172,7 +172,7 @@ export default function BorderTab({
                 className="h-10 w-32 cursor-pointer" 
               />
               <p className="text-xs text-muted-foreground mt-1">
-                {t("designerEditor.borderTab.patternColorDesc")}
+                {t("patternColorDesc")}
               </p>
             </div>
 
@@ -180,26 +180,26 @@ export default function BorderTab({
             <div className="space-y-4 mb-6">
               <Label className="block font-medium flex items-center gap-2">
                 <Type className="size-4" />
-                {t("designerEditor.borderTab.borderText")}
+                {t("borderText")}
               </Label>
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
                   <Label className="block mb-1 text-sm">
-                    {t("designerEditor.borderTab.textContent")}
+                    {t("textContent")}
                   </Label>
                   <Input
                     type="text"
                     value={borderText}
                     onChange={(e) => setBorderText(e.target.value)}
-                    placeholder={t("designerEditor.borderTab.textPlaceholder")}
+                    placeholder={t("textPlaceholder")}
                     className="w-full"
                   />
                 </div>
                 
                 <div>
                   <Label className="block mb-1 text-sm">
-                    {t("designerEditor.borderTab.textColor")}
+                    {t("textColor")}
                   </Label>
                   <Input 
                     type="color" 
@@ -213,7 +213,7 @@ export default function BorderTab({
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
                   <Label className="block mb-1 text-sm">
-                    {t("designerEditor.borderTab.font")}
+                    {t("font")}
                   </Label>
                   <Select value={borderFont} onValueChange={setBorderFont}>
                     <SelectTrigger className="w-full">
@@ -231,7 +231,7 @@ export default function BorderTab({
                 
                 <div>
                   <Label className="block mb-1 text-sm">
-                    {t("designerEditor.borderTab.fontSize")}: {borderFontSize}px
+                    {t("fontSize")}: {borderFontSize}px
                   </Label>
                   <Slider 
                     min={8} 
@@ -247,12 +247,12 @@ export default function BorderTab({
             <div className="space-y-4">
               <Label className="block font-medium flex items-center gap-2">
                 <ImageIcon className="size-4" />
-                {t("designerEditor.borderTab.borderLogo")}
+                {t("borderLogo")}
               </Label>
               
               <div>
                 <Label className="block mb-1 text-sm">
-                  {t("designerEditor.borderTab.uploadLogo")}
+                  {t("uploadLogo")}
                 </Label>
                 <Input 
                   type="file" 
@@ -270,10 +270,10 @@ export default function BorderTab({
                     />
                     <div className="flex-1">
                       <p className="text-sm font-medium">
-                        {t("designerEditor.borderTab.logoUploaded")}
+                        {t("logoUploaded")}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {t("designerEditor.borderTab.logoReady")}
+                        {t("logoReady")}
                       </p>
                     </div>
                     <Button 
@@ -282,7 +282,7 @@ export default function BorderTab({
                       size="sm"
                       onClick={onRemoveBorderLogo}
                     >
-                      {t("designerEditor.borderTab.remove")}
+                      {t("remove")}
                     </Button>
                   </div>
                 )}
@@ -292,7 +292,7 @@ export default function BorderTab({
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
                     <Label className="block mb-1 text-sm">
-                      {t("designerEditor.borderTab.logoSize")}: {borderLogoSize}px
+                      {t("logoSize")}: {borderLogoSize}px
                     </Label>
                     <Slider 
                       min={16} 
@@ -304,7 +304,7 @@ export default function BorderTab({
                   
                   <div>
                     <Label className="block mb-1 text-sm">
-                      {t("designerEditor.borderTab.logoAngle")}: {borderLogoAngle}°
+                      {t("logoAngle")}: {borderLogoAngle}°
                     </Label>
                     <Slider 
                       min={0} 
