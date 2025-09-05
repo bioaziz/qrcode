@@ -1,6 +1,6 @@
 import "@/styles/globals.css";
-import "coloris/dist/coloris.min.css";
-import Coloris from "coloris";
+import "@melloware/coloris/dist/coloris.css";
+import Coloris from "@melloware/coloris";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
