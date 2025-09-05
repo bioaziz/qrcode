@@ -10,6 +10,7 @@ import { useTranslation } from "next-i18next";
 import { Type, Image as ImageIcon, Palette } from "lucide-react";
 
 export default function BorderTab({
+
   circularBorder, setCircularBorder,
   borderText, setBorderText,
   borderTextColor, setBorderTextColor,
