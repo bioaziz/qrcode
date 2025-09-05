@@ -136,7 +136,7 @@ Purpose: Canvas renderer used by the designer to draw QR codes with custom style
 - `drawBorderLogo(ctx, cx, cy, radius, opts)` – places a logo somewhere on the border ring.
 - `drawCenterLogo(ctx, cx, cy, imageUrl, imageOptions, qrSize)` – overlays a logo at the QR center.
 - `drawModule(ctx, x, y, size, color, type)` – draws individual QR modules.
-- `drawRoundedRect`, `drawCircleCorner`, `drawStandardCorner`, `isInCornerSquare` – helper utilities for custom shapes.
+- `drawRoundedRect`, `drawCircleCorner`, `drawSquareCorner`, `isInCornerSquare`, `createGradient` – helper utilities for custom shapes and gradients.
 
 ## lib/qr.js
 Purpose: Server‑side utilities for generating QR code images and compositing logos.
