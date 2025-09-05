@@ -197,10 +197,6 @@
       }
     },
     "borderTab": {
-      "width": "Largeur de la bordure",
-      "color": "Couleur de la bordure",
-      "radius": "Rayon de la bordure",
-      "traditional": "Bordure Traditionnelle",
       "circularBorder": "Activer la Bordure Circulaire",
       "circularBorderDesc": "Ajouter une bordure circulaire décorative autour du QR code",
       "circularSettings": "Paramètres de Bordure Circulaire",
