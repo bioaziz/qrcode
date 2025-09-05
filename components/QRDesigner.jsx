@@ -297,7 +297,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 innerBorderColor,
                 outerBorderWidth,
                 outerBorderColor,
-            },
+            }}),
         [
             size,
             data,
