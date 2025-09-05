@@ -90,6 +90,7 @@
       "content": "Content",
       "style": "Style",
       "corners": "Corners",
+      "border": "Border",
       "logo": "Logo",
       "presets": "Presets"
     },
@@ -212,6 +213,26 @@
         "square": "Square",
         "dot": "Dot"
       }
+    },
+    "borderTab": {
+      "circularBorder": "Enable Circular Border",
+      "circularBorderDesc": "Add decorative circular border around QR code",
+      "circularSettings": "Circular Border Settings",
+      "patternColor": "Pattern Color",
+      "patternColorDesc": "Color for decorative dots in the border ring",
+      "borderText": "Border Text",
+      "textContent": "Text Content",
+      "textPlaceholder": "Scan me",
+      "textColor": "Text Color",
+      "font": "Font Family",
+      "fontSize": "Font Size",
+      "borderLogo": "Border Logo",
+      "uploadLogo": "Upload Logo",
+      "logoUploaded": "Logo uploaded",
+      "logoReady": "Ready to use on border",
+      "remove": "Remove",
+      "logoSize": "Logo Size",
+      "logoAngle": "Logo Position"
     },
     "logoTab": {
       "logoLabel": "Logo (optional)",
