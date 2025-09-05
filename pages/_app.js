@@ -1,4 +1,6 @@
 import "@/styles/globals.css";
+import "coloris/dist/coloris.min.css";
+import Coloris from "coloris";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
@@ -24,6 +26,11 @@ function App({ Component, pageProps: { session, ...pageProps } }) {
       router.replace(router.pathname, router.asPath, { locale: stored });
     }
   }, [router]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    Coloris.init();
+  }, []);
   return (
     <SessionProvider session={session}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>

@@ -214,6 +214,10 @@
     // If lib missing, warn early
     ensureLib();
 
+    if (window.Coloris) {
+      window.Coloris.init();
+    }
+
     // Live update on typing and option changes
     els.txt.addEventListener('input', generate);
     els.size.addEventListener('input', generate);
