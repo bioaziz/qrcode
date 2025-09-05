@@ -96,6 +96,8 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     const [borderLogoSize, setBorderLogoSize] = useState(24);
     const [borderLogoAngle, setBorderLogoAngle] = useState(0);
     const [patternColor, setPatternColor] = useState("#f0f0f0");
+    const [ringWidth, setRingWidth] = useState(8);
+    const [radiusOffset, setRadiusOffset] = useState(16);
     const [cornerSquareType, setCornerSquareType] = useState("square");
     const [cornerSquareColor, setCornerSquareColor] = useState("#111111");
     const [cornerDotType, setCornerDotType] = useState("dot");
@@ -302,8 +304,10 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 borderFontSize,
                 borderLogo,
                 borderLogoSize,
-                borderLogoAngle,
+            borderLogoAngle,
                 patternColor,
+                ringWidth,
+                radiusOffset,
             },
         }),
         [
@@ -345,6 +349,8 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             borderLogoSize,
             borderLogoAngle,
             patternColor,
+            ringWidth,
+            radiusOffset,
         ]
     );
 
@@ -1172,6 +1178,8 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                 borderLogoSize={borderLogoSize} setBorderLogoSize={setBorderLogoSize}
                                 borderLogoAngle={borderLogoAngle} setBorderLogoAngle={setBorderLogoAngle}
                                 patternColor={patternColor} setPatternColor={setPatternColor}
+                                ringWidth={ringWidth} setRingWidth={setRingWidth}
+                                radiusOffset={radiusOffset} setRadiusOffset={setRadiusOffset}
                                 onBorderLogoUpload={onBorderLogoUpload}
                                 onRemoveBorderLogo={onRemoveBorderLogo}
                             />

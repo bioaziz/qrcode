@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "next-i18next";
-import { Type, Image as ImageIcon, Palette } from "lucide-react";
+import { Type, Image as ImageIcon, Palette, Circle as CircleIcon, Maximize2 } from "lucide-react";
 
 export default function BorderTab({
 
@@ -20,6 +20,8 @@ export default function BorderTab({
   borderLogoSize, setBorderLogoSize,
   borderLogoAngle, setBorderLogoAngle,
   patternColor, setPatternColor,
+  ringWidth, setRingWidth,
+  radiusOffset, setRadiusOffset,
   onBorderLogoUpload,
   onRemoveBorderLogo
 }) {
@@ -68,14 +70,48 @@ export default function BorderTab({
                 <Palette className="size-4" />
                 {t("designerEditor.borderTab.patternColor")}
               </Label>
-              <Input 
-                type="color" 
-                value={patternColor} 
-                onChange={(e) => setPatternColor(e.target.value)} 
-                className="h-10 w-32 cursor-pointer" 
+              <Input
+                type="color"
+                value={patternColor}
+                onChange={(e) => setPatternColor(e.target.value)}
+                className="h-10 w-32 cursor-pointer"
               />
               <p className="text-xs text-muted-foreground mt-1">
                 {t("designerEditor.borderTab.patternColorDesc")}
+              </p>
+            </div>
+
+            {/* Ring Width */}
+            <div className="mb-6">
+              <Label className="block mb-1 text-sm flex items-center gap-2">
+                <CircleIcon className="size-4" />
+                {t("designerEditor.borderTab.ringWidth")}: {ringWidth}px
+              </Label>
+              <Slider
+                min={2}
+                max={40}
+                value={[ringWidth]}
+                onValueChange={(v) => setRingWidth(v?.[0] ?? 8)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                {t("designerEditor.borderTab.ringWidthDesc")}
+              </p>
+            </div>
+
+            {/* Radius Offset */}
+            <div className="mb-6">
+              <Label className="block mb-1 text-sm flex items-center gap-2">
+                <Maximize2 className="size-4" />
+                {t("designerEditor.borderTab.radiusOffset")}: {radiusOffset}px
+              </Label>
+              <Slider
+                min={0}
+                max={60}
+                value={[radiusOffset]}
+                onValueChange={(v) => setRadiusOffset(v?.[0] ?? 16)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                {t("designerEditor.borderTab.radiusOffsetDesc")}
               </p>
             </div>
 
