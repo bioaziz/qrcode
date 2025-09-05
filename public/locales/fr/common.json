@@ -206,6 +206,11 @@
       "innerRadius": "Rayon intérieur",
       "outerRadius": "Rayon extérieur",
 
+      "innerBorderWidth": "Épaisseur bordure intérieure",
+      "innerBorderColor": "Couleur bordure intérieure",
+      "outerBorderWidth": "Épaisseur bordure extérieure",
+      "outerBorderColor": "Couleur bordure extérieure",
+
       "borderText": "Texte de Bordure",
       "textContent": "Contenu du Texte",
       "textPlaceholder": "Scannez-moi",
