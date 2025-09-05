@@ -10,6 +10,7 @@ import { useTranslation } from "next-i18next";
 import { Type, Image as ImageIcon, Palette } from "lucide-react";
 
 export default function BorderTab({
+
   circularBorder, setCircularBorder,
   borderText, setBorderText,
   borderTextColor, setBorderTextColor,
@@ -72,6 +73,7 @@ export default function BorderTab({
                 value={patternColor} 
                 onChange={(e) => setPatternColor(e.target.value)} 
                 className="h-10 w-32 cursor-pointer" 
+
               />
               <p className="text-xs text-muted-foreground mt-1">
                 {t("designerEditor.borderTab.patternColorDesc")}

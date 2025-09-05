@@ -96,6 +96,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     const [borderLogoSize, setBorderLogoSize] = useState(24);
     const [borderLogoAngle, setBorderLogoAngle] = useState(0);
     const [patternColor, setPatternColor] = useState("#f0f0f0");
+
     const [cornerSquareType, setCornerSquareType] = useState("square");
     const [cornerSquareColor, setCornerSquareColor] = useState("#111111");
     const [cornerDotType, setCornerDotType] = useState("dot");
@@ -272,7 +273,6 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 type: cornerDotType,
             },
             borderOptions: {
-                // Circular border options
                 circularBorder,
                 borderText,
                 borderTextColor,
@@ -282,6 +282,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 borderLogoSize,
                 borderLogoAngle,
                 patternColor,
+
             },
         }),
         [
@@ -314,7 +315,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             cornerSquareType,
             cornerDotColor,
             cornerDotType,
-            // Circular border dependencies
+
             circularBorder,
             borderText,
             borderTextColor,
@@ -401,6 +402,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         }
         ensureCanvasSize();
     }, [options, displaySize, cornerSquareType, circularBorder]);
+
 
     const onUpload = (e) => {
         const file = e.target.files?.[0];
