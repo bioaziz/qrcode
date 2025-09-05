@@ -1,6 +1,6 @@
 "use client";
 
-import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {
@@ -136,29 +136,6 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     const [state, setState] = useState("");
     const [zip, setZip] = useState("");
     const [country, setCountry] = useState("");
-
-    const drawBorder = useCallback((canvas) => {
-        if (!canvas || borderWidth <= 0) return;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-        const dpr = (typeof window !== "undefined" && window.devicePixelRatio) ? window.devicePixelRatio : 1;
-        const w = canvas.width / dpr;
-        const h = canvas.height / dpr;
-        ctx.save();
-        ctx.scale(dpr, dpr);
-        ctx.strokeStyle = borderColor;
-        ctx.lineWidth = borderWidth / dpr;
-        const rr = Math.min(borderRadius, Math.min(w, h) / 2);
-        ctx.beginPath();
-        ctx.moveTo(borderWidth / 2 + rr, borderWidth / 2);
-        ctx.arcTo(w - borderWidth / 2, borderWidth / 2, w - borderWidth / 2, h - borderWidth / 2, rr);
-        ctx.arcTo(w - borderWidth / 2, h - borderWidth / 2, borderWidth / 2, h - borderWidth / 2, rr);
-        ctx.arcTo(borderWidth / 2, h - borderWidth / 2, borderWidth / 2, borderWidth / 2, rr);
-        ctx.arcTo(borderWidth / 2, borderWidth / 2, w - borderWidth / 2, borderWidth / 2, rr);
-        ctx.closePath();
-        ctx.stroke();
-        ctx.restore();
-    }, [borderWidth, borderColor, borderRadius]);
 
     // Compose data based on preset mode (hoisted as function for early use)
     function presetData() {
