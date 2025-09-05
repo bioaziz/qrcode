@@ -63,6 +63,7 @@ body {
 .field label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 0.95rem; }
 .field input[type="text"],
 .field input[type="number"],
+.field input[type="color"],
 .field select {
   width: 100%;
   padding: 10px 12px;
@@ -72,7 +73,7 @@ body {
   color: var(--text);
   outline: none;
 }
-.field input[data-coloris] { height: 40px; }
+.field input[type="color"] { padding: 2px; height: 40px; }
 .hint { display: block; margin-top: 6px; color: var(--muted); font-size: 0.85rem; }
 
 .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
