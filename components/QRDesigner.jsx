@@ -86,9 +86,6 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     const [bgGradEnd, setBgGradEnd] = useState("#e5e5e5");
     const [bgGradStops, setBgGradStops] = useState(2); // 2 or 3
     const [bgGradRotation, setBgGradRotation] = useState(0);
-    const [borderWidth, setBorderWidth] = useState(0);
-    const [borderColor, setBorderColor] = useState("#000000");
-    const [borderRadius, setBorderRadius] = useState(0);
     // Circular border state
     const [circularBorder, setCircularBorder] = useState(false);
     const [borderText, setBorderText] = useState("Scan me");
@@ -298,10 +295,6 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 type: cornerDotType,
             },
             borderOptions: {
-                size: borderWidth,
-                color: borderColor,
-                radius: borderRadius,
-                // New circular border options
                 circularBorder,
                 borderText,
                 borderTextColor,
@@ -343,10 +336,6 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             cornerSquareType,
             cornerDotColor,
             cornerDotType,
-            borderWidth,
-            borderColor,
-            borderRadius,
-            // New circular border dependencies
             circularBorder,
             borderText,
             borderTextColor,
@@ -432,11 +421,8 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             qrRef.current.inst.update(options);
         }
         ensureCanvasSize();
-        const canvas = ref.current?.querySelector?.('canvas');
-        if (canvas) {
-            setTimeout(() => drawBorder(canvas), 0);
-        }
-    }, [options, displaySize, cornerSquareType, circularBorder, drawBorder]);
+    }, [options, displaySize, cornerSquareType, circularBorder]);
+
 
     const onUpload = (e) => {
         const file = e.target.files?.[0];
@@ -656,10 +642,8 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         quietZone,
         imageSize,
         hideLogoBgDots,
-        borderWidth,
-        borderColor,
-        borderRadius,
-        // New circular border properties
+        // Circular border properties
+
         circularBorder,
         borderText,
         borderTextColor,
@@ -722,10 +706,8 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         setQuietZone(s.quietZone ?? 4);
         setImageSize(s.imageSize ?? 0.35);
         setHideLogoBgDots(!!s.hideLogoBgDots);
-        setBorderWidth(s.borderWidth ?? 0);
-        setBorderColor(s.borderColor ?? "#000000");
-        setBorderRadius(s.borderRadius ?? 0);
-        // New circular border properties
+        // Circular border properties
+
         setCircularBorder(!!s.circularBorder);
         setBorderText(s.borderText ?? "Scan me");
         setBorderTextColor(s.borderTextColor ?? "#333333");
@@ -1181,9 +1163,6 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
 
                         <TabsContent value="border" className="space-y-6 mt-6">
                             <BorderTab
-                                borderWidth={borderWidth} setBorderWidth={setBorderWidth}
-                                borderColor={borderColor} setBorderColor={setBorderColor}
-                                borderRadius={borderRadius} setBorderRadius={setBorderRadius}
                                 circularBorder={circularBorder} setCircularBorder={setCircularBorder}
                                 borderText={borderText} setBorderText={setBorderText}
                                 borderTextColor={borderTextColor} setBorderTextColor={setBorderTextColor}

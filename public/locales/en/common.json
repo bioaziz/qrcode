@@ -215,10 +215,6 @@
       }
     },
     "borderTab": {
-      "width": "Border width",
-      "color": "Border color",
-      "radius": "Border radius",
-      "traditional": "Traditional Border",
       "circularBorder": "Enable Circular Border",
       "circularBorderDesc": "Add decorative circular border around QR code",
       "circularSettings": "Circular Border Settings",
