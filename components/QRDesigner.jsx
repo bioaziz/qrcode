@@ -289,7 +289,6 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             innerRadius,
             outerRadius,
         },
-    }),
         [
             size,
             data,
@@ -641,6 +640,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         ringBackgroundColor,
         innerRadius,
         outerRadius,
+
         // imageUrl intentionally skipped
     });
 
@@ -1170,6 +1170,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         onRemoveBorderLogo={onRemoveBorderLogo}
     />
 </TabsContent>
+
 
                         <TabsContent value="logo" className="space-y-6 mt-6">
                             <h3 className="text-sm font-medium mb-4 text-muted-foreground">Logo Settings</h3>
