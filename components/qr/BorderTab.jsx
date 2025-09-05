@@ -21,6 +21,10 @@ export default function BorderTab({
   borderLogoAngle, setBorderLogoAngle,
   patternColor, setPatternColor,
   ringBackgroundColor, setRingBackgroundColor,
+  innerBorderWidth, setInnerBorderWidth,
+  innerBorderColor, setInnerBorderColor,
+  outerBorderWidth, setOuterBorderWidth,
+  outerBorderColor, setOuterBorderColor,
   innerRadius, setInnerRadius,
   outerRadius, setOuterRadius,
 
@@ -101,6 +105,56 @@ export default function BorderTab({
                   max={200}
                   value={[outerRadius]}
                   onValueChange={(v) => setOuterRadius(v?.[0] ?? 0)}
+                />
+              </div>
+            </div>
+
+            {/* Border Widths and Colors */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+              <div>
+                <Label className="block mb-1 text-sm">
+                  {t("designerEditor.borderTab.innerBorderWidth")}: {innerBorderWidth}px
+                </Label>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={[innerBorderWidth]}
+                  onValueChange={(v) => setInnerBorderWidth(v?.[0] ?? 0)}
+                />
+              </div>
+              <div>
+                <Label className="block mb-1 text-sm">
+                  {t("designerEditor.borderTab.innerBorderColor")}
+                </Label>
+                <Input
+                  type="color"
+                  value={innerBorderColor}
+                  onChange={(e) => setInnerBorderColor(e.target.value)}
+                  className="h-10 w-full cursor-pointer"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+              <div>
+                <Label className="block mb-1 text-sm">
+                  {t("designerEditor.borderTab.outerBorderWidth")}: {outerBorderWidth}px
+                </Label>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={[outerBorderWidth]}
+                  onValueChange={(v) => setOuterBorderWidth(v?.[0] ?? 0)}
+                />
+              </div>
+              <div>
+                <Label className="block mb-1 text-sm">
+                  {t("designerEditor.borderTab.outerBorderColor")}
+                </Label>
+                <Input
+                  type="color"
+                  value={outerBorderColor}
+                  onChange={(e) => setOuterBorderColor(e.target.value)}
+                  className="h-10 w-full cursor-pointer"
                 />
               </div>
             </div>

@@ -97,6 +97,11 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     const [borderLogoAngle, setBorderLogoAngle] = useState(0);
     const [patternColor, setPatternColor] = useState("#f0f0f0");
     const [ringBackgroundColor, setRingBackgroundColor] = useState("#ffffff");
+    const defaultBorderWidth = Math.round(size / 33);
+    const [innerBorderWidth, setInnerBorderWidth] = useState(defaultBorderWidth);
+    const [innerBorderColor, setInnerBorderColor] = useState(ringBackgroundColor);
+    const [outerBorderWidth, setOuterBorderWidth] = useState(defaultBorderWidth);
+    const [outerBorderColor, setOuterBorderColor] = useState(ringBackgroundColor);
     const [innerRadius, setInnerRadius] = useState(0);
     const [outerRadius, setOuterRadius] = useState(0);
     const [cornerSquareType, setCornerSquareType] = useState("square");
@@ -283,12 +288,16 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 borderFontSize,
                 borderLogo,
                 borderLogoSize,
-            borderLogoAngle,
-            patternColor,
-            ringBackgroundColor,
-            innerRadius,
-            outerRadius,
-        },
+                borderLogoAngle,
+                patternColor,
+                ringBackgroundColor,
+                innerRadius,
+                outerRadius,
+                innerBorderWidth,
+                innerBorderColor,
+                outerBorderWidth,
+                outerBorderColor,
+            },
         [
             size,
             data,
@@ -332,6 +341,10 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             ringBackgroundColor,
             innerRadius,
             outerRadius,
+            innerBorderWidth,
+            innerBorderColor,
+            outerBorderWidth,
+            outerBorderColor,
         ]
     );
 
@@ -638,6 +651,10 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         borderLogoAngle,
         patternColor,
         ringBackgroundColor,
+        innerBorderWidth,
+        innerBorderColor,
+        outerBorderWidth,
+        outerBorderColor,
         innerRadius,
         outerRadius,
 
@@ -705,6 +722,10 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         setBorderLogoAngle(s.borderLogoAngle ?? 0);
         setPatternColor(s.patternColor ?? "#f0f0f0");
         setRingBackgroundColor(s.ringBackgroundColor ?? "#ffffff");
+        setInnerBorderWidth(s.innerBorderWidth ?? Math.round((s.size ?? 256) / 33));
+        setInnerBorderColor(s.innerBorderColor ?? (s.ringBackgroundColor ?? "#ffffff"));
+        setOuterBorderWidth(s.outerBorderWidth ?? Math.round((s.size ?? 256) / 33));
+        setOuterBorderColor(s.outerBorderColor ?? (s.ringBackgroundColor ?? "#ffffff"));
         setInnerRadius(s.innerRadius ?? 0);
         setOuterRadius(s.outerRadius ?? 0);
     };
@@ -1164,6 +1185,10 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         borderLogoAngle={borderLogoAngle} setBorderLogoAngle={setBorderLogoAngle}
         patternColor={patternColor} setPatternColor={setPatternColor}
         ringBackgroundColor={ringBackgroundColor} setRingBackgroundColor={setRingBackgroundColor}
+        innerBorderWidth={innerBorderWidth} setInnerBorderWidth={setInnerBorderWidth}
+        innerBorderColor={innerBorderColor} setInnerBorderColor={setInnerBorderColor}
+        outerBorderWidth={outerBorderWidth} setOuterBorderWidth={setOuterBorderWidth}
+        outerBorderColor={outerBorderColor} setOuterBorderColor={setOuterBorderColor}
         innerRadius={innerRadius} setInnerRadius={setInnerRadius}
         outerRadius={outerRadius} setOuterRadius={setOuterRadius}
         onBorderLogoUpload={onBorderLogoUpload}
