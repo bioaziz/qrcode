@@ -34,6 +34,7 @@ import {
     Shield,
 } from "lucide-react";
 import ContentTab from "@/components/qr/ContentTab";
+import BorderTab from "@/components/qr/BorderTab";
 import {renderCustomQR} from "@/lib/customRenderer";
 import { useTranslation } from "next-i18next";
 
@@ -85,6 +86,19 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     const [bgGradEnd, setBgGradEnd] = useState("#e5e5e5");
     const [bgGradStops, setBgGradStops] = useState(2); // 2 or 3
     const [bgGradRotation, setBgGradRotation] = useState(0);
+    // Circular border state
+    const [circularBorder, setCircularBorder] = useState(false);
+    const [borderText, setBorderText] = useState("Scan me");
+    const [borderTextColor, setBorderTextColor] = useState("#333333");
+    const [borderFont, setBorderFont] = useState("Arial");
+    const [borderFontSize, setBorderFontSize] = useState(14);
+    const [borderLogo, setBorderLogo] = useState("");
+    const [borderLogoSize, setBorderLogoSize] = useState(24);
+    const [borderLogoAngle, setBorderLogoAngle] = useState(0);
+    const [patternColor, setPatternColor] = useState("#f0f0f0");
+    const [ringBackgroundColor, setRingBackgroundColor] = useState("#ffffff");
+    const [innerRadius, setInnerRadius] = useState(0);
+    const [outerRadius, setOuterRadius] = useState(0);
     const [cornerSquareType, setCornerSquareType] = useState("square");
     const [cornerSquareColor, setCornerSquareColor] = useState("#111111");
     const [cornerDotType, setCornerDotType] = useState("dot");
@@ -260,7 +274,22 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 color: cornerDotColor,
                 type: cornerDotType,
             },
-        }),
+            borderOptions: {
+                // Circular border options
+                circularBorder,
+                borderText,
+                borderTextColor,
+                borderFont,
+                borderFontSize,
+                borderLogo,
+                borderLogoSize,
+            borderLogoAngle,
+            patternColor,
+            ringBackgroundColor,
+            innerRadius,
+            outerRadius,
+        },
+    }),
         [
             size,
             data,
@@ -291,6 +320,19 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             cornerSquareType,
             cornerDotColor,
             cornerDotType,
+            // Circular border dependencies
+            circularBorder,
+            borderText,
+            borderTextColor,
+            borderFont,
+            borderFontSize,
+            borderLogo,
+            borderLogoSize,
+            borderLogoAngle,
+            patternColor,
+            ringBackgroundColor,
+            innerRadius,
+            outerRadius,
         ]
     );
 
@@ -333,7 +375,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
 
     useEffect(() => {
         if (!ref.current) return;
-        const wantCustom = cornerSquareType === 'circle';
+        const wantCustom = cornerSquareType === 'circle' || circularBorder;
         const ensureCanvasSize = () => {
             const canvas = ref.current?.querySelector?.("canvas");
             if (canvas) {
@@ -342,7 +384,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             }
         };
         if (wantCustom) {
-            // Switch to custom renderer when circle eyes are requested
+            // Switch to custom renderer when circle eyes or circular border are requested
             if (!qrRef.current || qrRef.current.kind !== 'custom') {
                 // Clear previous renderer DOM
                 ref.current.innerHTML = '';
@@ -367,7 +409,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             qrRef.current.inst.update(options);
         }
         ensureCanvasSize();
-    }, [options, displaySize, cornerSquareType]);
+    }, [options, displaySize, cornerSquareType, circularBorder]);
 
     const onUpload = (e) => {
         const file = e.target.files?.[0];
@@ -379,6 +421,25 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         setError("");
         const url = URL.createObjectURL(file);
         setImageUrl(url);
+    };
+
+    const onBorderLogoUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith("image/")) {
+            setError("Please select an image file.");
+            return;
+        }
+        setError("");
+        const url = URL.createObjectURL(file);
+        setBorderLogo(url);
+    };
+
+    const onRemoveBorderLogo = () => {
+        if (borderLogo) {
+            URL.revokeObjectURL(borderLogo);
+            setBorderLogo("");
+        }
     };
 
     const autoSaveDesign = async () => {
@@ -403,11 +464,10 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         if (!qrRef.current) return;
         // Save design snapshot automatically
         await autoSaveDesign();
-        if (qrRef.current.kind === 'styling' && qrRef.current.inst?.download) {
+        if (qrRef.current.kind === 'styling' && ext === 'svg' && qrRef.current.inst?.download) {
             await qrRef.current.inst.download({extension: ext});
             return;
         }
-        // Custom renderer path: only PNG supported directly
         const canvas = ref.current?.querySelector?.('canvas');
         if (!canvas) return;
         if (ext === 'svg') {
@@ -569,6 +629,18 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         quietZone,
         imageSize,
         hideLogoBgDots,
+        // Circular border properties
+        circularBorder,
+        borderText,
+        borderTextColor,
+        borderFont,
+        borderFontSize,
+        borderLogoSize,
+        borderLogoAngle,
+        patternColor,
+        ringBackgroundColor,
+        innerRadius,
+        outerRadius,
         // imageUrl intentionally skipped
     });
 
@@ -623,6 +695,18 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         setQuietZone(s.quietZone ?? 4);
         setImageSize(s.imageSize ?? 0.35);
         setHideLogoBgDots(!!s.hideLogoBgDots);
+        // Circular border properties
+        setCircularBorder(!!s.circularBorder);
+        setBorderText(s.borderText ?? "Scan me");
+        setBorderTextColor(s.borderTextColor ?? "#333333");
+        setBorderFont(s.borderFont ?? "Arial");
+        setBorderFontSize(s.borderFontSize ?? 14);
+        setBorderLogoSize(s.borderLogoSize ?? 24);
+        setBorderLogoAngle(s.borderLogoAngle ?? 0);
+        setPatternColor(s.patternColor ?? "#f0f0f0");
+        setRingBackgroundColor(s.ringBackgroundColor ?? "#ffffff");
+        setInnerRadius(s.innerRadius ?? 0);
+        setOuterRadius(s.outerRadius ?? 0);
     };
 
     const savePreset = () => {
@@ -709,7 +793,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <Tabs defaultValue="content">
-                        <TabsList className="grid w-full grid-cols-4">
+                        <TabsList className="grid w-full grid-cols-5">
                             <TabsTrigger value="content" className="flex items-center gap-2">
                                 <QrCode className="size-4"/>
                                 <span className="hidden sm:inline">{t("designerEditor.tabs.content")}</span>
@@ -721,6 +805,10 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                             <TabsTrigger value="corners" className="flex items-center gap-2">
                                 <Shapes className="size-4"/>
                                 <span className="hidden sm:inline">{t("designerEditor.tabs.corners")}</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="border" className="flex items-center gap-2">
+                                <SquareIcon className="size-4"/>
+                                <span className="hidden sm:inline">{t("designerEditor.tabs.border")}</span>
                             </TabsTrigger>
                             <TabsTrigger value="logo" className="flex items-center gap-2">
                                 <ImageIcon className="size-4"/>
@@ -1063,6 +1151,25 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                 </div>
                             </div>
                         </TabsContent>
+
+                        <TabsContent value="border" className="space-y-6 mt-6">
+                            <BorderTab
+                                circularBorder={circularBorder} setCircularBorder={setCircularBorder}
+                                borderText={borderText} setBorderText={setBorderText}
+                                borderTextColor={borderTextColor} setBorderTextColor={setBorderTextColor}
+                                borderFont={borderFont} setBorderFont={setBorderFont}
+                                borderFontSize={borderFontSize} setBorderFontSize={setBorderFontSize}
+                                borderLogo={borderLogo} setBorderLogo={setBorderLogo}
+                                borderLogoSize={borderLogoSize} setBorderLogoSize={setBorderLogoSize}
+        borderLogoAngle={borderLogoAngle} setBorderLogoAngle={setBorderLogoAngle}
+        patternColor={patternColor} setPatternColor={setPatternColor}
+        ringBackgroundColor={ringBackgroundColor} setRingBackgroundColor={setRingBackgroundColor}
+        innerRadius={innerRadius} setInnerRadius={setInnerRadius}
+        outerRadius={outerRadius} setOuterRadius={setOuterRadius}
+        onBorderLogoUpload={onBorderLogoUpload}
+        onRemoveBorderLogo={onRemoveBorderLogo}
+    />
+</TabsContent>
 
                         <TabsContent value="logo" className="space-y-6 mt-6">
                             <h3 className="text-sm font-medium mb-4 text-muted-foreground">Logo Settings</h3>
