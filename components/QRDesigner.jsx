@@ -33,10 +33,13 @@ import {
     Maximize2,
     Shield,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import ContentTab from "@/components/qr/ContentTab";
 import BorderTab from "@/components/qr/BorderTab";
 import {renderCustomQR} from "@/lib/customRenderer";
 import { useTranslation } from "next-i18next";
+import DotTypeIcon from "@/components/qr/DotTypeIcon";
+import { ColorPicker } from "@/components/ui/color-picker";
 
 let QRCodeStyling;
 // Lazy-load to avoid SSR issues
@@ -50,11 +53,9 @@ const DOT_TYPES = [
     "dots",
     "rounded",
     "classy",
-    "classy-rounded",
-    "extra-rounded",
 ];
 
-const CORNER_SQUARE_TYPES = ["square", "extra-rounded", "circle"];
+const CORNER_SQUARE_TYPES = ["square", "extra-rounded"]; // removed 'circle'
 const CORNER_DOT_TYPES = ["square", "dot"]; // library accepts these
 
 // Maximum QR code preview size in pixels. Keep in sync with the non-React version
@@ -390,7 +391,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
 
     useEffect(() => {
         if (!ref.current) return;
-        const wantCustom = cornerSquareType === 'circle' || circularBorder;
+        const wantCustom = circularBorder; // use custom renderer only for circular border
         const ensureCanvasSize = () => {
             const canvas = ref.current?.querySelector?.("canvas");
             if (canvas) {
@@ -399,9 +400,8 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             }
         };
         if (wantCustom) {
-            // Switch to custom renderer when circle eyes or circular border are requested
+            // Switch to custom renderer for circular border
             if (!qrRef.current || qrRef.current.kind !== 'custom') {
-                // Clear previous renderer DOM
                 ref.current.innerHTML = '';
                 const canvas = document.createElement('canvas');
                 ref.current.appendChild(canvas);
@@ -418,14 +418,11 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             ...options,
             cornersSquareOptions: {
                 ...options.cornersSquareOptions,
-                type:
-                    options.cornersSquareOptions?.type === 'circle'
-                        ? 'extra-rounded'
-                        : options.cornersSquareOptions?.type,
+                // Pass through type as-is; 'circle' is not used in UI anymore
+                type: options.cornersSquareOptions?.type,
             },
         };
         if (!qrRef.current || qrRef.current.kind !== 'styling') {
-            // Clear previous renderer DOM
             ref.current.innerHTML = '';
             const inst = new QRCodeStyling(libOptions);
             inst.append(ref.current);
@@ -717,7 +714,8 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         setBgGradEnd(s.bgGradEnd ?? "#e5e5e5");
         setBgGradStops(s.bgGradStops ?? 2);
         setBgGradRotation(s.bgGradRotation ?? 0);
-        setCornerSquareType(s.cornerSquareType ?? "square");
+        // sanitize legacy 'circle' to 'extra-rounded' since circle style is removed
+        setCornerSquareType(s.cornerSquareType === 'circle' ? 'extra-rounded' : (s.cornerSquareType ?? "square"));
         setCornerSquareColor(s.cornerSquareColor ?? "#111111");
         setCornerDotType(s.cornerDotType ?? "dot");
         setCornerDotColor(s.cornerDotColor ?? "#111111");
@@ -916,17 +914,23 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                         <Label className="block mb-2 flex items-center gap-2">
                                             <Shield className="size-4"/> {t("designerEditor.styleTab.errorCorrection")}
                                         </Label>
-                                        <Select value={errorCorrection} onValueChange={setErrorCorrection}>
-                                            <SelectTrigger className="w-full h-10">
-                                                <SelectValue placeholder={t("designerEditor.styleTab.levelPlaceholder")}/>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="L">{t("designerEditor.styleTab.errorLow")}</SelectItem>
-                                                <SelectItem value="M">{t("designerEditor.styleTab.errorMedium")}</SelectItem>
-                                                <SelectItem value="Q">{t("designerEditor.styleTab.errorQuartile")}</SelectItem>
-                                                <SelectItem value="H">{t("designerEditor.styleTab.errorHigh")}</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                        <RadioGroup value={errorCorrection} onValueChange={setErrorCorrection} className="grid grid-cols-4 gap-2">
+                                            {[
+                                                { v: "L", label: t("designerEditor.styleTab.errorLow") },
+                                                { v: "M", label: t("designerEditor.styleTab.errorMedium") },
+                                                { v: "Q", label: t("designerEditor.styleTab.errorQuartile") },
+                                                { v: "H", label: t("designerEditor.styleTab.errorHigh") },
+                                            ].map(({ v }) => (
+                                                <label key={v} htmlFor={`ec2-${v}`} className={cn(
+                                                    "flex items-center justify-center rounded-md border p-2 text-xs cursor-pointer",
+                                                    "hover:bg-black/5 transition-colors",
+                                                    errorCorrection === v ? "ring-2 ring-black border-black" : "border-black/20"
+                                                )}>
+                                                    <RadioGroupItem id={`ec2-${v}`} value={v} className="sr-only" />
+                                                    <span className="font-medium">{v}</span>
+                                                </label>
+                                            ))}
+                                        </RadioGroup>
                                     </div>
                                 </div>
                             </div>
@@ -961,26 +965,27 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                             <Label className="block mb-2 flex items-center gap-2">
                                                 <Shapes className="size-4"/> {t("designerEditor.styleTab.dotsType")}
                                             </Label>
-                                            <Select value={dotType} onValueChange={setDotType}>
-                                                <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder={t("designerEditor.styleTab.typePlaceholder")}/>
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {DOT_TYPES.map((t) => (
-                                                        <SelectItem key={t} value={t}>{t}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                            <RadioGroup value={dotType} onValueChange={setDotType} className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                                {DOT_TYPES.map((type) => (
+                                                    <label key={type} htmlFor={`dot2-${type}`} className={cn(
+                                                        "flex items-center gap-2 rounded-md border p-2 text-sm cursor-pointer",
+                                                        "hover:bg-black/5 transition-colors",
+                                                        dotType === type ? "ring-2 ring-black border-black" : "border-black/20"
+                                                    )}>
+                                                        <RadioGroupItem id={`dot2-${type}`} value={type} className="sr-only" />
+                                                        <DotTypeIcon type={type} />
+                                                        <span className="truncate">{type}</span>
+                                                    </label>
+                                                ))}
+                                            </RadioGroup>
                                         </div>
 
                                         {!dotGradEnabled ? (
                                             <div>
-                                                <Label className="block mb-2 flex items-center gap-2">
-                                                    <Palette className="size-4"/> {t("designerEditor.styleTab.dotsColor")}
-                                                </Label>
-                                                <Input type="color" value={dotColor}
-                                                       onChange={(e) => setDotColor(e.target.value)}
-                                                       className="h-10 w-full cursor-pointer"/>
+                                            <Label className="block mb-2 flex items-center gap-2">
+                                                <Palette className="size-4"/> {t("designerEditor.styleTab.dotsColor")}
+                                            </Label>
+                                            <ColorPicker value={dotColor} onChange={setDotColor} />
                                             </div>
                                         ) : (
                                             <div className="space-y-3">
@@ -988,17 +993,11 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                                     <Palette className="size-4"/> {t("designerEditor.styleTab.dotsGradient")}
                                                 </Label>
                                                 <div className="grid grid-cols-2 gap-2">
-                                                    <Input type="color" value={dotGradStart}
-                                                           onChange={(e) => setDotGradStart(e.target.value)}
-                                                           placeholder={t("designerEditor.styleTab.start")}/>
+                                                    <ColorPicker value={dotGradStart} onChange={setDotGradStart} />
                                                     {dotGradStops === 3 && (
-                                                        <Input type="color" value={dotGradMid}
-                                                               onChange={(e) => setDotGradMid(e.target.value)}
-                                                               placeholder={t("designerEditor.styleTab.middle")}/>
+                                                        <ColorPicker value={dotGradMid} onChange={setDotGradMid} />
                                                     )}
-                                                    <Input type="color" value={dotGradEnd}
-                                                           onChange={(e) => setDotGradEnd(e.target.value)}
-                                                           placeholder={t("designerEditor.styleTab.end")}/>
+                                                    <ColorPicker value={dotGradEnd} onChange={setDotGradEnd} />
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-2">
                                                     <Select value={dotGradType} onValueChange={setDotGradType}>
@@ -1037,13 +1036,10 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                         <h4 className="text-sm font-medium">{t("designerEditor.styleTab.background")}</h4>
                                         {!bgGradEnabled ? (
                                             <div>
-                                                <Label className="block mb-2 flex items-center gap-2">
-                                                    <Palette className="size-4"/> {t("designerEditor.styleTab.backgroundColor")}
-                                                </Label>
-                                                <Input type="color" value={bgColor}
-                                                       onChange={(e) => setBgColor(e.target.value)}
-                                                       className="h-10 w-full cursor-pointer"
-                                                       disabled={bgTransparent}/>
+                                            <Label className="block mb-2 flex items-center gap-2">
+                                                <Palette className="size-4"/> {t("designerEditor.styleTab.backgroundColor")}
+                                            </Label>
+                                            <ColorPicker value={bgColor} onChange={setBgColor} disabled={bgTransparent} />
                                             </div>
                                         ) : (
                                             <div className="space-y-3">
@@ -1051,20 +1047,11 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                                     <Palette className="size-4"/> {t("designerEditor.styleTab.backgroundGradientToggle")}
                                                 </Label>
                                                 <div className="grid grid-cols-2 gap-2">
-                                                    <Input type="color" value={bgGradStart}
-                                                           onChange={(e) => setBgGradStart(e.target.value)}
-                                                           disabled={bgTransparent}
-                                                           placeholder={t("designerEditor.styleTab.start")}/>
+                                                    <ColorPicker value={bgGradStart} onChange={setBgGradStart} disabled={bgTransparent} />
                                                     {bgGradStops === 3 && (
-                                                        <Input type="color" value={bgGradMid}
-                                                               onChange={(e) => setBgGradMid(e.target.value)}
-                                                               disabled={bgTransparent}
-                                                               placeholder={t("designerEditor.styleTab.middle")}/>
+                                                        <ColorPicker value={bgGradMid} onChange={setBgGradMid} disabled={bgTransparent} />
                                                     )}
-                                                    <Input type="color" value={bgGradEnd}
-                                                           onChange={(e) => setBgGradEnd(e.target.value)}
-                                                           disabled={bgTransparent}
-                                                           placeholder={t("designerEditor.styleTab.end")}/>
+                                                    <ColorPicker value={bgGradEnd} onChange={setBgGradEnd} disabled={bgTransparent} />
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-2">
                                                     <Select value={bgGradType} onValueChange={setBgGradType}
@@ -1115,16 +1102,19 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                         <Label className="block mb-2 flex items-center gap-2">
                                             <SquareIcon className="size-4"/> Style
                                         </Label>
-                                        <Select value={cornerSquareType} onValueChange={setCornerSquareType}>
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue placeholder="Type"/>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {CORNER_SQUARE_TYPES.map((t) => (
-                                                    <SelectItem key={t} value={t}>{t}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                        <RadioGroup value={cornerSquareType} onValueChange={setCornerSquareType} className="grid grid-cols-2 gap-2">
+                                            {CORNER_SQUARE_TYPES.map((t) => (
+                                                <label key={t} htmlFor={`cs2-${t}`} className={cn(
+                                                    "flex items-center gap-2 rounded-md border p-2 text-sm cursor-pointer",
+                                                    "hover:bg-black/5 transition-colors",
+                                                    cornerSquareType === t ? "ring-2 ring-black border-black" : "border-black/20"
+                                                )}>
+                                                    <RadioGroupItem id={`cs2-${t}`} value={t} className="sr-only" />
+                                                    <SquareIcon className="size-4" />
+                                                    <span className="truncate">{t}</span>
+                                                </label>
+                                            ))}
+                                        </RadioGroup>
                                     </div>
                                     {cornerSquareType === 'circle-ring' && (
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1150,9 +1140,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                         <Label className="block mb-2 flex items-center gap-2">
                                             <Palette className="size-4"/> Color
                                         </Label>
-                                        <Input type="color" value={cornerSquareColor}
-                                               onChange={(e) => setCornerSquareColor(e.target.value)}
-                                               className="h-10 w-full cursor-pointer"/>
+                                        <ColorPicker value={cornerSquareColor} onChange={setCornerSquareColor} />
                                     </div>
                                 </div>
 
@@ -1163,24 +1151,25 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                         <Label className="block mb-2 flex items-center gap-2">
                                             <Circle className="size-4"/> Style
                                         </Label>
-                                        <Select value={cornerDotType} onValueChange={setCornerDotType}>
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue placeholder="Type"/>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {CORNER_DOT_TYPES.map((t) => (
-                                                    <SelectItem key={t} value={t}>{t}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                        <RadioGroup value={cornerDotType} onValueChange={setCornerDotType} className="grid grid-cols-2 gap-2">
+                                            {CORNER_DOT_TYPES.map((t) => (
+                                                <label key={t} htmlFor={`cd2-${t}`} className={cn(
+                                                    "flex items-center gap-2 rounded-md border p-2 text-sm cursor-pointer",
+                                                    "hover:bg-black/5 transition-colors",
+                                                    cornerDotType === t ? "ring-2 ring-black border-black" : "border-black/20"
+                                                )}>
+                                                    <RadioGroupItem id={`cd2-${t}`} value={t} className="sr-only" />
+                                                    <Circle className="size-4" />
+                                                    <span className="truncate">{t}</span>
+                                                </label>
+                                            ))}
+                                        </RadioGroup>
                                     </div>
                                     <div>
                                         <Label className="block mb-2 flex items-center gap-2">
                                             <Palette className="size-4"/> Color
                                         </Label>
-                                        <Input type="color" value={cornerDotColor}
-                                               onChange={(e) => setCornerDotColor(e.target.value)}
-                                               className="h-10 w-full cursor-pointer"/>
+                                        <ColorPicker value={cornerDotColor} onChange={setCornerDotColor} />
                                     </div>
                                 </div>
                             </div>

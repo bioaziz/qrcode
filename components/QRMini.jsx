@@ -19,7 +19,7 @@ export default function QRMini({ text, size = 120 }) {
       type: "canvas",
       data: text || "",
       qrOptions: { errorCorrectionLevel: "M", margin: 2 },
-      dotsOptions: { color: "#111", type: "square" },
+      dotsOptions: { color: "#ef7d20", type: "square" },
       backgroundOptions: { color: "#fff" },
     };
     if (!qr.current) {

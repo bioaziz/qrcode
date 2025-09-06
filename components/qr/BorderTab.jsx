@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "next-i18next";
 import { Type, Image as ImageIcon, Palette } from "lucide-react";
+import { ColorPicker } from "@/components/ui/color-picker";
 
 export default function BorderTab({
 
@@ -75,12 +76,7 @@ export default function BorderTab({
               <Label className="block mb-2 flex items-center gap-2">
                 {t("designerEditor.borderTab.ringBackground")}
               </Label>
-              <Input
-                type="color"
-                value={ringBackgroundColor}
-                onChange={(e) => setRingBackgroundColor(e.target.value)}
-                className="h-10 w-32 cursor-pointer"
-              />
+              <ColorPicker value={ringBackgroundColor} onChange={setRingBackgroundColor} />
             </div>
 
             {/* Radius Controls */}
@@ -126,12 +122,7 @@ export default function BorderTab({
                 <Label className="block mb-1 text-sm">
                   {t("designerEditor.borderTab.innerBorderColor")}
                 </Label>
-                <Input
-                  type="color"
-                  value={innerBorderColor}
-                  onChange={(e) => setInnerBorderColor(e.target.value)}
-                  className="h-10 w-full cursor-pointer"
-                />
+                <ColorPicker value={innerBorderColor} onChange={setInnerBorderColor} />
               </div>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
@@ -150,12 +141,7 @@ export default function BorderTab({
                 <Label className="block mb-1 text-sm">
                   {t("designerEditor.borderTab.outerBorderColor")}
                 </Label>
-                <Input
-                  type="color"
-                  value={outerBorderColor}
-                  onChange={(e) => setOuterBorderColor(e.target.value)}
-                  className="h-10 w-full cursor-pointer"
-                />
+                <ColorPicker value={outerBorderColor} onChange={setOuterBorderColor} />
               </div>
             </div>
 
@@ -165,12 +151,7 @@ export default function BorderTab({
                 <Palette className="size-4" />
                 {t("designerEditor.borderTab.patternColor")}
               </Label>
-              <Input 
-                type="color" 
-                value={patternColor} 
-                onChange={(e) => setPatternColor(e.target.value)} 
-                className="h-10 w-32 cursor-pointer" 
-              />
+              <ColorPicker value={patternColor} onChange={setPatternColor} />
               <p className="text-xs text-muted-foreground mt-1">
                 {t("designerEditor.borderTab.patternColorDesc")}
               </p>
@@ -201,12 +182,7 @@ export default function BorderTab({
                   <Label className="block mb-1 text-sm">
                     {t("designerEditor.borderTab.textColor")}
                   </Label>
-                  <Input 
-                    type="color" 
-                    value={borderTextColor} 
-                    onChange={(e) => setBorderTextColor(e.target.value)} 
-                    className="h-10 w-full cursor-pointer" 
-                  />
+                  <ColorPicker value={borderTextColor} onChange={setBorderTextColor} />
                 </div>
               </div>
               
