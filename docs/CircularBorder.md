@@ -18,8 +18,10 @@ Increasing `size` enlarges the overall diameter. A larger `ringWidth` produces a
 
 ## Usage
 
+First render the base QR using `qr-code-styling`, then overlay the ring:
+
 ```js
-await renderCustomQR(canvas, {
+await renderOverlay(canvas, {
   width: 256,
   height: 256,
   borderOptions: {

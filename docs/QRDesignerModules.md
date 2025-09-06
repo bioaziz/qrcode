@@ -43,7 +43,7 @@ Purpose: Orchestrates the designer UI, manages state for all design options and 
 - `savedPresets`, `presetName`, `cloudPresets`, `cloudSelectedId` – local and cloud preset state.
 
 ### Functions
-- `getPngBlob()` – renders the current canvas to a PNG `Blob` using `renderCustomQR`.
+- `getPngBlob()` – renders the current canvas to a PNG `Blob`.
 - `download(format)` – saves the QR in PNG or SVG format.
 - `downloadPDF()` – exports the QR code to a PDF document.
 - `autoSaveDesign()` – persists the current design snapshot to the server.
@@ -130,7 +130,8 @@ Purpose: Canvas renderer used by the designer to draw QR codes with custom style
 - `outerRadius`, `innerRadius` – radii for the circular border.
 - `textRadius` – radius for border text positioned within the ring.
 ### Functions
-- `renderCustomQR(canvas, options)` – main entry that draws the QR code, optional border, and logo.
+- `renderOverlay(canvas, options)` – draws circular borders or eyes over a QR rendered by `qr-code-styling`.
+- `renderCustomQR(canvas, options)` *(deprecated)* – legacy renderer that drew the entire QR including borders and logos.
 - `drawCircularPattern(ctx, cx, cy, outerR, innerR, opts)` – fills the border ring with a repeating pattern.
 - `drawCircularText(ctx, cx, cy, radius, opts)` – renders text along the circular border.
 - `drawBorderLogo(ctx, cx, cy, radius, opts)` – places a logo somewhere on the border ring.
