@@ -36,7 +36,7 @@ import {
 import { cn } from "@/lib/utils";
 import ContentTab from "@/components/qr/ContentTab";
 import BorderTab from "@/components/qr/BorderTab";
-import {renderCustomQR} from "@/lib/customRenderer";
+import {renderOverlay} from "@/lib/customRenderer";
 import { useTranslation } from "next-i18next";
 import DotTypeIcon from "@/components/qr/DotTypeIcon";
 import { ColorPicker } from "@/components/ui/color-picker";
@@ -390,30 +390,20 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     }, [mode, linkUrl, phone, email, emailSubject, emailBody, wifiSsid, wifiPass, wifiHidden, wifiType, data, firstName, lastName, contactPhone, contactEmail, org, url, note, street, city, state, zip, country]);
 
     useEffect(() => {
-        if (!ref.current) return;
-        const wantCustom = circularBorder; // use custom renderer only for circular border
+        if (!ref.current || !QRCodeStyling) return;
+        ref.current.style.position = 'relative';
+
         const ensureCanvasSize = () => {
-            const canvas = ref.current?.querySelector?.("canvas");
-            if (canvas) {
-                canvas.style.width = `${displaySize}px`;
-                canvas.style.height = `${displaySize}px`;
-            }
+            const canvases = ref.current?.querySelectorAll?.('canvas');
+            canvases?.forEach((c) => {
+                c.style.width = `${displaySize}px`;
+                c.style.height = `${displaySize}px`;
+                c.style.position = 'absolute';
+                c.style.top = '0';
+                c.style.left = '0';
+            });
         };
-        if (wantCustom) {
-            // Switch to custom renderer for circular border
-            if (!qrRef.current || qrRef.current.kind !== 'custom') {
-                ref.current.innerHTML = '';
-                const canvas = document.createElement('canvas');
-                ref.current.appendChild(canvas);
-                qrRef.current = {kind: 'custom', canvas};
-            }
-            const canvas = qrRef.current.canvas;
-            renderCustomQR(canvas, options);
-            ensureCanvasSize();
-            return;
-        }
-        // Default to qr-code-styling
-        if (!QRCodeStyling) return;
+
         const libOptions = {
             ...options,
             cornersSquareOptions: {
@@ -422,16 +412,36 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 type: options.cornersSquareOptions?.type,
             },
         };
+
         if (!qrRef.current || qrRef.current.kind !== 'styling') {
             ref.current.innerHTML = '';
             const inst = new QRCodeStyling(libOptions);
             inst.append(ref.current);
-            qrRef.current = {kind: 'styling', inst};
+            qrRef.current = {kind: 'styling', inst, overlay: null};
         } else {
             qrRef.current.inst.update(libOptions);
         }
+
         ensureCanvasSize();
-    }, [options, displaySize, cornerSquareType, circularBorder]);
+
+        if (circularBorder) {
+            if (!qrRef.current.overlay) {
+                const overlay = document.createElement('canvas');
+                overlay.style.position = 'absolute';
+                overlay.style.top = '0';
+                overlay.style.left = '0';
+                ref.current.appendChild(overlay);
+                qrRef.current.overlay = overlay;
+            }
+            setTimeout(() => {
+                renderOverlay(qrRef.current.overlay, options);
+                ensureCanvasSize();
+            }, 0);
+        } else if (qrRef.current.overlay) {
+            ref.current.removeChild(qrRef.current.overlay);
+            qrRef.current.overlay = null;
+        }
+    }, [options, displaySize, circularBorder, cornerSquareType]);
 
     const onUpload = (e) => {
         const file = e.target.files?.[0];
@@ -486,14 +496,14 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         if (!qrRef.current) return;
         // Save design snapshot automatically
         await autoSaveDesign();
-        if (qrRef.current.kind === 'styling' && ext === 'svg' && qrRef.current.inst?.download) {
+        if (!circularBorder && ext === 'svg' && qrRef.current.inst?.download) {
             await qrRef.current.inst.download({extension: ext});
             return;
         }
         const canvas = ref.current?.querySelector?.('canvas');
         if (!canvas) return;
         if (ext === 'svg') {
-            // Fallback to PNG when SVG requested in custom mode
+            // Fallback to PNG when SVG requested with circular border overlay
             ext = 'png';
         }
         const blob = await new Promise((res) => canvas.toBlob(res));
