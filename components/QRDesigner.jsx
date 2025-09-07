@@ -395,13 +395,42 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
 
         const ensureCanvasSize = () => {
             const canvases = ref.current?.querySelectorAll?.('canvas');
-            canvases?.forEach((c) => {
-                c.style.width = `${displaySize}px`;
-                c.style.height = `${displaySize}px`;
-                c.style.position = 'absolute';
-                c.style.top = '0';
-                c.style.left = '0';
-            });
+            const dpr = window.devicePixelRatio || 1;
+
+            if (circularBorder && qrRef.current?.overlay) {
+                const overlayPx = qrRef.current.overlay.width / dpr;
+                const cssSize = overlayPx * (displaySize / size);
+                const offset = (cssSize - displaySize) / 2;
+
+                ref.current.style.width = `${cssSize}px`;
+                ref.current.style.height = `${cssSize}px`;
+
+                canvases?.forEach((c) => {
+                    c.style.position = 'absolute';
+                    if (c === qrRef.current.overlay) {
+                        c.style.width = `${cssSize}px`;
+                        c.style.height = `${cssSize}px`;
+                        c.style.top = '0';
+                        c.style.left = '0';
+                    } else {
+                        c.style.width = `${displaySize}px`;
+                        c.style.height = `${displaySize}px`;
+                        c.style.top = `${offset}px`;
+                        c.style.left = `${offset}px`;
+                    }
+                });
+            } else {
+                ref.current.style.width = `${displaySize}px`;
+                ref.current.style.height = `${displaySize}px`;
+
+                canvases?.forEach((c) => {
+                    c.style.width = `${displaySize}px`;
+                    c.style.height = `${displaySize}px`;
+                    c.style.position = 'absolute';
+                    c.style.top = '0';
+                    c.style.left = '0';
+                });
+            }
         };
 
         const libOptions = {
