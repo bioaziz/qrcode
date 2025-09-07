@@ -103,7 +103,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     const [patternColor, setPatternColor] = useState("#02070a");
     const [borderDotType, setBorderDotType] = useState("square");
     const [ringBackgroundColor, setRingBackgroundColor] = useState("#ef7d20");
-    const defaultBorderWidth = Math.round(size / 80);
+    const defaultBorderWidth = 0;
     const [innerBorderWidth, setInnerBorderWidth] = useState(defaultBorderWidth);
     const [innerBorderColor, setInnerBorderColor] = useState(ringBackgroundColor);
     const [outerBorderWidth, setOuterBorderWidth] = useState(defaultBorderWidth);
@@ -400,6 +400,31 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         if (outerRadius < minOuterRadius) setOuterRadius(minOuterRadius);
         if (outerRadius > maxOuterRadius) setOuterRadius(maxOuterRadius);
     }, [circularBorder, minOuterRadius, maxOuterRadius]);
+
+    // Dynamic innerRadius maximum based on outer radius and strokes
+    const maxInnerRadius = useMemo(() => {
+        if (!circularBorder) return Number.POSITIVE_INFINITY;
+        const maxByOuter = outerRadius - (innerBorderWidth / 2) - (outerBorderWidth / 2) - 14;
+        return Math.max(0, Math.floor(maxByOuter));
+    }, [circularBorder, outerRadius, innerBorderWidth, outerBorderWidth]);
+    useEffect(() => {
+        if (!circularBorder) return;
+        if (innerRadius > maxInnerRadius) setInnerRadius(maxInnerRadius);
+    }, [circularBorder, maxInnerRadius]);
+
+    // Ensure a visible ring gap by default when enabling circular border
+    useEffect(() => {
+        if (!circularBorder) return;
+        // Desired ring thickness based on font size (ensures text area visibility)
+        const desiredGap = Math.max(24, Math.ceil(borderFontSize * 1.5));
+        const targetOuter = Math.min(
+            maxOuterRadius,
+            Math.max(minOuterRadius, innerRadius + desiredGap)
+        );
+        if (outerRadius < targetOuter) {
+            setOuterRadius(targetOuter);
+        }
+    }, [circularBorder, innerRadius, outerRadius, borderFontSize, minOuterRadius, maxOuterRadius]);
 
     // Responsive preview sizing
     const [viewportWidth, setViewportWidth] = useState(
@@ -858,9 +883,9 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         setBorderLogoAngle(s.borderLogoAngle ?? 0);
         setPatternColor(s.patternColor ?? "#f0f0f0");
         setRingBackgroundColor(s.ringBackgroundColor ?? "#ffffff");
-        setInnerBorderWidth(s.innerBorderWidth ?? Math.round((s.size ?? 256) / 33));
+        setInnerBorderWidth(s.innerBorderWidth ?? 0);
         setInnerBorderColor(s.innerBorderColor ?? (s.ringBackgroundColor ?? "#ffffff"));
-        setOuterBorderWidth(s.outerBorderWidth ?? Math.round((s.size ?? 256) / 33));
+        setOuterBorderWidth(s.outerBorderWidth ?? 0);
         setOuterBorderColor(s.outerBorderColor ?? (s.ringBackgroundColor ?? "#ffffff"));
         setInnerRadius(s.innerRadius ?? 0);
         setOuterRadius(s.outerRadius ?? 0);
@@ -1114,7 +1139,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                                     </Label>
                                                     <ColorPicker color={dotColor}
                                                                  onChange={setDotColor}
-                                                                 className="h-10 w-full cursor-pointer"/>
+                                                                 className="h-full w-full cursor-pointer"/>
                                                 </div>
                                             ) : (
                                                 <div className="space-y-3">
@@ -1129,7 +1154,10 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                                         {dotGradStops === 3 && (
                                                             <ColorPicker color={dotGradMid}
                                                                          onChange={setDotGradMid}
-                                                                         placeholder={t("designerEditor.styleTab.middle")}/>
+                                                                         placeholder={t("designerEditor.styleTab.middle")}
+                                                                         className="h-full"
+                                                            />
+
                                                         )}
                                                         <ColorPicker color={dotGradEnd}
                                                                      onChange={setDotGradEnd}
@@ -1183,7 +1211,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                                     </Label>
                                                     <ColorPicker color={bgColor}
                                                                  onChange={setBgColor}
-                                                                 className="h-10 w-full cursor-pointer"
+                                                                 className="h-full w-full cursor-pointer"
                                                                  disabled={bgTransparent}/>
                                                 </div>
                                             ) : (
@@ -1299,7 +1327,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                         </Label>
                                         <ColorPicker color={cornerSquareColor}
                                                      onChange={setCornerSquareColor}
-                                                     className="h-10 w-full cursor-pointer"/>
+                                                     className=" w-full cursor-pointer"/>
                                     </div>
                                 </div>
 
@@ -1327,7 +1355,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                         </Label>
                                         <ColorPicker color={cornerDotColor}
                                                      onChange={setCornerDotColor}
-                                                     className="h-10 w-full cursor-pointer"/>
+                                                     className=" w-full cursor-pointer"/>
                                     </div>
                                 </div>
                             </div>
@@ -1354,6 +1382,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                 innerRadius={innerRadius} setInnerRadius={setInnerRadius}
                                 outerRadius={outerRadius} setOuterRadius={setOuterRadius}
                                 minInnerRadius={minInnerRadius}
+                                maxInnerRadius={maxInnerRadius}
                                 minOuterRadius={minOuterRadius}
                                 maxOuterRadius={maxOuterRadius}
                                 size={size}
