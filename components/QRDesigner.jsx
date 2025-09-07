@@ -3,6 +3,7 @@
 import {useEffect, useMemo, useRef, useState} from "react";
 import QRCode from 'qrcode';
 import {Input} from "@/components/ui/input";
+import ColorPicker from "@/components/ui/color-picker";
 import {Label} from "@/components/ui/label";
 import {
     Select,
@@ -1111,9 +1112,9 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                                         <Palette
                                                             className="size-4"/> {t("designerEditor.styleTab.dotsColor")}
                                                     </Label>
-                                                    <Input type="color" value={dotColor}
-                                                           onChange={(e) => setDotColor(e.target.value)}
-                                                           className="h-10 w-full cursor-pointer"/>
+                                                    <ColorPicker color={dotColor}
+                                                                 onChange={setDotColor}
+                                                                 className="h-10 w-full cursor-pointer"/>
                                                 </div>
                                             ) : (
                                                 <div className="space-y-3">
@@ -1122,17 +1123,17 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                                             className="size-4"/> {t("designerEditor.styleTab.dotsGradient")}
                                                     </Label>
                                                     <div className="grid grid-cols-2 gap-2">
-                                                        <Input type="color" value={dotGradStart}
-                                                               onChange={(e) => setDotGradStart(e.target.value)}
-                                                               placeholder={t("designerEditor.styleTab.start")}/>
+                                                        <ColorPicker color={dotGradStart}
+                                                                     onChange={setDotGradStart}
+                                                                     placeholder={t("designerEditor.styleTab.start")}/>
                                                         {dotGradStops === 3 && (
-                                                            <Input type="color" value={dotGradMid}
-                                                                   onChange={(e) => setDotGradMid(e.target.value)}
-                                                                   placeholder={t("designerEditor.styleTab.middle")}/>
+                                                            <ColorPicker color={dotGradMid}
+                                                                         onChange={setDotGradMid}
+                                                                         placeholder={t("designerEditor.styleTab.middle")}/>
                                                         )}
-                                                        <Input type="color" value={dotGradEnd}
-                                                               onChange={(e) => setDotGradEnd(e.target.value)}
-                                                               placeholder={t("designerEditor.styleTab.end")}/>
+                                                        <ColorPicker color={dotGradEnd}
+                                                                     onChange={setDotGradEnd}
+                                                                     placeholder={t("designerEditor.styleTab.end")}/>
                                                     </div>
                                                     <div className="grid grid-cols-2 gap-2">
                                                         <Select value={dotGradType} onValueChange={setDotGradType}>
@@ -1180,10 +1181,10 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                                         <Palette
                                                             className="size-4"/> {t("designerEditor.styleTab.backgroundColor")}
                                                     </Label>
-                                                    <Input type="color" value={bgColor}
-                                                           onChange={(e) => setBgColor(e.target.value)}
-                                                           className="h-10 w-full cursor-pointer"
-                                                           disabled={bgTransparent}/>
+                                                    <ColorPicker color={bgColor}
+                                                                 onChange={setBgColor}
+                                                                 className="h-10 w-full cursor-pointer"
+                                                                 disabled={bgTransparent}/>
                                                 </div>
                                             ) : (
                                                 <div className="space-y-3">
@@ -1192,20 +1193,20 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                                             className="size-4"/> {t("designerEditor.styleTab.backgroundGradientToggle")}
                                                     </Label>
                                                     <div className="grid grid-cols-2 gap-2">
-                                                        <Input type="color" value={bgGradStart}
-                                                               onChange={(e) => setBgGradStart(e.target.value)}
-                                                               disabled={bgTransparent}
-                                                               placeholder={t("designerEditor.styleTab.start")}/>
+                                                        <ColorPicker color={bgGradStart}
+                                                                     onChange={setBgGradStart}
+                                                                     disabled={bgTransparent}
+                                                                     placeholder={t("designerEditor.styleTab.start")}/>
                                                         {bgGradStops === 3 && (
-                                                            <Input type="color" value={bgGradMid}
-                                                                   onChange={(e) => setBgGradMid(e.target.value)}
-                                                                   disabled={bgTransparent}
-                                                                   placeholder={t("designerEditor.styleTab.middle")}/>
+                                                            <ColorPicker color={bgGradMid}
+                                                                         onChange={setBgGradMid}
+                                                                         disabled={bgTransparent}
+                                                                         placeholder={t("designerEditor.styleTab.middle")}/>
                                                         )}
-                                                        <Input type="color" value={bgGradEnd}
-                                                               onChange={(e) => setBgGradEnd(e.target.value)}
-                                                               disabled={bgTransparent}
-                                                               placeholder={t("designerEditor.styleTab.end")}/>
+                                                        <ColorPicker color={bgGradEnd}
+                                                                     onChange={setBgGradEnd}
+                                                                     disabled={bgTransparent}
+                                                                     placeholder={t("designerEditor.styleTab.end")}/>
                                                     </div>
                                                     <div className="grid grid-cols-2 gap-2">
                                                         <Select value={bgGradType} onValueChange={setBgGradType}
@@ -1296,9 +1297,9 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                         <Label className="block mb-2 flex items-center gap-2">
                                             <Palette className="size-4"/> Color
                                         </Label>
-                                        <Input type="color" value={cornerSquareColor}
-                                               onChange={(e) => setCornerSquareColor(e.target.value)}
-                                               className="h-10 w-full cursor-pointer"/>
+                                        <ColorPicker color={cornerSquareColor}
+                                                     onChange={setCornerSquareColor}
+                                                     className="h-10 w-full cursor-pointer"/>
                                     </div>
                                 </div>
 
@@ -1324,9 +1325,9 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                         <Label className="block mb-2 flex items-center gap-2">
                                             <Palette className="size-4"/> Color
                                         </Label>
-                                        <Input type="color" value={cornerDotColor}
-                                               onChange={(e) => setCornerDotColor(e.target.value)}
-                                               className="h-10 w-full cursor-pointer"/>
+                                        <ColorPicker color={cornerDotColor}
+                                                     onChange={setCornerDotColor}
+                                                     className="h-10 w-full cursor-pointer"/>
                                     </div>
                                 </div>
                             </div>

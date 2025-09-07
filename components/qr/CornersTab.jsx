@@ -1,6 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
+import ColorPicker from "@/components/ui/color-picker";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Square as SquareIcon, Circle } from "lucide-react";
@@ -32,7 +33,7 @@ export default function CornersTab({
       </div>
       <div>
         <label className="block text-sm font-medium mb-1 flex items-center gap-2"><SquareIcon className="size-4"/> {t("designerEditor.cornersTab.cornerSquareColorLabel")}</label>
-        <Input type="color" value={cornerSquareColor} onChange={(e) => setCornerSquareColor(e.target.value)} className="h-10 w-full cursor-pointer" />
+        <ColorPicker color={cornerSquareColor} onChange={setCornerSquareColor} className="h-10 w-full cursor-pointer" />
       </div>
       <div>
         <Label className="block mb-1 flex items-center gap-2"><Circle className="size-4"/> {t("designerEditor.cornersTab.cornerDotLabel")}</Label>
@@ -49,7 +50,7 @@ export default function CornersTab({
       </div>
       <div>
         <label className="block text-sm font-medium mb-1 flex items-center gap-2"><Circle className="size-4"/> {t("designerEditor.cornersTab.cornerDotColorLabel")}</label>
-        <Input type="color" value={cornerDotColor} onChange={(e) => setCornerDotColor(e.target.value)} className="h-10 w-full cursor-pointer" />
+        <ColorPicker color={cornerDotColor} onChange={setCornerDotColor} className="h-10 w-full cursor-pointer" />
       </div>
     </div>
   );
