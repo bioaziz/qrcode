@@ -1,6 +1,7 @@
 "use client";
 
 import {useEffect, useMemo, useRef, useState} from "react";
+import QRCode from 'qrcode';
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {
@@ -32,11 +33,14 @@ import {
     QrCode,
     Maximize2,
     Shield,
+    ZoomIn,
+    ZoomOut,
+    RotateCcw,
 } from "lucide-react";
 import ContentTab from "@/components/qr/ContentTab";
 import BorderTab from "@/components/qr/BorderTab";
 import {renderCustomQR} from "@/lib/customRenderer";
-import { useTranslation } from "next-i18next";
+import {useTranslation} from "next-i18next";
 
 let QRCodeStyling;
 // Lazy-load to avoid SSR issues
@@ -60,7 +64,7 @@ const CORNER_DOT_TYPES = ["square", "dot"]; // library accepts these
 export default function QRDesigner({embedded = false, initialSnapshot = null, onSnapshotChange = null}) {
     const ref = useRef(null);
     const qrRef = useRef(null);
-    const { t } = useTranslation("common");
+    const {t} = useTranslation("common");
 
     // Controls
     const [data, setData] = useState("");
@@ -69,7 +73,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     const [dotType, setDotType] = useState("square");
     const [dotColor, setDotColor] = useState("#111111");
     const [bgColor, setBgColor] = useState("#ffffff");
-    const [bgTransparent, setBgTransparent] = useState(false);
+    const [bgTransparent, setBgTransparent] = useState(true);
     // Gradients
     const [dotGradEnabled, setDotGradEnabled] = useState(false);
     const [dotGradType, setDotGradType] = useState("linear"); // linear | radial
@@ -95,9 +99,10 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     const [borderLogo, setBorderLogo] = useState("");
     const [borderLogoSize, setBorderLogoSize] = useState(24);
     const [borderLogoAngle, setBorderLogoAngle] = useState(0);
-    const [patternColor, setPatternColor] = useState("#f0f0f0");
-    const [ringBackgroundColor, setRingBackgroundColor] = useState("#ffffff");
-    const defaultBorderWidth = Math.round(size / 33);
+    const [patternColor, setPatternColor] = useState("#02070a");
+    const [borderDotType, setBorderDotType] = useState("square");
+    const [ringBackgroundColor, setRingBackgroundColor] = useState("#ef7d20");
+    const defaultBorderWidth = Math.round(size / 80);
     const [innerBorderWidth, setInnerBorderWidth] = useState(defaultBorderWidth);
     const [innerBorderColor, setInnerBorderColor] = useState(ringBackgroundColor);
     const [outerBorderWidth, setOuterBorderWidth] = useState(defaultBorderWidth);
@@ -289,6 +294,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 borderLogoSize,
                 borderLogoAngle,
                 patternColor,
+                borderDotType,
                 ringBackgroundColor,
                 innerRadius,
                 outerRadius,
@@ -296,7 +302,8 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 innerBorderColor,
                 outerBorderWidth,
                 outerBorderColor,
-            }}),
+            }
+        }),
         [
             size,
             data,
@@ -337,6 +344,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             borderLogoSize,
             borderLogoAngle,
             patternColor,
+            borderDotType,
             ringBackgroundColor,
             innerRadius,
             outerRadius,
@@ -348,6 +356,49 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     );
 
     // end presetData
+
+    // Minimum safe inner radius so the circular ring never touches the QR square
+    const minInnerRadius = useMemo(() => {
+        if (!circularBorder) return 0;
+        try {
+            const value = presetData();
+            const content = value && String(value).length ? value : ' ';
+            const qr = QRCode.create(content, {
+                errorCorrectionLevel: errorCorrection || 'M',
+                margin: 0,
+            });
+            const moduleCount = qr.modules.size;
+            const padding = Math.max(quietZone * 4, 16);
+            const totalSize = moduleCount + padding * 2;
+            const moduleSize = size / totalSize;
+            const qrSizePx = moduleCount * moduleSize;
+            const qrHalfDiagonal = qrSizePx / Math.SQRT2;
+            const minR = qrHalfDiagonal + (innerBorderWidth / 2);
+            return Math.ceil(minR);
+        } catch (_) {
+            return 0;
+        }
+    }, [circularBorder, size, quietZone, innerBorderWidth, errorCorrection, data, mode, linkUrl, phone, email, emailSubject, emailBody, wifiSsid, wifiPass, wifiHidden, wifiType, firstName, lastName, contactPhone, contactEmail, org, url, note, street, city, state, zip, country]);
+
+    // Clamp innerRadius to the minimum if needed
+    useEffect(() => {
+        if (!circularBorder) return;
+        if (innerRadius < minInnerRadius) setInnerRadius(minInnerRadius);
+    }, [circularBorder, minInnerRadius]);
+
+    // Dynamic outerRadius bounds based on inner radius and canvas size
+    const minOuterRadius = useMemo(() => {
+        if (!circularBorder) return 0;
+        return Math.ceil(innerRadius + (innerBorderWidth / 2) + (outerBorderWidth / 2));
+    }, [circularBorder, innerRadius, innerBorderWidth, outerBorderWidth]);
+    const maxOuterRadius = useMemo(() => {
+        return Math.floor(size / 2 - outerBorderWidth / 2);
+    }, [size, outerBorderWidth]);
+    useEffect(() => {
+        if (!circularBorder) return;
+        if (outerRadius < minOuterRadius) setOuterRadius(minOuterRadius);
+        if (outerRadius > maxOuterRadius) setOuterRadius(maxOuterRadius);
+    }, [circularBorder, minOuterRadius, maxOuterRadius]);
 
     // Responsive preview sizing
     const [viewportWidth, setViewportWidth] = useState(
@@ -364,6 +415,30 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         const isSmall = viewportWidth < 640; // sm breakpoint
         return Math.round(isSmall ? Math.min(size, maxForMobile) : size);
     }, [viewportWidth, size]);
+
+    // Pan/zoom state for the preview viewer
+    const viewerRef = useRef(null);
+    const [scale, setScale] = useState(1);
+    const [tx, setTx] = useState(0);
+    const [ty, setTy] = useState(0);
+    const [panning, setPanning] = useState(false);
+    const panStart = useRef({x: 0, y: 0, tx: 0, ty: 0});
+
+    const applyViewerTransform = () => {
+        const canvas = ref.current?.querySelector?.('canvas');
+        if (!canvas) return;
+        canvas.style.transformOrigin = 'center center';
+        canvas.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+        canvas.style.willChange = 'transform';
+    };
+
+    const zoomInBtn = () => setScale((s) => Math.min(8, s * 1.2));
+    const zoomOutBtn = () => setScale((s) => Math.max(0.5, s / 1.2));
+    const resetView = () => {
+        setScale(1);
+        setTx(0);
+        setTy(0);
+    };
 
     // Live validation message
     const validation = useMemo(() => {
@@ -392,6 +467,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             if (canvas) {
                 canvas.style.width = `${displaySize}px`;
                 canvas.style.height = `${displaySize}px`;
+                applyViewerTransform();
             }
         };
         if (wantCustom) {
@@ -431,6 +507,56 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         }
         ensureCanvasSize();
     }, [options, displaySize, cornerSquareType, circularBorder]);
+
+    // Enable wheel zoom and pointer pan on the preview container
+    useEffect(() => {
+        const el = viewerRef.current;
+        if (!el) return;
+        const onWheel = (e) => {
+            e.preventDefault();
+            const delta = -e.deltaY;
+            const factor = Math.exp(delta * 0.001);
+            const next = Math.min(8, Math.max(0.5, scale * factor));
+            setScale(next);
+        };
+        const onPointerDown = (e) => {
+            // Ignore clicks that originate from the overlay controls
+            if (e.target && typeof e.target.closest === 'function' && e.target.closest('[data-role="viewer-controls"]')) {
+                return;
+            }
+            setPanning(true);
+            panStart.current = {x: e.clientX, y: e.clientY, tx, ty};
+            el.setPointerCapture?.(e.pointerId);
+        };
+        const onPointerMove = (e) => {
+            if (!panning) return;
+            const dx = e.clientX - panStart.current.x;
+            const dy = e.clientY - panStart.current.y;
+            setTx(panStart.current.tx + dx);
+            setTy(panStart.current.ty + dy);
+        };
+        const onPointerUp = (e) => {
+            setPanning(false);
+            el.releasePointerCapture?.(e.pointerId);
+        };
+        el.addEventListener('wheel', onWheel, {passive: false});
+        el.addEventListener('pointerdown', onPointerDown);
+        el.addEventListener('pointermove', onPointerMove);
+        el.addEventListener('pointerup', onPointerUp);
+        el.addEventListener('pointerleave', onPointerUp);
+        return () => {
+            el.removeEventListener('wheel', onWheel);
+            el.removeEventListener('pointerdown', onPointerDown);
+            el.removeEventListener('pointermove', onPointerMove);
+            el.removeEventListener('pointerup', onPointerUp);
+            el.removeEventListener('pointerleave', onPointerUp);
+        };
+    }, [scale, tx, ty, panning]);
+
+    // Reapply transform whenever pan/zoom changes
+    useEffect(() => {
+        applyViewerTransform();
+    }, [scale, tx, ty]);
 
     const onUpload = (e) => {
         const file = e.target.files?.[0];
@@ -900,7 +1026,8 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                     </div>
                                     <div>
                                         <Label className="block mb-2 flex items-center gap-2">
-                                            <Maximize2 className="size-4"/> {t("designerEditor.styleTab.quietZone")}: {quietZone}px
+                                            <Maximize2
+                                                className="size-4"/> {t("designerEditor.styleTab.quietZone")}: {quietZone}px
                                         </Label>
                                         <div className="h-10 flex items-center">
                                             <Slider min={0} max={32} value={[quietZone]}
@@ -914,13 +1041,18 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                         </Label>
                                         <Select value={errorCorrection} onValueChange={setErrorCorrection}>
                                             <SelectTrigger className="w-full h-10">
-                                                <SelectValue placeholder={t("designerEditor.styleTab.levelPlaceholder")}/>
+                                                <SelectValue
+                                                    placeholder={t("designerEditor.styleTab.levelPlaceholder")}/>
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="L">{t("designerEditor.styleTab.errorLow")}</SelectItem>
-                                                <SelectItem value="M">{t("designerEditor.styleTab.errorMedium")}</SelectItem>
-                                                <SelectItem value="Q">{t("designerEditor.styleTab.errorQuartile")}</SelectItem>
-                                                <SelectItem value="H">{t("designerEditor.styleTab.errorHigh")}</SelectItem>
+                                                <SelectItem
+                                                    value="L">{t("designerEditor.styleTab.errorLow")}</SelectItem>
+                                                <SelectItem
+                                                    value="M">{t("designerEditor.styleTab.errorMedium")}</SelectItem>
+                                                <SelectItem
+                                                    value="Q">{t("designerEditor.styleTab.errorQuartile")}</SelectItem>
+                                                <SelectItem
+                                                    value="H">{t("designerEditor.styleTab.errorHigh")}</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -936,168 +1068,186 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                     <div className="flex items-center gap-2">
                                         <Switch id="bg-transparent" checked={bgTransparent}
                                                 onCheckedChange={setBgTransparent}/>
-                                        <Label htmlFor="bg-transparent" className="text-sm">{t("designerEditor.styleTab.transparentBg")}</Label>
+                                        <Label htmlFor="bg-transparent"
+                                               className="text-sm">{t("designerEditor.styleTab.transparentBg")}</Label>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Switch id="dots-gradient" checked={dotGradEnabled}
                                                 onCheckedChange={setDotGradEnabled}/>
-                                        <Label htmlFor="dots-gradient" className="text-sm">{t("designerEditor.styleTab.dotsGradientToggle")}</Label>
+                                        <Label htmlFor="dots-gradient"
+                                               className="text-sm">{t("designerEditor.styleTab.dotsGradientToggle")}</Label>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Switch id="bg-gradient" checked={bgGradEnabled}
                                                 onCheckedChange={setBgGradEnabled} disabled={bgTransparent}/>
-                                        <Label htmlFor="bg-gradient" className="text-sm">{t("designerEditor.styleTab.backgroundGradientToggle")}</Label>
-                                </div>
+                                        <Label htmlFor="bg-gradient"
+                                               className="text-sm">{t("designerEditor.styleTab.backgroundGradientToggle")}</Label>
+                                    </div>
 
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                    {/* Dots Configuration */}
-                                    <div className="space-y-4">
-                                        <h4 className="text-sm font-medium">{t("designerEditor.styleTab.dotsHeading")}</h4>
-                                        <div>
-                                            <Label className="block mb-2 flex items-center gap-2">
-                                                <Shapes className="size-4"/> {t("designerEditor.styleTab.dotsType")}
-                                            </Label>
-                                            <Select value={dotType} onValueChange={setDotType}>
-                                                <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder={t("designerEditor.styleTab.typePlaceholder")}/>
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {DOT_TYPES.map((t) => (
-                                                        <SelectItem key={t} value={t}>{t}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        {/* Dots Configuration */}
+                                        <div className="space-y-4">
+                                            <h4 className="text-sm font-medium">{t("designerEditor.styleTab.dotsHeading")}</h4>
+                                            <div>
+                                                <Label className="block mb-2 flex items-center gap-2">
+                                                    <Shapes className="size-4"/> {t("designerEditor.styleTab.dotsType")}
+                                                </Label>
+                                                <Select value={dotType} onValueChange={setDotType}>
+                                                    <SelectTrigger className="w-full">
+                                                        <SelectValue
+                                                            placeholder={t("designerEditor.styleTab.typePlaceholder")}/>
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {DOT_TYPES.map((t) => (
+                                                            <SelectItem key={t} value={t}>{t}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+
+                                            {!dotGradEnabled ? (
+                                                <div>
+                                                    <Label className="block mb-2 flex items-center gap-2">
+                                                        <Palette
+                                                            className="size-4"/> {t("designerEditor.styleTab.dotsColor")}
+                                                    </Label>
+                                                    <Input type="color" value={dotColor}
+                                                           onChange={(e) => setDotColor(e.target.value)}
+                                                           className="h-10 w-full cursor-pointer"/>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-3">
+                                                    <Label className="block flex items-center gap-2">
+                                                        <Palette
+                                                            className="size-4"/> {t("designerEditor.styleTab.dotsGradient")}
+                                                    </Label>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        <Input type="color" value={dotGradStart}
+                                                               onChange={(e) => setDotGradStart(e.target.value)}
+                                                               placeholder={t("designerEditor.styleTab.start")}/>
+                                                        {dotGradStops === 3 && (
+                                                            <Input type="color" value={dotGradMid}
+                                                                   onChange={(e) => setDotGradMid(e.target.value)}
+                                                                   placeholder={t("designerEditor.styleTab.middle")}/>
+                                                        )}
+                                                        <Input type="color" value={dotGradEnd}
+                                                               onChange={(e) => setDotGradEnd(e.target.value)}
+                                                               placeholder={t("designerEditor.styleTab.end")}/>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        <Select value={dotGradType} onValueChange={setDotGradType}>
+                                                            <SelectTrigger>
+                                                                <SelectValue
+                                                                    placeholder={t("designerEditor.styleTab.typePlaceholder")}/>
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem
+                                                                    value="linear">{t("designerEditor.styleTab.linear")}</SelectItem>
+                                                                <SelectItem
+                                                                    value="radial">{t("designerEditor.styleTab.radial")}</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <div>
+                                                            <Input type="number" step={0.1} value={dotGradRotation}
+                                                                   onChange={(e) => setDotGradRotation(parseFloat(e.target.value) || 0)}
+                                                                   placeholder={t("designerEditor.styleTab.rotation")}/>
+                                                        </div>
+                                                    </div>
+                                                    <RadioGroup className="flex items-center gap-4"
+                                                                value={String(dotGradStops)}
+                                                                onValueChange={(v) => setDotGradStops(parseInt(v, 10))}>
+                                                        <div className="flex items-center gap-2">
+                                                            <RadioGroupItem id="dotstops-2" value="2"/>
+                                                            <Label htmlFor="dotstops-2"
+                                                                   className="text-sm">{t("designerEditor.styleTab.stops2")}</Label>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <RadioGroupItem id="dotstops-3" value="3"/>
+                                                            <Label htmlFor="dotstops-3"
+                                                                   className="text-sm">{t("designerEditor.styleTab.stops3")}</Label>
+                                                        </div>
+                                                    </RadioGroup>
+                                                </div>
+                                            )}
                                         </div>
 
-                                        {!dotGradEnabled ? (
-                                            <div>
-                                                <Label className="block mb-2 flex items-center gap-2">
-                                                    <Palette className="size-4"/> {t("designerEditor.styleTab.dotsColor")}
-                                                </Label>
-                                                <Input type="color" value={dotColor}
-                                                       onChange={(e) => setDotColor(e.target.value)}
-                                                       className="h-10 w-full cursor-pointer"/>
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-3">
-                                                <Label className="block flex items-center gap-2">
-                                                    <Palette className="size-4"/> {t("designerEditor.styleTab.dotsGradient")}
-                                                </Label>
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    <Input type="color" value={dotGradStart}
-                                                           onChange={(e) => setDotGradStart(e.target.value)}
-                                                           placeholder={t("designerEditor.styleTab.start")}/>
-                                                    {dotGradStops === 3 && (
-                                                        <Input type="color" value={dotGradMid}
-                                                               onChange={(e) => setDotGradMid(e.target.value)}
-                                                               placeholder={t("designerEditor.styleTab.middle")}/>
-                                                    )}
-                                                    <Input type="color" value={dotGradEnd}
-                                                           onChange={(e) => setDotGradEnd(e.target.value)}
-                                                           placeholder={t("designerEditor.styleTab.end")}/>
+                                        {/* Background Configuration */}
+                                        <div className="space-y-4">
+                                            <h4 className="text-sm font-medium">{t("designerEditor.styleTab.background")}</h4>
+                                            {!bgGradEnabled ? (
+                                                <div>
+                                                    <Label className="block mb-2 flex items-center gap-2">
+                                                        <Palette
+                                                            className="size-4"/> {t("designerEditor.styleTab.backgroundColor")}
+                                                    </Label>
+                                                    <Input type="color" value={bgColor}
+                                                           onChange={(e) => setBgColor(e.target.value)}
+                                                           className="h-10 w-full cursor-pointer"
+                                                           disabled={bgTransparent}/>
                                                 </div>
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    <Select value={dotGradType} onValueChange={setDotGradType}>
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder={t("designerEditor.styleTab.typePlaceholder")}/>
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="linear">{t("designerEditor.styleTab.linear")}</SelectItem>
-                                                            <SelectItem value="radial">{t("designerEditor.styleTab.radial")}</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <div>
-                                                        <Input type="number" step={0.1} value={dotGradRotation}
-                                                               onChange={(e) => setDotGradRotation(parseFloat(e.target.value) || 0)}
-                                                               placeholder={t("designerEditor.styleTab.rotation")}/>
-                                                    </div>
-                                                </div>
-                                                <RadioGroup className="flex items-center gap-4"
-                                                            value={String(dotGradStops)}
-                                                            onValueChange={(v) => setDotGradStops(parseInt(v, 10))}>
-                                                    <div className="flex items-center gap-2">
-                                                        <RadioGroupItem id="dotstops-2" value="2"/>
-                    <Label htmlFor="dotstops-2" className="text-sm">{t("designerEditor.styleTab.stops2")}</Label>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <RadioGroupItem id="dotstops-3" value="3"/>
-                    <Label htmlFor="dotstops-3" className="text-sm">{t("designerEditor.styleTab.stops3")}</Label>
-                                                    </div>
-                                                </RadioGroup>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Background Configuration */}
-                                    <div className="space-y-4">
-                                        <h4 className="text-sm font-medium">{t("designerEditor.styleTab.background")}</h4>
-                                        {!bgGradEnabled ? (
-                                            <div>
-                                                <Label className="block mb-2 flex items-center gap-2">
-                                                    <Palette className="size-4"/> {t("designerEditor.styleTab.backgroundColor")}
-                                                </Label>
-                                                <Input type="color" value={bgColor}
-                                                       onChange={(e) => setBgColor(e.target.value)}
-                                                       className="h-10 w-full cursor-pointer"
-                                                       disabled={bgTransparent}/>
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-3">
-                                                <Label className="block flex items-center gap-2">
-                                                    <Palette className="size-4"/> {t("designerEditor.styleTab.backgroundGradientToggle")}
-                                                </Label>
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    <Input type="color" value={bgGradStart}
-                                                           onChange={(e) => setBgGradStart(e.target.value)}
-                                                           disabled={bgTransparent}
-                                                           placeholder={t("designerEditor.styleTab.start")}/>
-                                                    {bgGradStops === 3 && (
-                                                        <Input type="color" value={bgGradMid}
-                                                               onChange={(e) => setBgGradMid(e.target.value)}
+                                            ) : (
+                                                <div className="space-y-3">
+                                                    <Label className="block flex items-center gap-2">
+                                                        <Palette
+                                                            className="size-4"/> {t("designerEditor.styleTab.backgroundGradientToggle")}
+                                                    </Label>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        <Input type="color" value={bgGradStart}
+                                                               onChange={(e) => setBgGradStart(e.target.value)}
                                                                disabled={bgTransparent}
-                                                               placeholder={t("designerEditor.styleTab.middle")}/>
-                                                    )}
-                                                    <Input type="color" value={bgGradEnd}
-                                                           onChange={(e) => setBgGradEnd(e.target.value)}
-                                                           disabled={bgTransparent}
-                                                           placeholder={t("designerEditor.styleTab.end")}/>
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    <Select value={bgGradType} onValueChange={setBgGradType}
-                                                            disabled={bgTransparent}>
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder={t("designerEditor.styleTab.typePlaceholder")}/>
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="linear">{t("designerEditor.styleTab.linear")}</SelectItem>
-                                                            <SelectItem value="radial">{t("designerEditor.styleTab.radial")}</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <div>
-                                                        <Input type="number" step={0.1} value={bgGradRotation}
-                                                               onChange={(e) => setBgGradRotation(parseFloat(e.target.value) || 0)}
+                                                               placeholder={t("designerEditor.styleTab.start")}/>
+                                                        {bgGradStops === 3 && (
+                                                            <Input type="color" value={bgGradMid}
+                                                                   onChange={(e) => setBgGradMid(e.target.value)}
+                                                                   disabled={bgTransparent}
+                                                                   placeholder={t("designerEditor.styleTab.middle")}/>
+                                                        )}
+                                                        <Input type="color" value={bgGradEnd}
+                                                               onChange={(e) => setBgGradEnd(e.target.value)}
                                                                disabled={bgTransparent}
-                                                               placeholder={t("designerEditor.styleTab.rotation")}/>
+                                                               placeholder={t("designerEditor.styleTab.end")}/>
                                                     </div>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        <Select value={bgGradType} onValueChange={setBgGradType}
+                                                                disabled={bgTransparent}>
+                                                            <SelectTrigger>
+                                                                <SelectValue
+                                                                    placeholder={t("designerEditor.styleTab.typePlaceholder")}/>
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem
+                                                                    value="linear">{t("designerEditor.styleTab.linear")}</SelectItem>
+                                                                <SelectItem
+                                                                    value="radial">{t("designerEditor.styleTab.radial")}</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <div>
+                                                            <Input type="number" step={0.1} value={bgGradRotation}
+                                                                   onChange={(e) => setBgGradRotation(parseFloat(e.target.value) || 0)}
+                                                                   disabled={bgTransparent}
+                                                                   placeholder={t("designerEditor.styleTab.rotation")}/>
+                                                        </div>
+                                                    </div>
+                                                    <RadioGroup className="flex items-center gap-4"
+                                                                value={String(bgGradStops)}
+                                                                onValueChange={(v) => setBgGradStops(parseInt(v, 10))}
+                                                                disabled={bgTransparent}>
+                                                        <div className="flex items-center gap-2">
+                                                            <RadioGroupItem id="bgstops-2" value="2"/>
+                                                            <Label htmlFor="bgstops-2"
+                                                                   className="text-sm">{t("designerEditor.styleTab.stops2")}</Label>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <RadioGroupItem id="bgstops-3" value="3"/>
+                                                            <Label htmlFor="bgstops-3"
+                                                                   className="text-sm">{t("designerEditor.styleTab.stops3")}</Label>
+                                                        </div>
+                                                    </RadioGroup>
                                                 </div>
-                                                <RadioGroup className="flex items-center gap-4"
-                                                            value={String(bgGradStops)}
-                                                            onValueChange={(v) => setBgGradStops(parseInt(v, 10))}
-                                                            disabled={bgTransparent}>
-                                                    <div className="flex items-center gap-2">
-                                                        <RadioGroupItem id="bgstops-2" value="2"/>
-                    <Label htmlFor="bgstops-2" className="text-sm">{t("designerEditor.styleTab.stops2")}</Label>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <RadioGroupItem id="bgstops-3" value="3"/>
-                    <Label htmlFor="bgstops-3" className="text-sm">{t("designerEditor.styleTab.stops3")}</Label>
-                                                    </div>
-                                                </RadioGroup>
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                              </div>
                             </div>
                         </TabsContent>
 
@@ -1191,19 +1341,25 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                 borderFontSize={borderFontSize} setBorderFontSize={setBorderFontSize}
                                 borderLogo={borderLogo} setBorderLogo={setBorderLogo}
                                 borderLogoSize={borderLogoSize} setBorderLogoSize={setBorderLogoSize}
-        borderLogoAngle={borderLogoAngle} setBorderLogoAngle={setBorderLogoAngle}
-        patternColor={patternColor} setPatternColor={setPatternColor}
-        ringBackgroundColor={ringBackgroundColor} setRingBackgroundColor={setRingBackgroundColor}
-        innerBorderWidth={innerBorderWidth} setInnerBorderWidth={setInnerBorderWidth}
-        innerBorderColor={innerBorderColor} setInnerBorderColor={setInnerBorderColor}
-        outerBorderWidth={outerBorderWidth} setOuterBorderWidth={setOuterBorderWidth}
-        outerBorderColor={outerBorderColor} setOuterBorderColor={setOuterBorderColor}
-        innerRadius={innerRadius} setInnerRadius={setInnerRadius}
-        outerRadius={outerRadius} setOuterRadius={setOuterRadius}
-        onBorderLogoUpload={onBorderLogoUpload}
-        onRemoveBorderLogo={onRemoveBorderLogo}
-    />
-</TabsContent>
+                                borderLogoAngle={borderLogoAngle} setBorderLogoAngle={setBorderLogoAngle}
+                                patternColor={patternColor} setPatternColor={setPatternColor}
+                                borderDotType={borderDotType} setBorderDotType={setBorderDotType}
+                                ringBackgroundColor={ringBackgroundColor}
+                                setRingBackgroundColor={setRingBackgroundColor}
+                                innerBorderWidth={innerBorderWidth} setInnerBorderWidth={setInnerBorderWidth}
+                                innerBorderColor={innerBorderColor} setInnerBorderColor={setInnerBorderColor}
+                                outerBorderWidth={outerBorderWidth} setOuterBorderWidth={setOuterBorderWidth}
+                                outerBorderColor={outerBorderColor} setOuterBorderColor={setOuterBorderColor}
+                                innerRadius={innerRadius} setInnerRadius={setInnerRadius}
+                                outerRadius={outerRadius} setOuterRadius={setOuterRadius}
+                                minInnerRadius={minInnerRadius}
+                                minOuterRadius={minOuterRadius}
+                                maxOuterRadius={maxOuterRadius}
+                                size={size}
+                                onBorderLogoUpload={onBorderLogoUpload}
+                                onRemoveBorderLogo={onRemoveBorderLogo}
+                            />
+                        </TabsContent>
 
 
                         <TabsContent value="logo" className="space-y-6 mt-6">
@@ -1259,13 +1415,29 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 </CardContent>
             </Card>
 
-            {/* QR Code Preview */}
-            <Card className="flex items-center justify-center">
+            {/*QR Code Preview with pan/zoom*/}
+            <Card className="flex items-center justify-center h-100">
                 <CardContent
-                    className="flex items-center justify-center p-4"
-                    style={{width: displaySize + 24, height: displaySize + 24}}
+                    className="flex items-center justify-center h-full w-full"
                 >
-                    <div ref={ref} className="flex items-center justify-center"/>
+                    <div
+                        ref={viewerRef}
+                        className="relative overflow-hidden flex items-center justify-center w-full h-full cursor-grab"
+                    >
+                        <div ref={ref} className="flex items-center justify-center"/>
+                        {/* Zoom controls */}
+                        <div className="absolute top-2 right-2 z-10 flex items-center gap-2" data-role="viewer-controls">
+                            <Button className='hover:bg-orange-400' size="icon" onClick={zoomOutBtn} title="Zoom out">
+                                <ZoomOut className="size-4"/>
+                            </Button>
+                            <Button className='hover:bg-orange-400'  size="icon" onClick={zoomInBtn} title="Zoom in">
+                                <ZoomIn className="size-4"/>
+                            </Button>
+                            <Button className='hover:bg-orange-400'   size="icon" onClick={resetView} title="Reset view">
+                                <RotateCcw className="size-4"/>
+                            </Button>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
             {!embedded && (
@@ -1282,7 +1454,8 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                 {/* Save Local Preset */}
                                 <div className="space-y-3">
-                                    <Label className="text-sm">{t("designerEditor.presetsTab.savePresetNameLabel")}</Label>
+                                    <Label
+                                        className="text-sm">{t("designerEditor.presetsTab.savePresetNameLabel")}</Label>
                                     <div className="flex gap-2">
                                         <Input
                                             value={presetName}
@@ -1303,11 +1476,13 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                         <Select value={selectedPresetId} onValueChange={setSelectedPresetId}
                                                 className="flex-1">
                                             <SelectTrigger>
-                                                <SelectValue placeholder={t("designerEditor.presetsTab.selectPresetPlaceholder")}/>
+                                                <SelectValue
+                                                    placeholder={t("designerEditor.presetsTab.selectPresetPlaceholder")}/>
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {savedPresets.length === 0 && (
-                                                    <SelectItem value="none" disabled>{t("designerEditor.presetsTab.noPresets")}</SelectItem>
+                                                    <SelectItem value="none"
+                                                                disabled>{t("designerEditor.presetsTab.noPresets")}</SelectItem>
                                                 )}
                                                 {savedPresets.map((p) => (
                                                     <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
@@ -1352,7 +1527,10 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                                 const res = await fetch('/api/presets', {
                                                     method: 'POST',
                                                     headers: {'Content-Type': 'application/json'},
-                                                    body: JSON.stringify({name: presetName || t('designerEditor.untitled'), snapshot})
+                                                    body: JSON.stringify({
+                                                        name: presetName || t('designerEditor.untitled'),
+                                                        snapshot
+                                                    })
                                                 });
                                                 if (res.ok) toast.success(t("designerEditor.messages.presetSaved"));
                                                 else toast.error(t("designerEditor.messages.failedToSave"));
@@ -1452,7 +1630,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                     type="button"
                                     onClick={() => {
                                         download('png');
-                                        toast.success(t("designerEditor.messages.downloadStarted", { format: 'PNG' }));
+                                        toast.success(t("designerEditor.messages.downloadStarted", {format: 'PNG'}));
                                     }}
                                 >
                                     {t("designerEditor.logoTab.downloadPng")}
@@ -1462,7 +1640,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                     variant="outline"
                                     onClick={() => {
                                         download('svg');
-                                        toast.success(t("designerEditor.messages.downloadStarted", { format: 'SVG' }));
+                                        toast.success(t("designerEditor.messages.downloadStarted", {format: 'SVG'}));
                                     }}
                                 >
                                     {t("designerEditor.logoTab.downloadSvg")}
@@ -1472,7 +1650,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                     variant="outline"
                                     onClick={() => {
                                         downloadPDF();
-                                        toast.success(t("designerEditor.messages.downloadStarted", { format: 'PDF' }));
+                                        toast.success(t("designerEditor.messages.downloadStarted", {format: 'PDF'}));
                                     }}
                                 >
                                     {t("designerEditor.logoTab.downloadPdf")}
@@ -1505,7 +1683,10 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                                 const res = await fetch('/api/presets', {
                                                     method: 'POST',
                                                     headers: {'Content-Type': 'application/json'},
-                                                    body: JSON.stringify({name: presetName || t('designerEditor.untitled'), snapshot})
+                                                    body: JSON.stringify({
+                                                        name: presetName || t('designerEditor.untitled'),
+                                                        snapshot
+                                                    })
                                                 });
                                                 if (res.ok) toast.success(t("designerEditor.messages.presetSaved"));
                                                 else toast.error(t("designerEditor.messages.failedToSave"));
