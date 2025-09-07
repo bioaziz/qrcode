@@ -968,7 +968,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     };
 
     return (
-        <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card className="">
                 <CardHeader className="pb-4">
                     <CardTitle className="text-base">{t("designerEditor.customizeTitle")}</CardTitle>
@@ -1444,11 +1444,14 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                     </Tabs>
                 </CardContent>
             </Card>
+            {/*/!* Quick Download bar under preview *!/*/}
+            {/*{!embedded && (*/}
+            {/*)}*/}
 
             {/*QR Code Preview with pan/zoom*/}
-            <Card className="flex items-center justify-center h-100">
+            <Card className="flex items-center justify-center h-200">
                 <CardContent
-                    className="flex items-center justify-center h-full w-full"
+                    className="flex flex-col items-center justify-center h-full w-full"
                 >
                     <div
                         ref={viewerRef}
@@ -1456,20 +1459,237 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                     >
                         <div ref={ref} className="flex items-center justify-center"/>
                         {/* Zoom controls */}
-                        <div className="absolute top-2 right-2 z-10 flex items-center gap-2" data-role="viewer-controls">
+                        <div className="absolute top-2 right-2 z-10 flex items-center gap-2"
+                             data-role="viewer-controls">
                             <Button className='hover:bg-orange-400' size="icon" onClick={zoomOutBtn} title="Zoom out">
                                 <ZoomOut className="size-4"/>
                             </Button>
-                            <Button className='hover:bg-orange-400'  size="icon" onClick={zoomInBtn} title="Zoom in">
+                            <Button className='hover:bg-orange-400' size="icon" onClick={zoomInBtn} title="Zoom in">
                                 <ZoomIn className="size-4"/>
                             </Button>
-                            <Button className='hover:bg-orange-400'   size="icon" onClick={resetView} title="Reset view">
+                            <Button className='hover:bg-orange-400' size="icon" onClick={resetView} title="Reset view">
                                 <RotateCcw className="size-4"/>
                             </Button>
                         </div>
                     </div>
+                    <div className="w-full flex flex-wrap items-center justify-center gap-3 py-3">
+                        <Button
+                            type="button"
+                            onClick={() => {
+                                download('png');
+                                toast.success(t("designerEditor.messages.downloadStarted", {format: 'PNG'}));
+                            }}
+                        >
+                            {t("designerEditor.logoTab.downloadPng")}
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                                download('svg');
+                                toast.success(t("designerEditor.messages.downloadStarted", {format: 'SVG'}));
+                            }}
+                        >
+                            {t("designerEditor.logoTab.downloadSvg")}
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                                downloadPDF();
+                                toast.success(t("designerEditor.messages.downloadStarted", {format: 'PDF'}));
+                            }}
+                        >
+                            {t("designerEditor.logoTab.downloadPdf")}
+                        </Button>
+                    </div>
+
+                    <div>
+                        <h3 className="text-sm font-medium mb-3 text-muted-foreground">{t("designerEditor.saveToLibrary")}</h3>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">
+                            <div className="lg:col-span-2">
+                                <Label className="mb-2 block text-sm">{t("designerEditor.qrName")}</Label>
+                                <Input
+                                    value={qrName}
+                                    onChange={(e) => setQrName(e.target.value)}
+                                    placeholder={t("designerEditor.qrNamePlaceholder")}
+                                    className="w-full"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <Button onClick={saveQrToDb} disabled={savingDb} className="w-full">
+                                    {savingDb ? t("designerEditor.saving") : t("designerEditor.saveQr")}
+                                </Button>
+                                {savedQr?.slug && (
+                                    <a className="text-sm text-center underline text-muted-foreground hover:text-foreground transition-colors"
+                                       href="/qrs">
+                                        {t("designerEditor.viewInMyQrs")}
+                                    </a>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+
                 </CardContent>
+
+
             </Card>
+            {/*{!embedded && (*/}
+            {/*    <Card className="lg:col-span-2">*/}
+            {/*        <CardHeader className="pb-4">*/}
+            {/*            <CardTitle className="text-base">{t("designerEditor.saveAndExport")}</CardTitle>*/}
+            {/*        </CardHeader>*/}
+            {/*        <CardContent className="space-y-6">*/}
+            {/*            /!* Save QR to Library Section *!/*/}
+            {/*            <div>*/}
+            {/*                <h3 className="text-sm font-medium mb-3 text-muted-foreground">{t("designerEditor.saveToLibrary")}</h3>*/}
+            {/*                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">*/}
+            {/*                    <div className="lg:col-span-2">*/}
+            {/*                        <Label className="mb-2 block text-sm">{t("designerEditor.qrName")}</Label>*/}
+            {/*                        <Input*/}
+            {/*                            value={qrName}*/}
+            {/*                            onChange={(e) => setQrName(e.target.value)}*/}
+            {/*                            placeholder={t("designerEditor.qrNamePlaceholder")}*/}
+            {/*                            className="w-full"*/}
+            {/*                        />*/}
+            {/*                    </div>*/}
+            {/*                    <div className="flex flex-col gap-2">*/}
+            {/*                        <Button onClick={saveQrToDb} disabled={savingDb} className="w-full">*/}
+            {/*                            {savingDb ? t("designerEditor.saving") : t("designerEditor.saveQr")}*/}
+            {/*                        </Button>*/}
+            {/*                        {savedQr?.slug && (*/}
+            {/*                            <a className="text-sm text-center underline text-muted-foreground hover:text-foreground transition-colors"*/}
+            {/*                               href="/qrs">*/}
+            {/*                                {t("designerEditor.viewInMyQrs")}*/}
+            {/*                            </a>*/}
+            {/*                        )}*/}
+            {/*                    </div>*/}
+            {/*                </div>*/}
+            {/*            </div>*/}
+
+            {/*            /!* Divider *!/*/}
+            {/*            /!*<div className="border-t"></div>*!/*/}
+
+            {/*            /!* Download Section *!/*/}
+            {/*            /!*<div>*!/*/}
+            {/*            /!*    <h3 className="text-sm font-medium mb-3 text-muted-foreground">{t("designerEditor.downloadOptions")}</h3>*!/*/}
+            {/*            /!*    <div className="flex flex-wrap gap-3">*!/*/}
+            {/*            /!*        <Button*!/*/}
+            {/*            /!*            type="button"*!/*/}
+            {/*            /!*            onClick={() => {*!/*/}
+            {/*            /!*                download('png');*!/*/}
+            {/*            /!*                toast.success(t("designerEditor.messages.downloadStarted", {format: 'PNG'}));*!/*/}
+            {/*            /!*            }}*!/*/}
+            {/*            /!*        >*!/*/}
+            {/*            /!*            {t("designerEditor.logoTab.downloadPng")}*!/*/}
+            {/*            /!*        </Button>*!/*/}
+            {/*            /!*        <Button*!/*/}
+            {/*            /!*            type="button"*!/*/}
+            {/*            /!*            variant="outline"*!/*/}
+            {/*            /!*            onClick={() => {*!/*/}
+            {/*            /!*                download('svg');*!/*/}
+            {/*            /!*                toast.success(t("designerEditor.messages.downloadStarted", {format: 'SVG'}));*!/*/}
+            {/*            /!*            }}*!/*/}
+            {/*            /!*        >*!/*/}
+            {/*            /!*            {t("designerEditor.logoTab.downloadSvg")}*!/*/}
+            {/*            /!*        </Button>*!/*/}
+            {/*            /!*        <Button*!/*/}
+            {/*            /!*            type="button"*!/*/}
+            {/*            /!*            variant="outline"*!/*/}
+            {/*            /!*            onClick={() => {*!/*/}
+            {/*            /!*                downloadPDF();*!/*/}
+            {/*            /!*                toast.success(t("designerEditor.messages.downloadStarted", {format: 'PDF'}));*!/*/}
+            {/*            /!*            }}*!/*/}
+            {/*            /!*        >*!/*/}
+            {/*            /!*            {t("designerEditor.logoTab.downloadPdf")}*!/*/}
+            {/*            /!*        </Button>*!/*/}
+            {/*            /!*    </div>*!/*/}
+            {/*            /!*</div>*!/*/}
+
+            {/*            /!*Divider *!/*/}
+            {/*            /!*<div className="border-t"></div>*!/*/}
+
+            {/*            /!* Quick Save Preset Section *!/*/}
+            {/*            /!*<div>*!/*/}
+            {/*            /!*    <h3 className="text-sm font-medium mb-3 text-muted-foreground">{t("designerEditor.quickSave.title")}</h3>*!/*/}
+            {/*            /!*    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">*!/*/}
+            {/*            /!*        /!* Save to Cloud *!/*!/*/}
+            {/*            /!*        <div className="space-y-3">*!/*/}
+            {/*            /!*            <Label className="text-sm">{t("designerEditor.quickSave.cloudSaveLabel")}</Label>*!/*/}
+            {/*            /!*            <div className="flex gap-2">*!/*/}
+            {/*            /!*                <Input*!/*/}
+            {/*            /!*                    value={presetName}*!/*/}
+            {/*            /!*                    onChange={(e) => setPresetName(e.target.value)}*!/*/}
+            {/*            /!*                    placeholder={t("designerEditor.presetsTab.presetNamePlaceholder")}*!/*/}
+            {/*            /!*                    className="flex-1"*!/*/}
+            {/*            /!*                />*!/*/}
+            {/*            /!*                <Button*!/*/}
+            {/*            /!*                    type="button"*!/*/}
+            {/*            /!*                    variant="outline"*!/*/}
+            {/*            /!*                    onClick={async () => {*!/*/}
+            {/*            /!*                        const snapshot = buildSnapshot();*!/*/}
+            {/*            /!*                        const res = await fetch('/api/presets', {*!/*/}
+            {/*            /!*                            method: 'POST',*!/*/}
+            {/*            /!*                            headers: {'Content-Type': 'application/json'},*!/*/}
+            {/*            /!*                            body: JSON.stringify({*!/*/}
+            {/*            /!*                                name: presetName || t('designerEditor.untitled'),*!/*/}
+            {/*            /!*                                snapshot*!/*/}
+            {/*            /!*                            })*!/*/}
+            {/*            /!*                        });*!/*/}
+            {/*            /!*                        if (res.ok) toast.success(t("designerEditor.messages.presetSaved"));*!/*/}
+            {/*            /!*                        else toast.error(t("designerEditor.messages.failedToSave"));*!/*/}
+            {/*            /!*                    }}*!/*/}
+            {/*            /!*                >*!/*/}
+            {/*            /!*                    {t("designerEditor.quickSave.saveToCloud")}*!/*/}
+            {/*            /!*                </Button>*!/*/}
+            {/*            /!*            </div>*!/*/}
+            {/*            /!*        </div>*!/*/}
+
+            {/*            /!*        /!* Load from Cloud *!/*!/*/}
+            {/*            /!*        <div className="space-y-3">*!/*/}
+            {/*            /!*            <Label className="text-sm">{t("designerEditor.quickSave.cloudLoadLabel")}</Label>*!/*/}
+            {/*            /!*            <div className="flex gap-2">*!/*/}
+            {/*            /!*                <select*!/*/}
+            {/*            /!*                    className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"*!/*/}
+            {/*            /!*                    value={cloudSelectedId}*!/*/}
+            {/*            /!*                    onChange={async (e) => {*!/*/}
+            {/*            /!*                        const id = e.target.value;*!/*/}
+            {/*            /!*                        setCloudSelectedId(id);*!/*/}
+            {/*            /!*                        if (!id) return;*!/*/}
+            {/*            /!*                        const r = await fetch(`/api/presets/${id}`);*!/*/}
+            {/*            /!*                        const js = await r.json();*!/*/}
+            {/*            /!*                        if (js?.success) applySnapshot(js.item.snapshot);*!/*/}
+            {/*            /!*                    }}*!/*/}
+            {/*            /!*                >*!/*/}
+            {/*            /!*                    <option value="">{t("designerEditor.quickSave.selectCloudPreset")}</option>*!/*/}
+            {/*            /!*                    {cloudPresets.map(p => (*!/*/}
+            {/*            /!*                        <option key={p._id} value={p._id}>{p.name}</option>*!/*/}
+            {/*            /!*                    ))}*!/*/}
+            {/*            /!*                </select>*!/*/}
+            {/*            /!*                <Button*!/*/}
+            {/*            /!*                    type="button"*!/*/}
+            {/*            /!*                    variant="outline"*!/*/}
+            {/*            /!*                    onClick={async () => {*!/*/}
+            {/*            /!*                        if (!cloudSelectedId) return;*!/*/}
+            {/*            /!*                        await fetch(`/api/presets/${cloudSelectedId}`, {method: "DELETE"});*!/*/}
+            {/*            /!*                        refreshCloudPresets();*!/*/}
+            {/*            /!*                        setCloudSelectedId("");*!/*/}
+            {/*            /!*                    }}*!/*/}
+            {/*            /!*                    disabled={!cloudSelectedId}*!/*/}
+            {/*            /!*                >*!/*/}
+            {/*            /!*                    {t("designerEditor.presetsTab.deleteButton")}*!/*/}
+            {/*            /!*                </Button>*!/*/}
+            {/*            /!*                <Button type="button" variant="outline" onClick={refreshCloudPresets}>*!/*/}
+            {/*            /!*                    {t("designerEditor.quickSave.refresh")}*!/*/}
+            {/*            /!*                </Button>*!/*/}
+            {/*            /!*            </div>*!/*/}
+            {/*            /!*        </div>*!/*/}
+            {/*            /!*    </div>*!/*/}
+            {/*            /!*</div>*!/*/}
+            {/*        </CardContent>*/}
+            {/*    </Card>*/}
+            {/*)}*/}
             {!embedded && (
                 <Card className='lg:col-span-2'>
                     <CardHeader className="pb-4">
@@ -1479,58 +1699,58 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                     </CardHeader>
                     <CardContent className="space-y-6">
                         {/* Local Presets Section */}
-                        <div>
-                            <h3 className="text-sm font-medium mb-3 text-muted-foreground">{t("designerEditor.presetsTab.localTitle")}</h3>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                {/* Save Local Preset */}
-                                <div className="space-y-3">
-                                    <Label
-                                        className="text-sm">{t("designerEditor.presetsTab.savePresetNameLabel")}</Label>
-                                    <div className="flex gap-2">
-                                        <Input
-                                            value={presetName}
-                                            onChange={(e) => setPresetName(e.target.value)}
-                                            placeholder={t("designerEditor.presetsTab.presetNamePlaceholder")}
-                                            className="flex-1"
-                                        />
-                                        <Button type="button" variant="outline" onClick={savePreset}>
-                                            {t("designerEditor.presetsTab.savePresetButton")}
-                                        </Button>
-                                    </div>
-                                </div>
+                        {/*<div>*/}
+                        {/*    <h3 className="text-sm font-medium mb-3 text-muted-foreground">{t("designerEditor.presetsTab.localTitle")}</h3>*/}
+                        {/*    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">*/}
+                        {/*        /!* Save Local Preset *!/*/}
+                        {/*        <div className="space-y-3">*/}
+                        {/*            <Label*/}
+                        {/*                className="text-sm">{t("designerEditor.presetsTab.savePresetNameLabel")}</Label>*/}
+                        {/*            <div className="flex gap-2">*/}
+                        {/*                <Input*/}
+                        {/*                    value={presetName}*/}
+                        {/*                    onChange={(e) => setPresetName(e.target.value)}*/}
+                        {/*                    placeholder={t("designerEditor.presetsTab.presetNamePlaceholder")}*/}
+                        {/*                    className="flex-1"*/}
+                        {/*                />*/}
+                        {/*                <Button type="button" variant="outline" onClick={savePreset}>*/}
+                        {/*                    {t("designerEditor.presetsTab.savePresetButton")}*/}
+                        {/*                </Button>*/}
+                        {/*            </div>*/}
+                        {/*        </div>*/}
 
-                                {/* Load/Manage Local Presets */}
-                                <div className="space-y-3">
-                                    <Label className="text-sm">{t("designerEditor.presetsTab.manageLabel")}</Label>
-                                    <div className="flex gap-2">
-                                        <Select value={selectedPresetId} onValueChange={setSelectedPresetId}
-                                                className="flex-1">
-                                            <SelectTrigger>
-                                                <SelectValue
-                                                    placeholder={t("designerEditor.presetsTab.selectPresetPlaceholder")}/>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {savedPresets.length === 0 && (
-                                                    <SelectItem value="none"
-                                                                disabled>{t("designerEditor.presetsTab.noPresets")}</SelectItem>
-                                                )}
-                                                {savedPresets.map((p) => (
-                                                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <Button type="button" variant="outline" onClick={loadPreset}
-                                                disabled={!selectedPresetId}>
-                                            {t("designerEditor.presetsTab.loadButton")}
-                                        </Button>
-                                        <Button type="button" variant="outline" onClick={deletePreset}
-                                                disabled={!selectedPresetId}>
-                                            {t("designerEditor.presetsTab.deleteButton")}
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        {/*        /!* Load/Manage Local Presets *!/*/}
+                        {/*        <div className="space-y-3">*/}
+                        {/*            <Label className="text-sm">{t("designerEditor.presetsTab.manageLabel")}</Label>*/}
+                        {/*            <div className="flex gap-2">*/}
+                        {/*                <Select value={selectedPresetId} onValueChange={setSelectedPresetId}*/}
+                        {/*                        className="flex-1">*/}
+                        {/*                    <SelectTrigger>*/}
+                        {/*                        <SelectValue*/}
+                        {/*                            placeholder={t("designerEditor.presetsTab.selectPresetPlaceholder")}/>*/}
+                        {/*                    </SelectTrigger>*/}
+                        {/*                    <SelectContent>*/}
+                        {/*                        {savedPresets.length === 0 && (*/}
+                        {/*                            <SelectItem value="none"*/}
+                        {/*                                        disabled>{t("designerEditor.presetsTab.noPresets")}</SelectItem>*/}
+                        {/*                        )}*/}
+                        {/*                        {savedPresets.map((p) => (*/}
+                        {/*                            <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>*/}
+                        {/*                        ))}*/}
+                        {/*                    </SelectContent>*/}
+                        {/*                </Select>*/}
+                        {/*                <Button type="button" variant="outline" onClick={loadPreset}*/}
+                        {/*                        disabled={!selectedPresetId}>*/}
+                        {/*                    {t("designerEditor.presetsTab.loadButton")}*/}
+                        {/*                </Button>*/}
+                        {/*                <Button type="button" variant="outline" onClick={deletePreset}*/}
+                        {/*                        disabled={!selectedPresetId}>*/}
+                        {/*                    {t("designerEditor.presetsTab.deleteButton")}*/}
+                        {/*                </Button>*/}
+                        {/*            </div>*/}
+                        {/*        </div>*/}
+                        {/*    </div>*/}
+                        {/*</div>*/}
 
                         {/* Divider */}
                         <div className="border-t"></div>
@@ -1616,161 +1836,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 </Card>
             )}
 
-            {!embedded && (
-                <Card className="lg:col-span-2">
-                    <CardHeader className="pb-4">
-                        <CardTitle className="text-base">{t("designerEditor.saveAndExport")}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        {/* Save QR to Library Section */}
-                        <div>
-                            <h3 className="text-sm font-medium mb-3 text-muted-foreground">{t("designerEditor.saveToLibrary")}</h3>
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">
-                                <div className="lg:col-span-2">
-                                    <Label className="mb-2 block text-sm">{t("designerEditor.qrName")}</Label>
-                                    <Input
-                                        value={qrName}
-                                        onChange={(e) => setQrName(e.target.value)}
-                                        placeholder={t("designerEditor.qrNamePlaceholder")}
-                                        className="w-full"
-                                    />
-                                </div>
-                                <div className="flex flex-col gap-2">
-                                    <Button onClick={saveQrToDb} disabled={savingDb} className="w-full">
-                                        {savingDb ? t("designerEditor.saving") : t("designerEditor.saveQr")}
-                                    </Button>
-                                    {savedQr?.slug && (
-                                        <a className="text-sm text-center underline text-muted-foreground hover:text-foreground transition-colors"
-                                           href="/qrs">
-                                            {t("designerEditor.viewInMyQrs")}
-                                        </a>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
 
-                        {/* Divider */}
-                        <div className="border-t"></div>
-
-                        {/* Download Section */}
-                        <div>
-                            <h3 className="text-sm font-medium mb-3 text-muted-foreground">{t("designerEditor.downloadOptions")}</h3>
-                            <div className="flex flex-wrap gap-3">
-                                <Button
-                                    type="button"
-                                    onClick={() => {
-                                        download('png');
-                                        toast.success(t("designerEditor.messages.downloadStarted", {format: 'PNG'}));
-                                    }}
-                                >
-                                    {t("designerEditor.logoTab.downloadPng")}
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => {
-                                        download('svg');
-                                        toast.success(t("designerEditor.messages.downloadStarted", {format: 'SVG'}));
-                                    }}
-                                >
-                                    {t("designerEditor.logoTab.downloadSvg")}
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => {
-                                        downloadPDF();
-                                        toast.success(t("designerEditor.messages.downloadStarted", {format: 'PDF'}));
-                                    }}
-                                >
-                                    {t("designerEditor.logoTab.downloadPdf")}
-                                </Button>
-                            </div>
-                        </div>
-
-                        {/* Divider */}
-                        <div className="border-t"></div>
-
-                        {/* Quick Save Preset Section */}
-                        <div>
-                            <h3 className="text-sm font-medium mb-3 text-muted-foreground">{t("designerEditor.quickSave.title")}</h3>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                {/* Save to Cloud */}
-                                <div className="space-y-3">
-                                    <Label className="text-sm">{t("designerEditor.quickSave.cloudSaveLabel")}</Label>
-                                    <div className="flex gap-2">
-                                        <Input
-                                            value={presetName}
-                                            onChange={(e) => setPresetName(e.target.value)}
-                                            placeholder={t("designerEditor.presetsTab.presetNamePlaceholder")}
-                                            className="flex-1"
-                                        />
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={async () => {
-                                                const snapshot = buildSnapshot();
-                                                const res = await fetch('/api/presets', {
-                                                    method: 'POST',
-                                                    headers: {'Content-Type': 'application/json'},
-                                                    body: JSON.stringify({
-                                                        name: presetName || t('designerEditor.untitled'),
-                                                        snapshot
-                                                    })
-                                                });
-                                                if (res.ok) toast.success(t("designerEditor.messages.presetSaved"));
-                                                else toast.error(t("designerEditor.messages.failedToSave"));
-                                            }}
-                                        >
-                                            {t("designerEditor.quickSave.saveToCloud")}
-                                        </Button>
-                                    </div>
-                                </div>
-
-                                {/* Load from Cloud */}
-                                <div className="space-y-3">
-                                    <Label className="text-sm">{t("designerEditor.quickSave.cloudLoadLabel")}</Label>
-                                    <div className="flex gap-2">
-                                        <select
-                                            className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                            value={cloudSelectedId}
-                                            onChange={async (e) => {
-                                                const id = e.target.value;
-                                                setCloudSelectedId(id);
-                                                if (!id) return;
-                                                const r = await fetch(`/api/presets/${id}`);
-                                                const js = await r.json();
-                                                if (js?.success) applySnapshot(js.item.snapshot);
-                                            }}
-                                        >
-                                            <option value="">{t("designerEditor.quickSave.selectCloudPreset")}</option>
-                                            {cloudPresets.map(p => (
-                                                <option key={p._id} value={p._id}>{p.name}</option>
-                                            ))}
-                                        </select>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={async () => {
-                                                if (!cloudSelectedId) return;
-                                                await fetch(`/api/presets/${cloudSelectedId}`, {method: "DELETE"});
-                                                refreshCloudPresets();
-                                                setCloudSelectedId("");
-                                            }}
-                                            disabled={!cloudSelectedId}
-                                        >
-                                            {t("designerEditor.presetsTab.deleteButton")}
-                                        </Button>
-                                        <Button type="button" variant="outline" onClick={refreshCloudPresets}>
-                                            {t("designerEditor.quickSave.refresh")}
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
         </div>
     );
 }
