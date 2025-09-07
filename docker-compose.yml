@@ -1,0 +1,46 @@
+services:
+  mongo:
+    image: mongo:6
+    restart: unless-stopped
+    ports:
+      - "27020:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - geniusbuy-network
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "63790:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+
+  app:
+    build: .
+    depends_on:
+      - mongo
+      - redis
+    ports:
+      - "3008:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    env_file:
+      - .env
+    networks:
+      - geniusbuy-network
+
+    command: sh -c "npm run dev"
+
+volumes:
+  mongo_data:
+  redis_data:
+
+networks:
+  geniusbuy-network:
+    external: true
+    name: geniusbuy_geniusbuy-network # <— exact existing network name
