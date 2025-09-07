@@ -1,6 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
+import ColorPicker from "@/components/ui/color-picker";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
@@ -83,10 +84,9 @@ export default function BorderTab({
               <Label className="block mb-2 flex items-center gap-2">
                 {t("designerEditor.borderTab.ringBackground")}
               </Label>
-              <Input
-                type="color"
-                value={ringBackgroundColor}
-                onChange={(e) => setRingBackgroundColor(e.target.value)}
+              <ColorPicker
+                color={ringBackgroundColor}
+                onChange={setRingBackgroundColor}
                 className="h-10 w-32 cursor-pointer"
               />
             </div>
@@ -134,10 +134,9 @@ export default function BorderTab({
                 <Label className="block mb-1 text-sm">
                   {t("designerEditor.borderTab.innerBorderColor")}
                 </Label>
-                <Input
-                  type="color"
-                  value={innerBorderColor}
-                  onChange={(e) => setInnerBorderColor(e.target.value)}
+                <ColorPicker
+                  color={innerBorderColor}
+                  onChange={setInnerBorderColor}
                   className="h-10 w-full cursor-pointer"
                 />
               </div>
@@ -158,10 +157,9 @@ export default function BorderTab({
                 <Label className="block mb-1 text-sm">
                   {t("designerEditor.borderTab.outerBorderColor")}
                 </Label>
-                <Input
-                  type="color"
-                  value={outerBorderColor}
-                  onChange={(e) => setOuterBorderColor(e.target.value)}
+                <ColorPicker
+                  color={outerBorderColor}
+                  onChange={setOuterBorderColor}
                   className="h-10 w-full cursor-pointer"
                 />
               </div>
@@ -173,11 +171,10 @@ export default function BorderTab({
                 <Palette className="size-4" />
                 {t("designerEditor.borderTab.patternColor")}
               </Label>
-              <Input 
-                type="color" 
-                value={patternColor} 
-                onChange={(e) => setPatternColor(e.target.value)} 
-                className="h-10 w-32 cursor-pointer" 
+              <ColorPicker
+                color={patternColor}
+                onChange={setPatternColor}
+                className="h-10 w-32 cursor-pointer"
               />
               <p className="text-xs text-muted-foreground mt-1">
                 {t("designerEditor.borderTab.patternColorDesc")}
@@ -229,11 +226,10 @@ export default function BorderTab({
                   <Label className="block mb-1 text-sm">
                     {t("designerEditor.borderTab.textColor")}
                   </Label>
-                  <Input 
-                    type="color" 
-                    value={borderTextColor} 
-                    onChange={(e) => setBorderTextColor(e.target.value)} 
-                    className="h-10 w-full cursor-pointer" 
+                  <ColorPicker
+                    color={borderTextColor}
+                    onChange={setBorderTextColor}
+                    className="h-10 w-full cursor-pointer"
                   />
                 </div>
               </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
+import ColorPicker from "@/components/ui/color-picker";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
@@ -79,20 +80,20 @@ export default function StyleTab(props) {
         {!dotGradEnabled && (
           <div className="min-w-0">
             <label className="block text-sm font-medium mb-1 flex flex-wrap items-center gap-2"><Palette className="size-4"/> {t("designerEditor.styleTab.dotsColor")}</label>
-            <Input type="color" value={dotColor} onChange={(e) => setDotColor(e.target.value)} className="h-10 w-full cursor-pointer" />
+            <ColorPicker color={dotColor} onChange={setDotColor} className="h-10 w-full cursor-pointer" />
           </div>
         )}
         {dotGradEnabled && (
           <div className="space-y-2 min-w-0">
             <label className="block text-sm font-medium flex flex-wrap items-center gap-2"><Palette className="size-4"/> {t("designerEditor.styleTab.dotsGradient")}</label>
             <div className="grid grid-cols-2 gap-2">
-              <Input type="color" value={dotGradStart} onChange={(e) => setDotGradStart(e.target.value)} />
+              <ColorPicker color={dotGradStart} onChange={setDotGradStart} />
               {dotGradStops === 3 ? (
-                <Input type="color" value={dotGradMid} onChange={(e) => setDotGradMid(e.target.value)} />
+                <ColorPicker color={dotGradMid} onChange={setDotGradMid} />
               ) : (
                 <div />
               )}
-              <Input type="color" value={dotGradEnd} onChange={(e) => setDotGradEnd(e.target.value)} />
+              <ColorPicker color={dotGradEnd} onChange={setDotGradEnd} />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Select value={dotGradType} onValueChange={setDotGradType}>
@@ -123,18 +124,18 @@ export default function StyleTab(props) {
         <div className="min-w-0">
           <label className="block text-sm font-medium mb-1 flex flex-wrap items-center gap-2"><Palette className="size-4"/> {t("designerEditor.styleTab.background")}</label>
           {!bgGradEnabled && (
-            <Input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="h-10 w-full cursor-pointer" disabled={bgTransparent} />
+            <ColorPicker color={bgColor} onChange={setBgColor} className="h-10 w-full cursor-pointer" disabled={bgTransparent} />
           )}
           {bgGradEnabled && (
             <div className="space-y-2">
               <div className="grid grid-cols-2 gap-2">
-                <Input type="color" value={bgGradStart} onChange={(e) => setBgGradStart(e.target.value)} disabled={bgTransparent} />
+                <ColorPicker color={bgGradStart} onChange={setBgGradStart} disabled={bgTransparent} />
                 {bgGradStops === 3 ? (
-                  <Input type="color" value={bgGradMid} onChange={(e) => setBgGradMid(e.target.value)} disabled={bgTransparent} />
+                  <ColorPicker color={bgGradMid} onChange={setBgGradMid} disabled={bgTransparent} />
                 ) : (
                   <div />
                 )}
-                <Input type="color" value={bgGradEnd} onChange={(e) => setBgGradEnd(e.target.value)} disabled={bgTransparent} />
+                <ColorPicker color={bgGradEnd} onChange={setBgGradEnd} disabled={bgTransparent} />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <Select value={bgGradType} onValueChange={setBgGradType} disabled={bgTransparent}>
