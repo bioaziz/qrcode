@@ -1,10 +1,23 @@
 "use client";
 
 import { SketchPicker } from "react-color";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function ColorPicker({ color, onChange, disabled, ...props }) {
   const [recentColors, setRecentColors] = useState([]);
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -35,16 +48,30 @@ export function ColorPicker({ color, onChange, disabled, ...props }) {
       // Ignore storage errors
     }
     onChange?.(hex);
+    setOpen(false);
   };
 
   return (
-    <div style={disabled ? { pointerEvents: "none", opacity: 0.5 } : undefined}>
-      <SketchPicker
-        color={color}
-        onChangeComplete={handleChangeComplete}
-        presetColors={recentColors}
-        {...props}
+    <div
+      ref={containerRef}
+      className="relative inline-block"
+      style={disabled ? { pointerEvents: "none", opacity: 0.5 } : undefined}
+    >
+      <div
+        onClick={() => setOpen(true)}
+        className="h-6 w-6 cursor-pointer rounded border"
+        style={{ backgroundColor: color }}
       />
+      {open && (
+        <div className="absolute z-10 mt-2">
+          <SketchPicker
+            color={color}
+            onChangeComplete={handleChangeComplete}
+            presetColors={recentColors}
+            {...props}
+          />
+        </div>
+      )}
     </div>
   );
 }
