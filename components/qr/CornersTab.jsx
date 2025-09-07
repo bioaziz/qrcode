@@ -2,11 +2,9 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Square as SquareIcon, Circle } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import { cn } from "@/lib/utils";
-import { ColorPicker } from "@/components/ui/color-picker";
 
 export default function CornersTab({
   cornerSquareType, setCornerSquareType,
@@ -21,44 +19,39 @@ export default function CornersTab({
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
       <div>
         <Label className="block mb-1 flex items-center gap-2"><SquareIcon className="size-4"/> {t("designerEditor.cornersTab.cornerSquareLabel")}</Label>
-        <RadioGroup value={cornerSquareType} onValueChange={setCornerSquareType} className="grid grid-cols-2 gap-2">
-          {cornerSquareTypes.map((type) => (
-            <label key={type} htmlFor={`cs-${type}`} className={cn(
-              "flex items-center gap-2 rounded-md border p-2 text-sm cursor-pointer",
-              "hover:bg-black/5 transition-colors",
-              cornerSquareType === type ? "ring-2 ring-black border-black" : "border-black/20"
-            )}>
-              <RadioGroupItem id={`cs-${type}`} value={type} className="sr-only" />
-              <SquareIcon className="size-4" />
-              <span className="truncate">{t(`designerEditor.cornersTab.cornerSquareTypes.${type}`)}</span>
-            </label>
-          ))}
-        </RadioGroup>
+        <Select value={cornerSquareType} onValueChange={setCornerSquareType}>
+          <SelectTrigger className="w-full"><SelectValue placeholder={t("designerEditor.cornersTab.cornerSquareTypePlaceholder")} /></SelectTrigger>
+          <SelectContent>
+            {cornerSquareTypes.map((type) => (
+              <SelectItem key={type} value={type}>
+                {t(`designerEditor.cornersTab.cornerSquareTypes.${type}`)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div>
         <label className="block text-sm font-medium mb-1 flex items-center gap-2"><SquareIcon className="size-4"/> {t("designerEditor.cornersTab.cornerSquareColorLabel")}</label>
-        <ColorPicker value={cornerSquareColor} onChange={setCornerSquareColor} />
+        <Input type="color" value={cornerSquareColor} onChange={(e) => setCornerSquareColor(e.target.value)} className="h-10 w-full cursor-pointer" />
       </div>
       <div>
         <Label className="block mb-1 flex items-center gap-2"><Circle className="size-4"/> {t("designerEditor.cornersTab.cornerDotLabel")}</Label>
-        <RadioGroup value={cornerDotType} onValueChange={setCornerDotType} className="grid grid-cols-2 gap-2">
-          {cornerDotTypes.map((type) => (
-            <label key={type} htmlFor={`cd-${type}`} className={cn(
-              "flex items-center gap-2 rounded-md border p-2 text-sm cursor-pointer",
-              "hover:bg-black/5 transition-colors",
-              cornerDotType === type ? "ring-2 ring-black border-black" : "border-black/20"
-            )}>
-              <RadioGroupItem id={`cd-${type}`} value={type} className="sr-only" />
-              <Circle className="size-4" />
-              <span className="truncate">{t(`designerEditor.cornersTab.cornerDotTypes.${type}`)}</span>
-            </label>
-          ))}
-        </RadioGroup>
+        <Select value={cornerDotType} onValueChange={setCornerDotType}>
+          <SelectTrigger className="w-full"><SelectValue placeholder={t("designerEditor.cornersTab.cornerDotTypePlaceholder")} /></SelectTrigger>
+          <SelectContent>
+            {cornerDotTypes.map((type) => (
+              <SelectItem key={type} value={type}>
+                {t(`designerEditor.cornersTab.cornerDotTypes.${type}`)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div>
         <label className="block text-sm font-medium mb-1 flex items-center gap-2"><Circle className="size-4"/> {t("designerEditor.cornersTab.cornerDotColorLabel")}</label>
-        <ColorPicker value={cornerDotColor} onChange={setCornerDotColor} />
+        <Input type="color" value={cornerDotColor} onChange={(e) => setCornerDotColor(e.target.value)} className="h-10 w-full cursor-pointer" />
       </div>
     </div>
   );
 }
+

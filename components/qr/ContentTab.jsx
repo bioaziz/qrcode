@@ -2,12 +2,11 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Mail, Phone as PhoneIcon, Link as LinkIcon, QrCode, Wifi as WifiIcon, Shield, User } from "lucide-react";
+import { Mail, Phone as PhoneIcon, Link as LinkIcon, QrCode, Wifi as WifiIcon, Shield } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import { cn } from "@/lib/utils";
 
 export default function ContentTab(props) {
   const {
@@ -30,32 +29,19 @@ export default function ContentTab(props) {
     <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <Label className="mb-2 flex items-center gap-2"><QrCode className="size-4"/> {t("designerEditor.contentTab.preset")}</Label>
-          <RadioGroup value={mode} onValueChange={setMode} className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {[
-              { value: "freeform", label: t("designerEditor.contentTab.freeform"), Icon: QrCode },
-              { value: "link", label: t("designerEditor.contentTab.link"), Icon: LinkIcon },
-              { value: "phone", label: t("designerEditor.contentTab.phone"), Icon: PhoneIcon },
-              { value: "email", label: t("designerEditor.contentTab.email"), Icon: Mail },
-              { value: "wifi", label: t("designerEditor.contentTab.wifi"), Icon: WifiIcon },
-              { value: "mecard", label: t("designerEditor.contentTab.mecard"), Icon: User },
-              { value: "vcard", label: t("designerEditor.contentTab.vcard"), Icon: User },
-            ].map(({ value, label, Icon }) => (
-              <label
-                key={value}
-                htmlFor={`mode-${value}`}
-                className={cn(
-                  "flex items-center gap-2 rounded-md border p-2 text-sm cursor-pointer",
-                  "hover:bg-black/5 transition-colors",
-                  mode === value ? "ring-2 ring-black border-black" : "border-black/20"
-                )}
-              >
-                <RadioGroupItem id={`mode-${value}`} value={value} className="sr-only" />
-                <Icon className="size-4" />
-                <span className="truncate">{label}</span>
-              </label>
-            ))}
-          </RadioGroup>
+          <Label className="mb-1 flex items-center gap-2"><QrCode className="size-4"/> {t("designerEditor.contentTab.preset")}</Label>
+          <Select value={mode} onValueChange={setMode}>
+            <SelectTrigger className="w-full"><SelectValue placeholder={t("designerEditor.contentTab.selectPreset")} /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="freeform">{t("designerEditor.contentTab.freeform")}</SelectItem>
+              <SelectItem value="link">{t("designerEditor.contentTab.link")}</SelectItem>
+              <SelectItem value="phone">{t("designerEditor.contentTab.phone")}</SelectItem>
+              <SelectItem value="email">{t("designerEditor.contentTab.email")}</SelectItem>
+              <SelectItem value="wifi">{t("designerEditor.contentTab.wifi")}</SelectItem>
+              <SelectItem value="mecard">{t("designerEditor.contentTab.mecard")}</SelectItem>
+              <SelectItem value="vcard">{t("designerEditor.contentTab.vcard")}</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2">
           <Button variant="outline" onClick={copyContent}>{t("designerEditor.contentTab.copyContent")}</Button>
@@ -185,3 +171,4 @@ export default function ContentTab(props) {
     </div>
   );
 }
+

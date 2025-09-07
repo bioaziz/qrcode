@@ -6,11 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Palette, Shapes, Maximize2, Shield } from "lucide-react";
+import { Palette, Shapes, Maximize2 } from "lucide-react";
 import { useTranslation } from "next-i18next";
-import { cn } from "@/lib/utils";
-import DotTypeIcon from "@/components/qr/DotTypeIcon";
-import { ColorPicker } from "@/components/ui/color-picker";
 
 export default function StyleTab(props) {
   const {
@@ -54,63 +51,48 @@ export default function StyleTab(props) {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="min-w-0">
-          <Label className="block mb-1 flex items-center gap-2"><Shield className="size-4"/> {t("designerEditor.styleTab.errorCorrection")}</Label>
-          <RadioGroup value={errorCorrection} onValueChange={setErrorCorrection} className="grid grid-cols-4 gap-2">
-            {[
-              { v: "L", label: t("designerEditor.styleTab.errorLow") },
-              { v: "M", label: t("designerEditor.styleTab.errorMedium") },
-              { v: "Q", label: t("designerEditor.styleTab.errorQuartile") },
-              { v: "H", label: t("designerEditor.styleTab.errorHigh") },
-            ].map(({ v, label }) => (
-              <label key={v} htmlFor={`ec-${v}`} className={cn(
-                "flex items-center justify-center rounded-md border p-2 text-xs cursor-pointer",
-                "hover:bg-black/5 transition-colors",
-                errorCorrection === v ? "ring-2 ring-black border-black" : "border-black/20"
-              )}>
-                <RadioGroupItem id={`ec-${v}`} value={v} className="sr-only" />
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{v}</span>
-                </div>
-              </label>
-            ))}
-          </RadioGroup>
+          <Label className="block mb-1">{t("designerEditor.styleTab.errorCorrection")}</Label>
+          <Select value={errorCorrection} onValueChange={setErrorCorrection}>
+            <SelectTrigger className="w-full truncate"><SelectValue placeholder={t("designerEditor.styleTab.levelPlaceholder")} /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="L">{t("designerEditor.styleTab.errorLow")}</SelectItem>
+              <SelectItem value="M">{t("designerEditor.styleTab.errorMedium")}</SelectItem>
+              <SelectItem value="Q">{t("designerEditor.styleTab.errorQuartile")}</SelectItem>
+              <SelectItem value="H">{t("designerEditor.styleTab.errorHigh")}</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="min-w-0">
           <Label className="block mb-1 flex flex-wrap items-center gap-2"><Shapes className="size-4"/> {t("designerEditor.styleTab.dotsType")}</Label>
-          <RadioGroup value={dotType} onValueChange={setDotType} className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {dotTypes.map((type) => (
-              <label key={type} htmlFor={`dot-${type}`} className={cn(
-                "flex items-center gap-2 rounded-md border p-2 text-sm cursor-pointer",
-                "hover:bg-black/5 transition-colors",
-                dotType === type ? "ring-2 ring-black border-black" : "border-black/20"
-              )}>
-                <RadioGroupItem id={`dot-${type}`} value={type} className="sr-only" />
-                <DotTypeIcon type={type} />
-                <span className="truncate">{type}</span>
-              </label>
-            ))}
-          </RadioGroup>
+          <Select value={dotType} onValueChange={setDotType}>
+            <SelectTrigger className="w-full truncate"><SelectValue placeholder={t("designerEditor.styleTab.typePlaceholder")} /></SelectTrigger>
+            <SelectContent>
+              {dotTypes.map((t) => (
+                <SelectItem key={t} value={t}>{t}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         {!dotGradEnabled && (
           <div className="min-w-0">
             <label className="block text-sm font-medium mb-1 flex flex-wrap items-center gap-2"><Palette className="size-4"/> {t("designerEditor.styleTab.dotsColor")}</label>
-            <ColorPicker value={dotColor} onChange={setDotColor} />
+            <Input type="color" value={dotColor} onChange={(e) => setDotColor(e.target.value)} className="h-10 w-full cursor-pointer" />
           </div>
         )}
         {dotGradEnabled && (
           <div className="space-y-2 min-w-0">
             <label className="block text-sm font-medium flex flex-wrap items-center gap-2"><Palette className="size-4"/> {t("designerEditor.styleTab.dotsGradient")}</label>
             <div className="grid grid-cols-2 gap-2">
-              <ColorPicker value={dotGradStart} onChange={setDotGradStart} />
+              <Input type="color" value={dotGradStart} onChange={(e) => setDotGradStart(e.target.value)} />
               {dotGradStops === 3 ? (
-                <ColorPicker value={dotGradMid} onChange={setDotGradMid} />
+                <Input type="color" value={dotGradMid} onChange={(e) => setDotGradMid(e.target.value)} />
               ) : (
                 <div />
               )}
-              <ColorPicker value={dotGradEnd} onChange={setDotGradEnd} />
+              <Input type="color" value={dotGradEnd} onChange={(e) => setDotGradEnd(e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Select value={dotGradType} onValueChange={setDotGradType}>
@@ -141,18 +123,18 @@ export default function StyleTab(props) {
         <div className="min-w-0">
           <label className="block text-sm font-medium mb-1 flex flex-wrap items-center gap-2"><Palette className="size-4"/> {t("designerEditor.styleTab.background")}</label>
           {!bgGradEnabled && (
-            <ColorPicker value={bgColor} onChange={setBgColor} disabled={bgTransparent} />
+            <Input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="h-10 w-full cursor-pointer" disabled={bgTransparent} />
           )}
           {bgGradEnabled && (
             <div className="space-y-2">
               <div className="grid grid-cols-2 gap-2">
-                <ColorPicker value={bgGradStart} onChange={setBgGradStart} disabled={bgTransparent} />
+                <Input type="color" value={bgGradStart} onChange={(e) => setBgGradStart(e.target.value)} disabled={bgTransparent} />
                 {bgGradStops === 3 ? (
-                  <ColorPicker value={bgGradMid} onChange={setBgGradMid} disabled={bgTransparent} />
+                  <Input type="color" value={bgGradMid} onChange={(e) => setBgGradMid(e.target.value)} disabled={bgTransparent} />
                 ) : (
                   <div />
                 )}
-                <ColorPicker value={bgGradEnd} onChange={setBgGradEnd} disabled={bgTransparent} />
+                <Input type="color" value={bgGradEnd} onChange={(e) => setBgGradEnd(e.target.value)} disabled={bgTransparent} />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <Select value={bgGradType} onValueChange={setBgGradType} disabled={bgTransparent}>
