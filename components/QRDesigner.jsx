@@ -422,32 +422,23 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             qrRef.current.inst.update(libOptions);
         }
 
-        const ensureOverlay = () => {
-            if (!qrRef.current.overlay || !ref.current.contains(qrRef.current.overlay)) {
-                const overlay = qrRef.current.overlay ?? document.createElement('canvas');
-                overlay.style.position = 'absolute';
-                overlay.style.top = overlay.style.left = '0';
-                ref.current.appendChild(overlay);
-                qrRef.current.overlay = overlay;
-            }
-        };
-
-        if (circularBorder) {
-            ensureOverlay();
-        }
-
         ensureCanvasSize();
 
         if (circularBorder) {
+            if (!qrRef.current.overlay) {
+                const overlay = document.createElement('canvas');
+                overlay.style.position = 'absolute';
+                overlay.style.top = '0';
+                overlay.style.left = '0';
+                ref.current.appendChild(overlay);
+                qrRef.current.overlay = overlay;
+            }
             setTimeout(() => {
-                ensureOverlay();
                 renderOverlay(qrRef.current.overlay, options);
                 ensureCanvasSize();
             }, 0);
-        } else {
-            if (qrRef.current.overlay && ref.current.contains(qrRef.current.overlay)) {
-                ref.current.removeChild(qrRef.current.overlay);
-            }
+        } else if (qrRef.current.overlay) {
+            ref.current.removeChild(qrRef.current.overlay);
             qrRef.current.overlay = null;
         }
     }, [options, displaySize, circularBorder, cornerSquareType]);
