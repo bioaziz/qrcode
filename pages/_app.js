@@ -7,6 +7,17 @@ import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { appWithTranslation } from "next-i18next";
 import i18nConfig from "../next-i18next.config.mjs";
+import { Geist, Geist_Mono } from "next/font/google";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 function App({ Component, pageProps: { session, ...pageProps } }) {
   const router = useRouter();
@@ -27,9 +38,11 @@ function App({ Component, pageProps: { session, ...pageProps } }) {
   return (
     <SessionProvider session={session}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        {!hideNav && <NavBar />}
-        <Component {...pageProps} />
-        <Toaster richColors />
+        <div className={`${geistSans.variable} ${geistMono.variable} font-sans min-h-screen`}>
+          {!hideNav && <NavBar />}
+          <Component {...pageProps} />
+          <Toaster richColors />
+        </div>
       </ThemeProvider>
     </SessionProvider>
   );

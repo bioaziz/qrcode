@@ -1,18 +1,7 @@
-import { Geist, Geist_Mono } from "next/font/google";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import i18nConfig from "../next-i18next.config.mjs";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 const QRDesigner = dynamic(() => import("@/components/QRDesigner"), {
   ssr: false,
@@ -22,7 +11,7 @@ export default function DesignerPage() {
   const { status } = useSession();
   const { t } = useTranslation("common");
   return (
-    <div className={`${geistSans.className} ${geistMono.className} font-sans min-h-screen`}>
+    <div className="font-sans min-h-screen">
       <main className="mx-auto max-w-6xl px-6 md:px-10 py-8 space-y-6">
         <div>
           <h1 className="text-2xl md:text-3xl font-semibold">{t("designer.title")}</h1>

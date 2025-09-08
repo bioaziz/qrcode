@@ -28,6 +28,24 @@ const posts = [
     description: "Les paiements mobiles avec QR",
     image: "/file.svg",
   },
+  {
+    slug: "qr-code-menu-restaurants",
+    title: "QR Code pour menu de restaurant",
+    description: "Créer des menus digitaux scannables",
+    image: "/window.svg",
+  },
+  {
+    slug: "qr-code-securite",
+    title: "Sécurité des QR Codes",
+    description: "Bonnes pratiques et lisibilité",
+    image: "/file.svg",
+  },
+  {
+    slug: "qr-code-marketing",
+    title: "Marketing avec des QR Codes",
+    description: "Lancer une campagne QR",
+    image: "/globe.svg",
+  },
 ];
 
 export default function BlogIndex() {
@@ -54,7 +72,7 @@ export default function BlogIndex() {
               <div className="p-4 space-y-2">
                 <h2 className="text-xl font-semibold">{post.title}</h2>
                 <p className="text-sm text-muted-foreground">{post.description}</p>
-                <span className="text-sm font-medium text-blue-600">
+                <span className="text-sm font-medium text-black/70 dark:text-white/70">
                   {t("blog.readMore", "Read more")}
                 </span>
               </div>
