@@ -15,7 +15,14 @@ export default async function handler(req, res) {
 
   if (req.method === 'PATCH') {
     try {
-      Object.assign(design, req.body || {});
+      const body = req.body || {};
+      if (Object.prototype.hasOwnProperty.call(body, 'snapshot')) {
+        if (body.name) design.name = body.name;
+        design.snapshot = body.snapshot;
+      } else {
+        // Back-compat: treat the entire body as the snapshot if no 'snapshot' key
+        design.snapshot = body;
+      }
       await design.save();
       return res.json({ success: true, item: design });
     } catch (e) {

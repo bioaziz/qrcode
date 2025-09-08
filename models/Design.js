@@ -17,6 +17,8 @@ const DesignSchema = new Schema(
   {
     tenantId: { type: Schema.Types.ObjectId, ref: "Tenant", index: true },
     name: { type: String, required: true },
+    // New: store full designer snapshot for reliable round‑tripping
+    snapshot: { type: Schema.Types.Mixed },
     dotType: { type: String, default: "square" },
     dotColor: { type: String, default: "#111111" },
     bgColor: { type: String, default: "#ffffff" },
@@ -35,4 +37,3 @@ const DesignSchema = new Schema(
 );
 
 export default mongoose.models.Design || mongoose.model("Design", DesignSchema);
-

@@ -12,17 +12,27 @@ const Designer = dynamic(() => import("@/components/QRDesigner"), { ssr: false }
 export async function getServerSideProps(ctx) {
   const { getServerSession } = await import("next-auth/next");
   const { authOptions } = await import("@/pages/api/auth/[...nextauth]");
+  const { serverSideTranslations } = await import("next-i18next/serverSideTranslations");
+  const i18nConfig = (await import("../../../next-i18next.config.mjs")).default;
   const session = await getServerSession(ctx.req, ctx.res, authOptions);
   if (!session) {
     return { redirect: { destination: "/auth/signin", permanent: false } };
   }
   await dbConnect();
+  const proto = ctx.req.headers['x-forwarded-proto'] || (ctx.req.connection?.encrypted ? 'https' : 'http');
+  const host = ctx.req.headers['x-forwarded-host'] || ctx.req.headers.host || 'localhost:3000';
+  const origin = `${proto}://${host}`;
   const { id } = ctx.params;
   const code = await QrCode.findById(id).lean();
   if (!code) return { notFound: true };
   let design = null;
   if (code.designRef) design = await Design.findById(code.designRef).lean();
-  return { props: { initial: JSON.parse(JSON.stringify({ code, design })) } };
+  return {
+    props: {
+      initial: JSON.parse(JSON.stringify({ code, design, origin })),
+      ...(await serverSideTranslations(ctx.locale, ["common"], i18nConfig)),
+    },
+  };
 }
 
 export default function EditQr({ initial }) {
@@ -31,6 +41,7 @@ export default function EditQr({ initial }) {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [snapshot, setSnapshot] = useState(design || null);
+  const redirectUrl = initial?.origin && code?.slug ? `${initial.origin}/r/${code.slug}` : null;
 
   function onField(k, v) {
     setCode((c) => ({ ...c, [k]: v }));
@@ -44,9 +55,9 @@ export default function EditQr({ initial }) {
       if (snapshot) {
         const body = snapshot;
         if (designId) {
-          await fetch(`/api/design/${designId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+          await fetch(`/api/design/${designId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ snapshot: body, name: code?.meta?.name || 'Untitled' }) });
         } else {
-          const res = await fetch('/api/design', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+          const res = await fetch('/api/design', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ snapshot: body, name: code?.meta?.name || 'Untitled' }) });
           const js = await res.json();
           if (js?.success) designId = js.item._id;
         }
@@ -79,7 +90,7 @@ export default function EditQr({ initial }) {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-1 gap-6">
         <Card>
           <CardHeader><CardTitle className="text-base">QR Details</CardTitle></CardHeader>
           <CardContent className="space-y-3">
@@ -105,7 +116,7 @@ export default function EditQr({ initial }) {
         <Card>
           <CardHeader><CardTitle className="text-base">Designer</CardTitle></CardHeader>
           <CardContent>
-            <Designer embedded initialSnapshot={design || null} onSnapshotChange={setSnapshot} />
+            <Designer embedded initialSnapshot={(design?.snapshot || design || null)} onSnapshotChange={setSnapshot} redirectUrl={redirectUrl} slug={code?.slug || null} />
           </CardContent>
         </Card>
       </div>

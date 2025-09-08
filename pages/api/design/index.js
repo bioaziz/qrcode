@@ -10,7 +10,11 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
       const body = req.body || {};
-      const design = await Design.create({ ...body });
+      // Accept either { snapshot, name } or a raw snapshot
+      const snapshot = body.snapshot ?? body;
+      const name = body.name ?? snapshot?.name ?? 'Untitled';
+      const payload = { name, snapshot };
+      const design = await Design.create(payload);
       return res.status(201).json({ success: true, item: design });
     } catch (e) {
       return res.status(400).json({ success: false, message: e.message });

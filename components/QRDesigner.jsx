@@ -62,7 +62,7 @@ const DOT_TYPES = [
 const CORNER_SQUARE_TYPES = ["square", "extra-rounded", "circle"];
 const CORNER_DOT_TYPES = ["square", "dot"]; // library accepts these
 
-export default function QRDesigner({embedded = false, initialSnapshot = null, onSnapshotChange = null}) {
+export default function QRDesigner({embedded = false, initialSnapshot = null, onSnapshotChange = null, redirectUrl: redirectUrlProp = null, slug: slugProp = null}) {
     const ref = useRef(null);
     const qrRef = useRef(null);
     const {t} = useTranslation("common");
@@ -120,6 +120,8 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     const [imageSize, setImageSize] = useState(0.35); // ratio (0..1)
     const [hideLogoBgDots, setHideLogoBgDots] = useState(false); // let transparent logos show QR dots
     const [error, setError] = useState("");
+    const [contentSource, setContentSource] = useState('direct');
+    const [redirectUrl, setRedirectUrl] = useState(redirectUrlProp || null);
     // Save to DB
     const [qrName, setQrName] = useState("");
     const [savingDb, setSavingDb] = useState(false);
@@ -213,13 +215,22 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         }
     }
 
+    // Data to encode in QR: direct content or redirect URL
+    const renderData = useMemo(() => {
+        const direct = presetData() || "https://";
+        if (contentSource === 'redirect' && (redirectUrlProp || redirectUrl)) {
+            return (redirectUrlProp || redirectUrl) || direct;
+        }
+        return direct;
+    }, [contentSource, redirectUrlProp, redirectUrl, mode, data, linkUrl, phone, email, emailSubject, emailBody, wifiSsid, wifiPass, wifiHidden, wifiType, firstName, lastName, contactPhone, contactEmail, org, url, note, street, city, state, zip, country]);
+
     const options = useMemo(
         () => ({
             width: size,
             height: size,
             type: "canvas",
             margin: quietZone, // ensure library paths honor quiet zone
-            data: presetData() || "https://",
+            data: renderData,
             backgroundOptions: {
                 color: bgTransparent ? "transparent" : bgColor,
                 ...(bgGradEnabled && !bgTransparent
@@ -308,6 +319,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         [
             size,
             data,
+            renderData,
             bgTransparent,
             bgColor,
             bgGradEnabled,
@@ -353,10 +365,59 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             innerBorderColor,
             outerBorderWidth,
             outerBorderColor,
+            contentSource,
         ]
     );
 
     // end presetData
+
+    // Normalize a DB Design document into a runtime snapshot shape for applySnapshot
+    const normalizeSnapshot = (s) => {
+        if (!s || typeof s !== 'object') return s;
+        const out = { ...s };
+        if (!out.contentSource && typeof s.encodesRedirect !== 'undefined') {
+            out.contentSource = s.encodesRedirect ? 'redirect' : 'direct';
+        }
+        // Map gradient objects from DB schema to flat fields expected by applySnapshot
+        if (s.dotGrad && typeof s.dotGrad === 'object') {
+            out.dotGradEnabled = !!s.dotGrad.enabled;
+            out.dotGradType = s.dotGrad.type ?? 'linear';
+            out.dotGradStart = s.dotGrad.start ?? '#111111';
+            out.dotGradMid = s.dotGrad.mid ?? '#333333';
+            out.dotGradEnd = s.dotGrad.end ?? '#555555';
+            out.dotGradStops = s.dotGrad.stops ?? 2;
+            out.dotGradRotation = s.dotGrad.rotation ?? 0;
+        }
+        if (s.bgGrad && typeof s.bgGrad === 'object') {
+            out.bgGradEnabled = !!s.bgGrad.enabled;
+            out.bgGradType = s.bgGrad.type ?? 'linear';
+            out.bgGradStart = s.bgGrad.start ?? '#ffffff';
+            out.bgGradMid = s.bgGrad.mid ?? '#f0f0f0';
+            out.bgGradEnd = s.bgGrad.end ?? '#e5e5e5';
+            out.bgGradStops = s.bgGrad.stops ?? 2;
+            out.bgGradRotation = s.bgGrad.rotation ?? 0;
+        }
+        return out;
+    };
+
+    // Apply initial snapshot once when provided (embedded edit page)
+    const appliedInitialRef = useRef(false);
+    useEffect(() => {
+        if (appliedInitialRef.current) return;
+        if (!initialSnapshot) return;
+        const norm = normalizeSnapshot(initialSnapshot);
+        applySnapshot(norm);
+        appliedInitialRef.current = true;
+    }, [initialSnapshot]);
+
+    useEffect(() => {
+        if (redirectUrlProp) return;
+        if (typeof window === 'undefined') return;
+        if (slugProp) {
+            const origin = window.location.origin;
+            setRedirectUrl(`${origin}/r/${slugProp}`);
+        }
+    }, [redirectUrlProp, slugProp]);
 
     // Minimum safe inner radius so the circular ring never touches the QR square
     const minInnerRadius = useMemo(() => {
@@ -818,6 +879,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         outerBorderColor,
         innerRadius,
         outerRadius,
+        contentSource,
 
         // imageUrl intentionally skipped
     });
@@ -889,6 +951,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         setOuterBorderColor(s.outerBorderColor ?? (s.ringBackgroundColor ?? "#ffffff"));
         setInnerRadius(s.innerRadius ?? 0);
         setOuterRadius(s.outerRadius ?? 0);
+        if (s.contentSource === 'redirect' || s.contentSource === 'direct') setContentSource(s.contentSource);
     };
 
     const savePreset = () => {
@@ -935,7 +998,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 const resD = await fetch("/api/design", {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify(designBody),
+                    body: JSON.stringify({ snapshot: designBody, name }),
                 });
                 const jsD = await resD.json();
                 if (jsD?.success) designRef = jsD.item?._id || null;
@@ -957,6 +1020,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             if (jsQ?.success) {
                 setSavedQr(jsQ.item);
                 toast.success(t("designerEditor.messages.qrSaved"));
+                return jsQ.item;
             } else {
                 toast.error(jsQ?.message || t("designerEditor.messages.failedToSave"));
             }
@@ -965,6 +1029,7 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         } finally {
             setSavingDb(false);
         }
+        return null;
     };
 
     return (
@@ -1451,8 +1516,46 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             {/*QR Code Preview with pan/zoom*/}
             <Card className="flex items-center justify-center h-200">
                 <CardContent
-                    className="flex flex-col items-center justify-center h-full w-full"
+                    className="flex flex-col items-center justify-center gap-3 h-full w-full"
                 >
+                    <div className="w-full flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                        <span>QR encodes:</span>
+                        <Button
+                            type="button"
+                            size="sm"
+                            variant={contentSource === 'direct' ? 'default' : 'outline'}
+                            onClick={() => setContentSource('direct')}
+                        >
+                            Direct content
+                        </Button>
+                        <Button
+                            type="button"
+                            size="sm"
+                            variant={contentSource === 'redirect' ? 'default' : 'outline'}
+                            onClick={async () => {
+                                if (!redirectUrlProp && !redirectUrl) {
+                                    const created = await saveQrToDb();
+                                    if (created?.slug && typeof window !== 'undefined') {
+                                        const origin = window.location.origin;
+                                        setRedirectUrl(`${origin}/r/${created.slug}`);
+                                    }
+                                }
+                                setContentSource('redirect');
+                            }}
+                        >
+                            Redirect URL
+                        </Button>
+                        {(redirectUrlProp || redirectUrl) && (
+                            <a
+                                href={(redirectUrlProp || redirectUrl) || '#'}
+                                className="ml-2 underline decoration-dotted text-[11px]"
+                                target="_blank" rel="noreferrer"
+                                title="Open redirect URL"
+                            >
+                                {(redirectUrlProp || redirectUrl)}
+                            </a>
+                        )}
+                    </div>
                     <div
                         ref={viewerRef}
                         className="relative overflow-hidden flex items-center justify-center w-full h-full cursor-grab"
