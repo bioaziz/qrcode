@@ -1,6 +1,7 @@
 "use client";
 
 import {useEffect, useMemo, useRef, useState} from "react";
+import { useRouter } from "next/router";
 import QRCode from 'qrcode';
 import {Input} from "@/components/ui/input";
 import ColorPicker from "@/components/ui/color-picker";
@@ -66,10 +67,11 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     const ref = useRef(null);
     const qrRef = useRef(null);
     const {t} = useTranslation("common");
+    const router = useRouter?.() || { query: {} };
 
     // Controls
     const [data, setData] = useState("");
-    const [mode, setMode] = useState("freeform"); // freeform | link | phone | email | wifi | mecard | vcard
+    const [mode, setMode] = useState("freeform"); // freeform | link | phone | email | wifi | mecard | vcard | whatsapp | sms | pdf | image | mp3 | video | app | geo | maps | social
     const [size, setSize] = useState(256);
     const [dotType, setDotType] = useState("square");
     const [dotColor, setDotColor] = useState("#111111");
@@ -159,6 +161,15 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 const hasScheme = /^(https?:)?\/\//i.test(linkUrl);
                 return hasScheme ? linkUrl : `https://${linkUrl}`;
             }
+            case "pdf":
+            case "image":
+            case "mp3":
+            case "video":
+            case "maps": {
+                if (!linkUrl) return "";
+                const hasScheme = /^(https?:)?\/\//i.test(linkUrl);
+                return hasScheme ? linkUrl : `https://${linkUrl}`;
+            }
             case "phone":
                 return phone ? `tel:${phone.replace(/\s+/g, "")}` : "";
             case "email": {
@@ -169,6 +180,18 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 const qs = params.toString();
                 return qs ? `mailto:${email}?${qs}` : `mailto:${email}`;
             }
+            case "whatsapp": {
+                if (!phone) return "";
+                const digits = String(phone).replace(/\D+/g, "");
+                const qs = data ? `?text=${encodeURIComponent(data)}` : "";
+                return `https://wa.me/${digits}${qs}`;
+            }
+            case "sms": {
+                if (!phone) return "";
+                const digits = String(phone).replace(/\D+/g, "");
+                const qs = data ? `?body=${encodeURIComponent(data)}` : "";
+                return `sms:${digits}${qs}`;
+            }
             case "wifi": {
                 if (!wifiSsid) return "";
                 const T = wifiType === "nopass" ? "nopass" : wifiType;
@@ -176,6 +199,29 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 const H = wifiHidden ? "H:true;" : "";
                 const esc = (v) => v.replaceAll("\\", "\\\\").replaceAll(";", "\\;").replaceAll(",", "\\,");
                 return `WIFI:T:${T};S:${esc(wifiSsid)};${P}${H};`;
+            }
+            case "app": {
+                // Temporarily encode a single target: prefer web fallback, then iOS, then Android
+                const primary = (typeof window !== 'undefined' && router?.query?.device)
+                  ? router.query.device === 'ios' ? (url || city || '') : router.query.device === 'android' ? (street || city || '') : (city || url || street || '')
+                  : (city || url || street || '');
+                if (!primary) return "";
+                const hasScheme = /^(https?:)?\/\//i.test(primary);
+                return hasScheme ? primary : `https://${primary}`;
+            }
+            case "geo": {
+                const lat = String(state || "").trim();
+                const lng = String(zip || "").trim();
+                if (!lat || !lng) return "";
+                const label = String(country || "").trim();
+                const base = `geo:${lat},${lng}`;
+                return label ? `${base}?q=${encodeURIComponent(label)}` : base;
+            }
+            case "social": {
+                // Placeholder: treat as simple link for now
+                if (!linkUrl) return "";
+                const hasScheme = /^(https?:)?\/\//i.test(linkUrl);
+                return hasScheme ? linkUrl : `https://${linkUrl}`;
             }
             case "mecard": {
                 const esc = (v) => v.replaceAll("\\", "\\\\").replaceAll(";", "\\;").replaceAll(",", "\\,");
@@ -534,17 +580,39 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         if (mode === "link") {
             if (!/^https?:\/\//i.test(value)) return {ok: true, msg: "No scheme found, using https automatically."};
         }
+        if (["pdf","image","mp3","video","maps","social","app"].includes(mode)) {
+            if (!/^(geo:|https?:\/\/)/i.test(value)) return {ok: true, msg: "No scheme found, using https automatically."};
+        }
         if (mode === "email") {
             if (!/^mailto:/i.test(value)) return {ok: false, msg: "Invalid email format."};
         }
         if (mode === "phone") {
             if (!/^tel:/i.test(value)) return {ok: false, msg: "Phone should start with tel:."};
         }
+        if (mode === "sms") {
+            if (!/^sms:/i.test(value)) return {ok: false, msg: "SMS format invalid."};
+        }
+        if (mode === "whatsapp") {
+            if (!/^https?:\/\/(wa\.me|api\.whatsapp)/i.test(value)) return {ok: false, msg: "WhatsApp phone required."};
+        }
         if (mode === "wifi") {
             if (!/^WIFI:/i.test(value)) return {ok: false, msg: "Wi‑Fi string malformed."};
         }
+        if (mode === "geo") {
+            if (!/^geo:/i.test(value)) return {ok: false, msg: "Geo coordinates required."};
+        }
         return {ok: true, msg: "Ready."};
     }, [mode, linkUrl, phone, email, emailSubject, emailBody, wifiSsid, wifiPass, wifiHidden, wifiType, data, firstName, lastName, contactPhone, contactEmail, org, url, note, street, city, state, zip, country]);
+
+    // Preselect preset via ?mode=
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const qMode = (router?.query?.mode || '').toString().toLowerCase();
+        const allowed = new Set(["freeform","link","phone","email","wifi","mecard","vcard","whatsapp","sms","pdf","image","mp3","video","app","geo","maps","social"]);
+        if (qMode && allowed.has(qMode)) {
+            setMode(qMode);
+        }
+    }, [router?.query?.mode]);
 
     useEffect(() => {
         if (!ref.current) return;
