@@ -159,22 +159,22 @@ export default function EditQr({ initial }) {
                   <RadioGroupItem id="type-dynamic" value="dynamic" />
                   <Label htmlFor="type-dynamic">Dynamic</Label>
                 </div>
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem id="type-wifi" value="wifi" />
-                  <Label htmlFor="type-wifi">Wi‑Fi</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem id="type-vcard" value="vcard" />
-                  <Label htmlFor="type-vcard">vCard</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem id="type-paylater" value="payLater" />
-                  <Label htmlFor="type-paylater">Pay Later</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem id="type-ticket" value="ticket" />
-                  <Label htmlFor="type-ticket">Ticket</Label>
-                </div>
+                {/*<div className="flex items-center gap-2">*/}
+                {/*  <RadioGroupItem id="type-wifi" value="wifi" />*/}
+                {/*  <Label htmlFor="type-wifi">Wi‑Fi</Label>*/}
+                {/*</div>*/}
+                {/*<div className="flex items-center gap-2">*/}
+                {/*  <RadioGroupItem id="type-vcard" value="vcard" />*/}
+                {/*  <Label htmlFor="type-vcard">vCard</Label>*/}
+                {/*</div>*/}
+                {/*<div className="flex items-center gap-2">*/}
+                {/*  <RadioGroupItem id="type-paylater" value="payLater" />*/}
+                {/*  <Label htmlFor="type-paylater">Pay Later</Label>*/}
+                {/*</div>*/}
+                {/*<div className="flex items-center gap-2">*/}
+                {/*  <RadioGroupItem id="type-ticket" value="ticket" />*/}
+                {/*  <Label htmlFor="type-ticket">Ticket</Label>*/}
+                {/*</div>*/}
               </RadioGroup>
             </div>
             <div>
@@ -225,7 +225,7 @@ export default function EditQr({ initial }) {
                         })}>
                           <SelectTrigger className="w-full"><SelectValue placeholder="Any device" /></SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Any</SelectItem>
+                            <SelectItem value="none">Any</SelectItem>
                             <SelectItem value="ios">iOS</SelectItem>
                             <SelectItem value="android">Android</SelectItem>
                             <SelectItem value="desktop">Desktop</SelectItem>
@@ -399,7 +399,7 @@ export default function EditQr({ initial }) {
                   }))}>
                     <SelectTrigger className="w-full"><SelectValue placeholder="None" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="none">None</SelectItem>
                       <SelectItem value="totp">TOTP</SelectItem>
                       <SelectItem value="interval">Interval</SelectItem>
                     </SelectContent>
