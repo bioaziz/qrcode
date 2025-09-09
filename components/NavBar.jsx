@@ -111,8 +111,8 @@ export default function NavBar() {
   const onContact = pathname === "/contact";
   const onAbout = pathname === "/about";
 
-  // Use a stable default so SSR/CSR always match even if i18n isn't ready yet
-  const brand = t("brand", "QR Generator");
+  // Use translation without a client-only default to avoid SSR/CSR mismatch
+  const brand = t("brand");
 
   const changeLocale = (locale) => {
     document.cookie = `NEXT_LOCALE=${locale}; path=/`;
@@ -132,7 +132,7 @@ export default function NavBar() {
         {/* Left: brand + nav */}
         <div className="flex items-center gap-2">
           <Link href="/" className="text-lg font-bold text-black dark:text-white">
-            {brand}
+            <span suppressHydrationWarning>{brand}</span>
           </Link>
           <nav className="hidden sm:flex items-center gap-1 ml-6">
             {pathname !== "/" && (
