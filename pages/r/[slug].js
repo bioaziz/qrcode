@@ -1,6 +1,7 @@
 import { dbConnect } from "@/lib/mongoose";
 import QrCode from "@/models/QrCode";
 import { logScanEvent } from "@/lib/redis";
+import { extractGeoFromHeaders, getIp, fallbackGeoLookup, GEO_LOOKUP_ENABLED } from "@/lib/geo";
 import { getSetting } from "@/lib/settings";
 
 function detectDevice(ua = "") {
@@ -61,10 +62,7 @@ function chooseAbSplit(abSplits = [], seedIndex = null) {
   return abSplits[abSplits.length - 1]?.url || null;
 }
 
-function computeDestination(code, headers) {
-  const device = detectDevice(headers["user-agent"] || "");
-  const country = headers["x-vercel-ip-country"] || headers["cf-ipcountry"] || "unknown";
-  const city = headers["x-vercel-ip-city"] || headers["x-real-city"] || "unknown";
+function computeDestination(code, { device, country, city }) {
 
   // 1) Rules evaluation (first match wins)
   const rules = code?.dynamicConfig?.rules || [];
@@ -115,13 +113,19 @@ export async function getServerSideProps(ctx) {
     };
   }
 
-  const destination = computeDestination(code, ctx.req.headers || {});
-
-  // pick up geo hints from common headers (Vercel/Cloudflare), fall back to unknown
   const headers = ctx.req.headers || {};
-  const country = headers["x-vercel-ip-country"] || headers["cf-ipcountry"] || "unknown";
-  const city = headers["x-vercel-ip-city"] || headers["x-real-city"] || "unknown";
   const device = detectDevice(headers["user-agent"] || "");
+  let { country, city } = extractGeoFromHeaders(headers);
+  if (GEO_LOOKUP_ENABLED && (!country || !city)) {
+    const ip = getIp(ctx.req);
+    const fb = fallbackGeoLookup(ip);
+    country = country || fb.country || "unknown";
+    city = city || fb.city || "unknown";
+  }
+  country = country || "unknown";
+  city = city || "unknown";
+
+  const destination = computeDestination(code, { device, country, city });
 
   // fire-and-forget log; don't block redirect on logging errors
   logScanEvent({ slug, qrId: code._id?.toString?.(), country, city, device }).catch(() => {});
