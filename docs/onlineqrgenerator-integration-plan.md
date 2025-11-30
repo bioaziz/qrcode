@@ -106,3 +106,61 @@
 - Keep changes incremental and behind feature flags where possible.
 - Maintain current auth gating for `/designer` and `/studio/*`; marketing pages remain public.
 
+📋 Update plan [░░░░░░░░░░] 0/12
+note
+Based on the current code and the integration plan, these are the concrete next steps to complete parity with the reference and polish UX
+end-to-end.
+  └ □ Complete WhatsApp and SMS presets
+    □ Add App Links preset (iOS/Android)
+    □ Implement Social Link‑list micro‑page
+    □ Implement Menu micro‑page templates
+    □ Add Coupon/Business micro‑pages (optional)
+    □ Preview builders for remaining types
+    □ Expand curated design presets
+    □ Improve export UX (PNG/SVG/PDF)
+    □ Add type marketing pages + deep links
+    □ Analytics polish + CSV exports
+    □ Add i18n keys for new UI
+    □ QA matrix + docs updates
+
+codex
+Here’s what remains and a focused plan to finish integration, based on the code and the integration plan.
+
+What’s done
+
+- Media presets: PDF, Image, MP3, Video editors plus /view pages, including password gates and social link cards for MP3/Video.
+- Upload APIs: PDF, Image, MP3, Video.
+- Live preview builders for pdf/link/image/mp3/video with auto-sync.
+
+Key gaps
+
+- Presets: WhatsApp/SMS completeness, App links (iOS/Android), a true Social/Link-list mode.
+- Micro-pages: Link-list, Menu layouts, Coupon/Business templates with models + CRUD + dynamic redirect wiring.
+- Design presets: Curated presets/palettes inspired by reference pages.
+- Export UX: Dedicated PNG/SVG/PDF export controls and sizes, filename presets.
+- Marketing pages: Per-type landing with deep links to /designer?mode=....
+- Analytics: CSV export, referrer breakdowns, quick links in QR lists.
+- i18n: New keys for added fields/buttons/presets.
+- QA & docs: Test matrix and brief docs for env/config.
+
+I’ve posted a concrete next-step plan in the TODOs. Highlights:
+
+- Complete WhatsApp and SMS presets
+- Add App Links preset (iOS/Android)
+- Implement Social Link‑list micro‑page
+- Implement Menu micro‑page templates
+- Add Coupon/Business micro‑pages (optional)
+- Preview builders for remaining types
+- Expand curated design presets
+- Improve export UX (PNG/SVG/PDF)
+- Add type marketing pages + deep links
+- Analytics polish + CSV exports
+- Add i18n keys for new UI
+- QA matrix + docs updates
+
+Suggested sequence
+
+- Week 1: Finish presets (WhatsApp/SMS/App Links), add Social Link-list micro-page, expand presets/palettes.
+- Week 2: Menu + Coupon micro-pages, export UX, type marketing pages.
+- Week 3: Analytics polish + CSV, i18n, QA/documentation.
+

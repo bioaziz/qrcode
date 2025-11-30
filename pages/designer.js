@@ -2,10 +2,8 @@ import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import i18nConfig from "../next-i18next.config.mjs";
-
-const QRDesigner = dynamic(() => import("@/components/QRDesigner"), {
-  ssr: false,
-});
+import QRDesigner from "@/components/QRDesigner";
+import DesignerErrorBoundary from "@/components/DesignerErrorBoundary";
 
 export default function DesignerPage() {
   const { status } = useSession();
@@ -19,7 +17,9 @@ export default function DesignerPage() {
             {t("designer.description")}
           </p>
         </div>
-        <QRDesigner />
+        <DesignerErrorBoundary>
+          <QRDesigner />
+        </DesignerErrorBoundary>
       </main>
     </div>
   );
