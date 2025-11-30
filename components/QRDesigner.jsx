@@ -1,6 +1,7 @@
 "use client";
 
 import {useEffect, useMemo, useRef, useState} from "react";
+import { useRouter } from "next/router";
 import QRCode from 'qrcode';
 import {Input} from "@/components/ui/input";
 import ColorPicker from "@/components/ui/color-picker";
@@ -17,6 +18,12 @@ import {Switch} from "@/components/ui/switch";
 import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
 import {Tabs, TabsList, TabsTrigger, TabsContent} from "@/components/ui/tabs";
 import {Button} from "@/components/ui/button";
+import MobileMockup from "@/components/ui/MobileMockup";
+import QRViewer from "@/components/qr/QRViewer";
+import EncodesToolbar from "@/components/qr/EncodesToolbar";
+import ExportActions from "@/components/qr/ExportActions";
+import PresetsManager from "@/components/qr/PresetsManager";
+import { buildPdfPreviewUrl as buildPdfPreviewUrlUtil, buildPreviewUrl as buildPreviewUrlUtil } from "@/lib/preview";
 import {toast} from "sonner";
 import {Card, CardHeader, CardTitle, CardContent} from "@/components/ui/card";
 import {
@@ -34,21 +41,11 @@ import {
     QrCode,
     Maximize2,
     Shield,
-    ZoomIn,
-    ZoomOut,
-    RotateCcw,
 } from "lucide-react";
 import ContentTab from "@/components/qr/ContentTab";
 import BorderTab from "@/components/qr/BorderTab";
 import {renderCustomQR} from "@/lib/customRenderer";
 import {useTranslation} from "next-i18next";
-
-let QRCodeStyling;
-// Lazy-load to avoid SSR issues
-if (typeof window !== "undefined") {
-    // eslint-disable-next-line global-require
-    QRCodeStyling = require("qr-code-styling");
-}
 
 const DOT_TYPES = [
     "square",
@@ -58,18 +55,16 @@ const DOT_TYPES = [
     "classy-rounded",
     "extra-rounded",
 ];
-
 const CORNER_SQUARE_TYPES = ["square", "extra-rounded", "circle"];
 const CORNER_DOT_TYPES = ["square", "dot"]; // library accepts these
 
 export default function QRDesigner({embedded = false, initialSnapshot = null, onSnapshotChange = null, redirectUrl: redirectUrlProp = null, slug: slugProp = null}) {
-    const ref = useRef(null);
-    const qrRef = useRef(null);
+    // Viewer implementation moved to QRViewer component
     const {t} = useTranslation("common");
-
+    const router = useRouter?.() || { query: {} };
     // Controls
     const [data, setData] = useState("");
-    const [mode, setMode] = useState("freeform"); // freeform | link | phone | email | wifi | mecard | vcard
+    const [mode, setMode] = useState("freeform"); // freeform | link | phone | email | wifi | mecard | vcard | whatsapp | sms | pdf | image | mp3 | video | app | geo | maps | social
     const [size, setSize] = useState(256);
     const [dotType, setDotType] = useState("square");
     const [dotColor, setDotColor] = useState("#111111");
@@ -83,7 +78,6 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     const [dotGradEnd, setDotGradEnd] = useState("#555555");
     const [dotGradStops, setDotGradStops] = useState(2); // 2 or 3
     const [dotGradRotation, setDotGradRotation] = useState(0); // radians expected by lib
-
     const [bgGradEnabled, setBgGradEnabled] = useState(false);
     const [bgGradType, setBgGradType] = useState("linear");
     const [bgGradStart, setBgGradStart] = useState("#ffffff");
@@ -137,6 +131,42 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     const [wifiPass, setWifiPass] = useState("");
     const [wifiHidden, setWifiHidden] = useState(false);
     const [wifiType, setWifiType] = useState("WPA"); // WEP | WPA | nopass
+    // WhatsApp country dialing
+    const [whatsCountry, setWhatsCountry] = useState("US");
+    const [whatsDialCode, setWhatsDialCode] = useState("1");
+    // SMS country dialing
+    const [smsCountry, setSmsCountry] = useState("US");
+    const [smsDialCode, setSmsDialCode] = useState("1");
+    // PDF landing options (inspired by reference)
+    const [pdfTitle, setPdfTitle] = useState("");
+    const [pdfDescription, setPdfDescription] = useState("");
+    const [pdfCtaText, setPdfCtaText] = useState("View PDF");
+    const [pdfOpenTarget, setPdfOpenTarget] = useState("newtab"); // newtab | sametab | download
+    const [pdfCompany, setPdfCompany] = useState("");
+    const [pdfWebsite, setPdfWebsite] = useState("");
+    const [pdfTitleFont, setPdfTitleFont] = useState("System");
+    const [pdfDescriptionFont, setPdfDescriptionFont] = useState("System");
+    const [pdfCtaTextFont, setPdfCtaTextFont] = useState("System");
+    const [pdfTextSize, setPdfTextSize] = useState(14);
+    const [pdfTextFontColor, setPdfTextFontColor] = useState("#333333");
+    const [pdfSubtitle, setPdfSubtitle] = useState("");
+    const [pdfTextFont, setPdfTextFont] = useState("System");
+    const [pdfDirect, setPdfDirect] = useState(false);
+    const [pdfRequirePassword, setPdfRequirePassword] = useState(false);
+    const [pdfPassword, setPdfPassword] = useState("");
+    const [pdfStyle, setPdfStyle] = useState("minimal");
+    const [pdfAccent, setPdfAccent] = useState("#000000");
+    const [pdfAccent2, setPdfAccent2] = useState("");
+    const [mediaCover, setMediaCover] = useState("");
+    const [mp3SocialLinks, setMp3SocialLinks] = useState([]); // [{platform, url, text}]
+    const [videoSocialLinks, setVideoSocialLinks] = useState([]);
+    const [socialLinks, setSocialLinks] = useState([]);
+    const [phHash, setPhHash] = useState("");
+    // App Links specific
+    const [appCtaIos, setAppCtaIos] = useState('App Store');
+    const [appCtaAndroid, setAppCtaAndroid] = useState('Google Play');
+    const [appCtaWeb, setAppCtaWeb] = useState('Open Website');
+    const [appAutoRedirect, setAppAutoRedirect] = useState(true);
     // Contact (MeCard / vCard)
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
@@ -159,6 +189,42 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 const hasScheme = /^(https?:)?\/\//i.test(linkUrl);
                 return hasScheme ? linkUrl : `https://${linkUrl}`;
             }
+            case "pdf":
+            case "image":
+            case "mp3":
+            case "video":
+            case "maps": {
+                if (!linkUrl) return "";
+                const hasScheme = /^(https?:)?\/\//i.test(linkUrl);
+                return hasScheme ? linkUrl : `https://${linkUrl}`;
+            }
+            case "instagram": {
+                if (!linkUrl) return "";
+                const raw = String(linkUrl).trim();
+                // If user pasted a full Instagram URL, normalize scheme; otherwise treat as username
+                if (/instagram\.com\//i.test(raw)) {
+                    const hasScheme = /^(https?:)?\/\//i.test(raw);
+                    return hasScheme ? raw : `https://${raw}`;
+                }
+                const username = raw.replace(/^@+/, "");
+                return `https://instagram.com/${username}`;
+            }
+            case "facebook": {
+                if (!linkUrl) return "";
+                const raw = String(linkUrl).trim();
+                if (/facebook\.com\//i.test(raw)) {
+                    const hasScheme = /^(https?:)?\/\//i.test(raw);
+                    return hasScheme ? raw : `https://${raw}`;
+                }
+                const slug = raw.replace(/^@+/, "");
+                return `https://facebook.com/${slug}`;
+            }
+            case "menu":
+            case "coupon": {
+                if (!linkUrl) return "";
+                const hasScheme = /^(https?:)?\/\//i.test(linkUrl);
+                return hasScheme ? linkUrl : `https://${linkUrl}`;
+            }
             case "phone":
                 return phone ? `tel:${phone.replace(/\s+/g, "")}` : "";
             case "email": {
@@ -169,6 +235,39 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 const qs = params.toString();
                 return qs ? `mailto:${email}?${qs}` : `mailto:${email}`;
             }
+            case "whatsapp": {
+                const raw = String(phone || "").trim();
+                if (!raw && !whatsDialCode) return "";
+                const dial = String(whatsDialCode || "").replace(/\D+/g, "");
+                let digits;
+                if (/^\+\d+/.test(raw)) {
+                    // Full international number entered by user
+                    digits = raw.replace(/\D+/g, "");
+                } else {
+                    const local = raw.replace(/\D+/g, "");
+                    digits = `${dial}${local}`;
+                }
+                digits = digits.replace(/^0+/, "");
+                if (!digits) return "";
+                const qs = data ? `?text=${encodeURIComponent(data)}` : "";
+                return `https://wa.me/${digits}${qs}`;
+            }
+            case "sms": {
+                const raw = String(phone || "").trim();
+                if (!raw && !smsDialCode) return "";
+                const dial = String(smsDialCode || "").replace(/\D+/g, "");
+                let digits;
+                if (/^\+\d+/.test(raw)) {
+                    digits = raw.replace(/\D+/g, "");
+                } else {
+                    const local = raw.replace(/\D+/g, "");
+                    digits = `${dial}${local}`;
+                }
+                digits = digits.replace(/^0+/, "");
+                if (!digits) return "";
+                const qs = data ? `?body=${encodeURIComponent(data)}` : "";
+                return `sms:${digits}${qs}`;
+            }
             case "wifi": {
                 if (!wifiSsid) return "";
                 const T = wifiType === "nopass" ? "nopass" : wifiType;
@@ -176,6 +275,29 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 const H = wifiHidden ? "H:true;" : "";
                 const esc = (v) => v.replaceAll("\\", "\\\\").replaceAll(";", "\\;").replaceAll(",", "\\,");
                 return `WIFI:T:${T};S:${esc(wifiSsid)};${P}${H};`;
+            }
+            case "app": {
+                // Temporarily encode a single target: prefer web fallback, then iOS, then Android
+                const primary = (typeof window !== 'undefined' && router?.query?.device)
+                  ? router.query.device === 'ios' ? (url || city || '') : router.query.device === 'android' ? (street || city || '') : (city || url || street || '')
+                  : (city || url || street || '');
+                if (!primary) return "";
+                const hasScheme = /^(https?:)?\/\//i.test(primary);
+                return hasScheme ? primary : `https://${primary}`;
+            }
+            case "geo": {
+                const lat = String(state || "").trim();
+                const lng = String(zip || "").trim();
+                if (!lat || !lng) return "";
+                const label = String(country || "").trim();
+                const base = `geo:${lat},${lng}`;
+                return label ? `${base}?q=${encodeURIComponent(label)}` : base;
+            }
+            case "social": {
+                // Placeholder: treat as simple link for now
+                if (!linkUrl) return "";
+                const hasScheme = /^(https?:)?\/\//i.test(linkUrl);
+                return hasScheme ? linkUrl : `https://${linkUrl}`;
             }
             case "mecard": {
                 const esc = (v) => v.replaceAll("\\", "\\\\").replaceAll(";", "\\;").replaceAll(",", "\\,");
@@ -368,7 +490,6 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
             contentSource,
         ]
     );
-
     // end presetData
 
     // Normalize a DB Design document into a runtime snapshot shape for applySnapshot
@@ -503,29 +624,364 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         return Math.round(isSmall ? Math.min(size, maxForMobile) : size);
     }, [viewportWidth, size]);
 
-    // Pan/zoom state for the preview viewer
-    const viewerRef = useRef(null);
-    const [scale, setScale] = useState(1);
-    const [tx, setTx] = useState(0);
-    const [ty, setTy] = useState(0);
-    const [panning, setPanning] = useState(false);
-    const panStart = useRef({x: 0, y: 0, tx: 0, ty: 0});
+    // Integrated viewer state and ref to QR viewer
+    const [viewerKind, setViewerKind] = useState('qr'); // 'qr' | 'preview'
+    const [landingUrl, setLandingUrl] = useState('');
+    const qrViewerRef = useRef(null);
 
-    const applyViewerTransform = () => {
-        const canvas = ref.current?.querySelector?.('canvas');
-        if (!canvas) return;
-        canvas.style.transformOrigin = 'center center';
-        canvas.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
-        canvas.style.willChange = 'transform';
+    const buildPdfPreviewUrl = () => {
+        const origin = typeof window !== 'undefined' ? location.origin : '';
+        return buildPdfPreviewUrlUtil(origin, {
+            url: linkUrl,
+            title: pdfTitle,
+            desc: pdfDescription,
+            company: pdfCompany,
+            site: pdfWebsite,
+            cta: pdfCtaText,
+            target: pdfOpenTarget,
+            tf: pdfTitleFont,
+            bf: pdfTextFont,
+            style: pdfStyle,
+            accent: pdfAccent,
+            accent2: pdfAccent2,
+        });
     };
 
-    const zoomInBtn = () => setScale((s) => Math.min(8, s * 1.2));
-    const zoomOutBtn = () => setScale((s) => Math.max(0.5, s / 1.2));
-    const resetView = () => {
-        setScale(1);
-        setTx(0);
-        setTy(0);
-    };
+    // Compute password hash for gated previews (pdf/mp3)
+    useEffect(() => {
+        let aborted = false;
+        (async () => {
+            try {
+                if (pdfRequirePassword && pdfPassword) {
+                    const enc = new TextEncoder();
+                    const data = enc.encode(pdfPassword);
+                    const digest = await crypto.subtle.digest('SHA-256', data);
+                    const bytes = Array.from(new Uint8Array(digest));
+                    const hex = bytes.map(b => b.toString(16).padStart(2, '0')).join('');
+                    if (!aborted) setPhHash(hex);
+                } else {
+                    if (!aborted) setPhHash('');
+                }
+            } catch {
+                if (!aborted) setPhHash('');
+            }
+        })();
+        return () => { aborted = true; };
+    }, [pdfRequirePassword, pdfPassword]);
+
+    // Auto-sync preview URL while editing when in 'preview' mode
+    useEffect(() => {
+        if (viewerKind !== 'preview') return;
+        const origin = typeof window !== 'undefined' ? location.origin : '';
+        const params = (() => {
+            if (mode === 'pdf') {
+                return {
+                    url: linkUrl,
+                    title: pdfTitle,
+                    desc: pdfDescription,
+                    company: pdfCompany,
+                    site: pdfWebsite,
+                    cta: pdfCtaText,
+                    target: pdfOpenTarget,
+                    tf: pdfTitleFont,
+                    bf: pdfTextFont,
+                    style: pdfStyle,
+                    accent: pdfAccent,
+                    accent2: pdfAccent2,
+                    ph: phHash || undefined,
+                };
+            }
+            if (mode === 'app') {
+                return {
+                    ios: url,
+                    android: street,
+                    web: city,
+                    title: pdfTitle || 'Get the app',
+                    desc: pdfDescription,
+                    tf: pdfTitleFont,
+                    bf: pdfTextFont,
+                    style: pdfStyle,
+                    accent: pdfAccent,
+                    accent2: pdfAccent2,
+                    auto: appAutoRedirect ? 'device' : undefined,
+                    ctaIos: appCtaIos || undefined,
+                    ctaAndroid: appCtaAndroid || undefined,
+                    ctaWeb: appCtaWeb || undefined,
+                };
+            }
+            if (mode === 'image') {
+                return {
+                    url: linkUrl,
+                    title: pdfTitle,
+                    desc: pdfDescription,
+                    site: pdfWebsite,
+                    cta: pdfCtaText || 'Open',
+                    target: pdfOpenTarget,
+                    tf: pdfTitleFont,
+                    bf: pdfTextFont,
+                    style: pdfStyle,
+                    accent: pdfAccent,
+                    accent2: pdfAccent2,
+                };
+            }
+            if (mode === 'phone') {
+                return {
+                    to: phone,
+                    title: pdfTitle || 'Call Us',
+                    desc: pdfDescription,
+                    cta: pdfCtaText || 'Call',
+                    tf: pdfTitleFont,
+                    bf: pdfTextFont,
+                    accent: pdfAccent,
+                    accent2: pdfAccent2,
+                };
+            }
+            if (mode === 'email') {
+                return {
+                    to: email,
+                    subject: emailSubject,
+                    body: emailBody,
+                    title: pdfTitle || 'Send us an email',
+                    desc: pdfDescription,
+                    cta: pdfCtaText || 'Compose Email',
+                    tf: pdfTitleFont,
+                    bf: pdfTextFont,
+                    accent: pdfAccent,
+                    accent2: pdfAccent2,
+                };
+            }
+            if (mode === 'sms') {
+                const raw = String(phone || '').trim();
+                const dial = String(smsDialCode || '').replace(/\D+/g, '');
+                let digits;
+                if (/^\+\d+/.test(raw)) {
+                    digits = raw.replace(/\D+/g, '');
+                } else {
+                    const local = raw.replace(/\D+/g, '');
+                    digits = `${dial}${local}`;
+                }
+                digits = digits.replace(/^0+/, '');
+                return {
+                    to: digits,
+                    body: data || '',
+                    title: pdfTitle || 'Send an SMS',
+                    desc: pdfDescription,
+                    cta: pdfCtaText || 'Open SMS',
+                    tf: pdfTitleFont,
+                    bf: pdfTextFont,
+                    accent: pdfAccent,
+                    accent2: pdfAccent2,
+                };
+            }
+            if (mode === 'wifi') {
+                return {
+                    ssid: wifiSsid,
+                    type: wifiType,
+                    pass: wifiPass,
+                    hidden: wifiHidden,
+                    title: pdfTitle || 'Wi‑Fi Network',
+                    desc: pdfDescription,
+                    cta: pdfCtaText || 'Copy details',
+                    tf: pdfTitleFont,
+                    bf: pdfTextFont,
+                    accent: pdfAccent,
+                    accent2: pdfAccent2,
+                };
+            }
+            if (mode === 'geo') {
+                return {
+                    lat: state,
+                    lng: zip,
+                    label: country,
+                    title: pdfTitle || 'Open Location',
+                    desc: pdfDescription,
+                    cta: pdfCtaText || 'Open in Maps',
+                    tf: pdfTitleFont,
+                    bf: pdfTextFont,
+                    accent: pdfAccent,
+                    accent2: pdfAccent2,
+                };
+            }
+            if (mode === 'maps') {
+                return {
+                    url: linkUrl,
+                    title: pdfTitle || 'Open Map',
+                    desc: pdfDescription,
+                    cta: pdfCtaText || 'Open',
+                    tf: pdfTitleFont,
+                    bf: pdfTextFont,
+                    accent: pdfAccent,
+                    accent2: pdfAccent2,
+                };
+            }
+            if (mode === 'mecard') {
+                return {
+                    fn: firstName, ln: lastName,
+                    phone: contactPhone, email: contactEmail,
+                    org, url, street, city, state, zip, country,
+                    title: pdfTitle || 'Contact', desc: pdfDescription,
+                    tf: pdfTitleFont, bf: pdfTextFont,
+                    accent: pdfAccent, accent2: pdfAccent2,
+                };
+            }
+            if (mode === 'vcard') {
+                return {
+                    fn: firstName, ln: lastName,
+                    phone: contactPhone, email: contactEmail,
+                    org, url, street, city, state, zip, country, note,
+                    title: pdfTitle || 'Contact Card', desc: pdfDescription,
+                    tf: pdfTitleFont, bf: pdfTextFont,
+                    accent: pdfAccent, accent2: pdfAccent2,
+                };
+            }
+            if (mode === 'social') {
+                const out = {
+                    title: pdfTitle || 'Links',
+                    desc: pdfDescription,
+                    tf: pdfTitleFont, bf: pdfTextFont,
+                    accent: pdfAccent, accent2: pdfAccent2,
+                };
+                (socialLinks || []).slice(0,6).forEach((it, idx) => {
+                    const i = idx + 1;
+                    if (it.platform) out[`s${i}p`] = it.platform;
+                    if (it.url) out[`s${i}u`] = it.url;
+                    if (it.text) out[`s${i}t`] = it.text;
+                });
+                return out;
+            }
+            if (mode === 'instagram') {
+                return {
+                    url: linkUrl,
+                    title: pdfTitle || 'Instagram', desc: pdfDescription,
+                    cta: pdfCtaText || 'Open Profile',
+                    tf: pdfTitleFont, bf: pdfTextFont,
+                    accent: pdfAccent, accent2: pdfAccent2,
+                };
+            }
+            if (mode === 'facebook') {
+                return {
+                    url: linkUrl,
+                    title: pdfTitle || 'Facebook', desc: pdfDescription,
+                    cta: pdfCtaText || 'Open Page',
+                    tf: pdfTitleFont, bf: pdfTextFont,
+                    accent: pdfAccent, accent2: pdfAccent2,
+                };
+            }
+            if (mode === 'menu') {
+                return {
+                    url: linkUrl,
+                    title: pdfTitle || 'Menu', desc: pdfDescription,
+                    cta: pdfCtaText || 'View Menu',
+                    tf: pdfTitleFont, bf: pdfTextFont,
+                    accent: pdfAccent, accent2: pdfAccent2,
+                };
+            }
+            if (mode === 'coupon') {
+                return {
+                    url: linkUrl,
+                    title: pdfTitle || 'Coupon', desc: pdfDescription,
+                    cta: pdfCtaText || 'Redeem',
+                    tf: pdfTitleFont, bf: pdfTextFont,
+                    accent: pdfAccent, accent2: pdfAccent2,
+                };
+            }
+            if (mode === 'mp3') {
+                return {
+                    url: linkUrl,
+                    title: pdfTitle || 'MP3',
+                    desc: pdfDescription,
+                    site: pdfWebsite,
+                    cta: pdfCtaText || 'Play',
+                    target: pdfOpenTarget,
+                    tf: pdfTitleFont,
+                    bf: pdfTextFont,
+                    style: pdfStyle,
+                    accent: pdfAccent,
+                    accent2: pdfAccent2,
+                    cover: mediaCover,
+                    ph: phHash || undefined,
+                    ...(() => {
+                        const out = {};
+                        const items = (mp3SocialLinks||[]).slice(0,6);
+                        items.forEach((it, idx) => {
+                          const i = idx + 1;
+                          if (it.platform) out[`s${i}p`] = it.platform;
+                          if (it.url) out[`s${i}u`] = it.url;
+                          if (it.text) out[`s${i}t`] = it.text;
+                        });
+                        return out;
+                    })(),
+                };
+            }
+            if (mode === 'whatsapp') {
+                const raw = String(phone || '').trim();
+                const dial = String(whatsDialCode || '').replace(/\D+/g, '');
+                let digits;
+                if (/^\+\d+/.test(raw)) {
+                    digits = raw.replace(/\D+/g, '');
+                } else {
+                    const local = raw.replace(/\D+/g, '');
+                    digits = `${dial}${local}`;
+                }
+                digits = digits.replace(/^0+/, '');
+                return {
+                    to: digits,
+                    text: data || '',
+                    tf: pdfTitleFont,
+                    bf: pdfTextFont,
+                    accent: pdfAccent,
+                    accent2: pdfAccent2,
+                };
+            }
+            if (mode === 'video') {
+                return {
+                    url: linkUrl,
+                    title: pdfTitle || 'Video',
+                    desc: pdfDescription,
+                    site: pdfWebsite,
+                    cta: pdfCtaText || 'Watch',
+                    target: pdfOpenTarget,
+                    tf: pdfTitleFont,
+                    bf: pdfTextFont,
+                    style: pdfStyle,
+                    accent: pdfAccent,
+                    accent2: pdfAccent2,
+                    cover: mediaCover,
+                    ph: phHash || undefined,
+                    ...(() => {
+                        const out = {};
+                        const items = (videoSocialLinks||[]).slice(0,6);
+                        items.forEach((it, idx) => {
+                          const i = idx + 1;
+                          if (it.platform) out[`s${i}p`] = it.platform;
+                          if (it.url) out[`s${i}u`] = it.url;
+                          if (it.text) out[`s${i}t`] = it.text;
+                        });
+                        return out;
+                    })(),
+                };
+            }
+            if (mode === 'link') {
+                return {
+                    url: linkUrl,
+                    title: pdfTitle,
+                    desc: pdfDescription,
+                    site: linkUrl,
+                    cta: pdfCtaText || 'Open',
+                    tf: pdfTitleFont,
+                    bf: pdfTextFont,
+                    style: pdfStyle,
+                    accent: pdfAccent,
+                    accent2: pdfAccent2,
+                };
+            }
+            return null;
+        })();
+        if (!params) return;
+        const urlBuilt = buildPreviewUrlUtil(mode, origin, params);
+        setLandingUrl(urlBuilt);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [viewerKind, mode, linkUrl, pdfTitle, pdfDescription, pdfCompany, pdfWebsite, pdfCtaText, pdfOpenTarget, pdfTitleFont, pdfTextFont, pdfStyle, pdfAccent, pdfAccent2, mediaCover, phHash, url, street, city, appCtaIos, appCtaAndroid, appCtaWeb, appAutoRedirect, phone, email, emailSubject, emailBody, smsDialCode, wifiSsid, wifiType, wifiPass, wifiHidden, state, zip, country, socialLinks]);
 
     // Live validation message
     const validation = useMemo(() => {
@@ -534,116 +990,91 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         if (mode === "link") {
             if (!/^https?:\/\//i.test(value)) return {ok: true, msg: "No scheme found, using https automatically."};
         }
+        if (mode === "pdf") {
+            if (!/^https?:\/\//i.test(value)) return {ok: true, msg: "No scheme found, using https automatically."};
+            if (!/\.pdf($|[?#])/i.test(value)) return {ok: false, msg: "URL should point to a .pdf file"};
+        }
+        if (["image","mp3","video","maps","social","app","instagram","facebook","menu","coupon"].includes(mode)) {
+            if (!/^(geo:|https?:\/\/)/i.test(value)) return {ok: true, msg: "No scheme found, using https automatically."};
+        }
         if (mode === "email") {
             if (!/^mailto:/i.test(value)) return {ok: false, msg: "Invalid email format."};
         }
         if (mode === "phone") {
             if (!/^tel:/i.test(value)) return {ok: false, msg: "Phone should start with tel:."};
         }
+        if (mode === "sms") {
+            if (!/^sms:/i.test(value)) return {ok: false, msg: "SMS format invalid."};
+        }
+        if (mode === "whatsapp") {
+            if (!/^https?:\/\/(wa\.me|api\.whatsapp)/i.test(value)) return {ok: false, msg: "WhatsApp phone required."};
+        }
         if (mode === "wifi") {
             if (!/^WIFI:/i.test(value)) return {ok: false, msg: "Wi‑Fi string malformed."};
+        }
+        if (mode === "geo") {
+            if (!/^geo:/i.test(value)) return {ok: false, msg: "Geo coordinates required."};
         }
         return {ok: true, msg: "Ready."};
     }, [mode, linkUrl, phone, email, emailSubject, emailBody, wifiSsid, wifiPass, wifiHidden, wifiType, data, firstName, lastName, contactPhone, contactEmail, org, url, note, street, city, state, zip, country]);
 
+    // Preselect preset via ?mode=
     useEffect(() => {
-        if (!ref.current) return;
-        const wantCustom = cornerSquareType === 'circle' || circularBorder;
-        const ensureCanvasSize = () => {
-            const canvas = ref.current?.querySelector?.("canvas");
-            if (canvas) {
-                canvas.style.width = `${displaySize}px`;
-                canvas.style.height = `${displaySize}px`;
-                applyViewerTransform();
-            }
-        };
-        if (wantCustom) {
-            // Switch to custom renderer when circle eyes or circular border are requested
-            if (!qrRef.current || qrRef.current.kind !== 'custom') {
-                // Clear previous renderer DOM
-                ref.current.innerHTML = '';
-                const canvas = document.createElement('canvas');
-                ref.current.appendChild(canvas);
-                qrRef.current = {kind: 'custom', canvas};
-            }
-            const canvas = qrRef.current.canvas;
-            renderCustomQR(canvas, options);
-            ensureCanvasSize();
-            return;
+        if (typeof window === 'undefined') return;
+        const qMode = (router?.query?.mode || '').toString().toLowerCase();
+        const allowed = new Set([
+            "freeform","link","phone","email","wifi","mecard","vcard",
+            "whatsapp","sms",
+            "pdf","image","mp3","video","app","geo","maps",
+            "social","instagram","facebook","menu","coupon"
+        ]);
+        if (qMode && allowed.has(qMode)) {
+            setMode(qMode);
         }
-        // Default to qr-code-styling
-        if (!QRCodeStyling) return;
-        const libOptions = {
-            ...options,
-            cornersSquareOptions: {
-                ...options.cornersSquareOptions,
-                type:
-                    options.cornersSquareOptions?.type === 'circle'
-                        ? 'extra-rounded'
-                        : options.cornersSquareOptions?.type,
-            },
-        };
-        if (!qrRef.current || qrRef.current.kind !== 'styling') {
-            // Clear previous renderer DOM
-            ref.current.innerHTML = '';
-            const inst = new QRCodeStyling(libOptions);
-            inst.append(ref.current);
-            qrRef.current = {kind: 'styling', inst};
-        } else {
-            qrRef.current.inst.update(libOptions);
-        }
-        ensureCanvasSize();
-    }, [options, displaySize, cornerSquareType, circularBorder]);
+    }, [router?.query?.mode]);
 
-    // Enable wheel zoom and pointer pan on the preview container
+    // Compose landing redirect for PDF when requested
     useEffect(() => {
-        const el = viewerRef.current;
-        if (!el) return;
-        const onWheel = (e) => {
-            e.preventDefault();
-            const delta = -e.deltaY;
-            const factor = Math.exp(delta * 0.001);
-            const next = Math.min(8, Math.max(0.5, scale * factor));
-            setScale(next);
-        };
-        const onPointerDown = (e) => {
-            // Ignore clicks that originate from the overlay controls
-            if (e.target && typeof e.target.closest === 'function' && e.target.closest('[data-role="viewer-controls"]')) {
+        if (typeof window === 'undefined') return;
+        if (mode !== 'pdf') return;
+        const makeUrl = async () => {
+            if (pdfDirect) {
+                setContentSource('direct');
+                setRedirectUrl(null);
                 return;
             }
-            setPanning(true);
-            panStart.current = {x: e.clientX, y: e.clientY, tx, ty};
-            el.setPointerCapture?.(e.pointerId);
+            // Build landing URL with query params
+            const base = `${window.location.origin}/view/pdf`;
+            const params = new URLSearchParams();
+            if (linkUrl) params.set('url', linkUrl);
+            if (pdfTitle) params.set('title', pdfTitle);
+            if (pdfDescription) params.set('desc', pdfDescription);
+            if (pdfCompany) params.set('company', pdfCompany);
+            if (pdfWebsite) params.set('site', pdfWebsite);
+            if (pdfCtaText) params.set('cta', pdfCtaText);
+            if (pdfOpenTarget) params.set('target', pdfOpenTarget);
+            if (pdfTitleFont) params.set('tf', pdfTitleFont);
+            if (pdfTextFont) params.set('bf', pdfTextFont);
+            if (pdfRequirePassword && pdfPassword) {
+                try {
+                    const enc = new TextEncoder();
+                    const data = enc.encode(pdfPassword);
+                    const digest = await crypto.subtle.digest('SHA-256', data);
+                    const bytes = Array.from(new Uint8Array(digest));
+                    const hex = bytes.map(b => b.toString(16).padStart(2, '0')).join('');
+                    params.set('ph', hex);
+                } catch (_) {}
+            }
+            const full = `${base}?${params.toString()}`;
+            setRedirectUrl(full);
+            setContentSource('redirect');
         };
-        const onPointerMove = (e) => {
-            if (!panning) return;
-            const dx = e.clientX - panStart.current.x;
-            const dy = e.clientY - panStart.current.y;
-            setTx(panStart.current.tx + dx);
-            setTy(panStart.current.ty + dy);
-        };
-        const onPointerUp = (e) => {
-            setPanning(false);
-            el.releasePointerCapture?.(e.pointerId);
-        };
-        el.addEventListener('wheel', onWheel, {passive: false});
-        el.addEventListener('pointerdown', onPointerDown);
-        el.addEventListener('pointermove', onPointerMove);
-        el.addEventListener('pointerup', onPointerUp);
-        el.addEventListener('pointerleave', onPointerUp);
-        return () => {
-            el.removeEventListener('wheel', onWheel);
-            el.removeEventListener('pointerdown', onPointerDown);
-            el.removeEventListener('pointermove', onPointerMove);
-            el.removeEventListener('pointerup', onPointerUp);
-            el.removeEventListener('pointerleave', onPointerUp);
-        };
-    }, [scale, tx, ty, panning]);
+        makeUrl();
+    }, [mode, pdfDirect, linkUrl, pdfTitle, pdfDescription, pdfCompany, pdfWebsite, pdfCtaText, pdfOpenTarget, pdfTitleFont, pdfTextFont, pdfRequirePassword, pdfPassword]);
 
-    // Reapply transform whenever pan/zoom changes
-    useEffect(() => {
-        applyViewerTransform();
-    }, [scale, tx, ty]);
+    // QR rendering moved into QRViewer component
+
+    const resetView = () => qrViewerRef.current?.resetView?.();
 
     const onUpload = (e) => {
         const file = e.target.files?.[0];
@@ -695,20 +1126,15 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     };
 
     const download = async (ext) => {
-        if (!qrRef.current) return;
         // Save design snapshot automatically
         await autoSaveDesign();
-        if (qrRef.current.kind === 'styling' && ext === 'svg' && qrRef.current.inst?.download) {
-            await qrRef.current.inst.download({extension: ext});
-            return;
-        }
-        const canvas = ref.current?.querySelector?.('canvas');
-        if (!canvas) return;
         if (ext === 'svg') {
-            // Fallback to PNG when SVG requested in custom mode
+            const ok = await qrViewerRef.current?.downloadSvg?.();
+            if (ok) return;
+            // fallback to PNG
             ext = 'png';
         }
-        const blob = await new Promise((res) => canvas.toBlob(res));
+        const blob = await qrViewerRef.current?.getPngBlob?.();
         if (!blob) return;
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -727,27 +1153,9 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         }
     };
 
-    const getPngBlob = async () => {
-        if (!qrRef.current) return null;
-        if (qrRef.current.getRawData) {
-            try {
-                const blob = await qrRef.current.getRawData("png");
-                if (blob) return blob;
-            } catch (e) {
-                // fallback below
-            }
-        }
-        // Fallback: find canvas and convert
-        const canvas = ref.current?.querySelector?.("canvas");
-        if (!canvas) return null;
-        const blob = await new Promise((res) => canvas.toBlob(res));
-        return blob;
-    };
-
     const copyImage = async () => {
-        if (!qrRef.current) return;
         try {
-            const blob = await getPngBlob();
+            const blob = await qrViewerRef.current?.getPngBlob?.();
             if (!blob) return;
             if ("ClipboardItem" in window) {
                 // eslint-disable-next-line no-undef
@@ -768,10 +1176,9 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     };
 
     const downloadPDF = async () => {
-        if (!qrRef.current) return;
         await autoSaveDesign();
         try {
-            const blob = await getPngBlob();
+            const blob = await qrViewerRef.current?.getPngBlob?.();
             const url = URL.createObjectURL(blob);
             const img = new Image();
             await new Promise((res, rej) => {
@@ -780,8 +1187,9 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                 img.src = url;
             });
             const {jsPDF} = await import("jspdf");
-            const pdf = new jsPDF({orientation: "p", unit: "pt", format: [size, size]});
-            pdf.addImage(img, "PNG", 0, 0, size, size);
+            const px = size;
+            const pdf = new jsPDF({orientation: "p", unit: "pt", format: [px, px]});
+            pdf.addImage(img, "PNG", 0, 0, px, px);
             pdf.save("qrcode.pdf");
             URL.revokeObjectURL(url);
         } catch (e) {
@@ -824,6 +1232,23 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         wifiPass,
         wifiHidden,
         wifiType,
+        pdfTitle,
+        pdfDescription,
+        pdfCtaText,
+        pdfOpenTarget,
+        pdfCompany,
+        pdfWebsite,
+        pdfTitleFont,
+        pdfTextFont,
+        pdfDirect,
+        pdfSubtitle,
+        pdfRequirePassword,
+        pdfPassword,
+        appCtaIos,
+        appCtaAndroid,
+        appCtaWeb,
+        appAutoRedirect,
+        socialLinks,
         firstName,
         lastName,
         contactPhone,
@@ -896,6 +1321,18 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         setWifiPass(s.wifiPass ?? "");
         setWifiHidden(!!s.wifiHidden);
         setWifiType(s.wifiType ?? "WPA");
+        setPdfTitle(s.pdfTitle ?? "");
+        setPdfDescription(s.pdfDescription ?? "");
+        setPdfCtaText(s.pdfCtaText ?? "View PDF");
+        setPdfOpenTarget(s.pdfOpenTarget ?? "newtab");
+        setPdfCompany(s.pdfCompany ?? "");
+        setPdfWebsite(s.pdfWebsite ?? "");
+        setPdfTitleFont(s.pdfTitleFont ?? "System");
+        setPdfTextFont(s.pdfTextFont ?? "System");
+        setPdfDirect(!!s.pdfDirect);
+
+        setPdfRequirePassword(!!s.pdfRequirePassword);
+        setPdfPassword(s.pdfPassword ?? "");
         setFirstName(s.firstName ?? "");
         setLastName(s.lastName ?? "");
         setContactPhone(s.contactPhone ?? "");
@@ -952,6 +1389,11 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
         setInnerRadius(s.innerRadius ?? 0);
         setOuterRadius(s.outerRadius ?? 0);
         if (s.contentSource === 'redirect' || s.contentSource === 'direct') setContentSource(s.contentSource);
+        if (typeof s.appCtaIos !== 'undefined') setAppCtaIos(s.appCtaIos);
+        if (typeof s.appCtaAndroid !== 'undefined') setAppCtaAndroid(s.appCtaAndroid);
+        if (typeof s.appCtaWeb !== 'undefined') setAppCtaWeb(s.appCtaWeb);
+        if (typeof s.appAutoRedirect !== 'undefined') setAppAutoRedirect(!!s.appAutoRedirect);
+        if (Array.isArray(s.socialLinks)) setSocialLinks(s.socialLinks);
     };
 
     const savePreset = () => {
@@ -1033,12 +1475,12 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
     };
 
     return (
-        <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card className="">
+        <div className="w-full grid grid-cols-1 border-0 gap-2 lg:grid-cols-7">
+            <div className="lg:col-span-4 border-0">
                 <CardHeader className="pb-4">
                     <CardTitle className="text-base">{t("designerEditor.customizeTitle")}</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <div className="overflow-visible">
                     <Tabs defaultValue="content">
                         <TabsList className="grid w-full grid-cols-5">
                             <TabsTrigger value="content" className="flex items-center gap-2">
@@ -1069,6 +1511,28 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                 data={data} setData={setData}
                                 linkUrl={linkUrl} setLinkUrl={setLinkUrl}
                                 phone={phone} setPhone={setPhone}
+                                whatsCountry={whatsCountry} setWhatsCountry={setWhatsCountry}
+                                whatsDialCode={whatsDialCode} setWhatsDialCode={setWhatsDialCode}
+                                smsCountry={smsCountry} setSmsCountry={setSmsCountry}
+                                smsDialCode={smsDialCode} setSmsDialCode={setSmsDialCode}
+                                pdfTitle={pdfTitle} setPdfTitle={setPdfTitle}
+                                pdfDescription={pdfDescription} setPdfDescription={setPdfDescription}
+                                pdfCtaText={pdfCtaText} setPdfCtaText={setPdfCtaText}
+                                pdfOpenTarget={pdfOpenTarget} setPdfOpenTarget={setPdfOpenTarget}
+                                pdfCompany={pdfCompany} setPdfCompany={setPdfCompany}
+                                pdfWebsite={pdfWebsite} setPdfWebsite={setPdfWebsite}
+                                pdfTitleFont={pdfTitleFont} setPdfTitleFont={setPdfTitleFont}
+                                pdfTextFont={pdfTextFont} setPdfTextFont={setPdfTextFont}
+                                pdfDirect={pdfDirect} setPdfDirect={setPdfDirect}
+                                pdfRequirePassword={pdfRequirePassword} setPdfRequirePassword={setPdfRequirePassword}
+                                pdfPassword={pdfPassword} setPdfPassword={setPdfPassword}
+                                pdfStyle={pdfStyle} setPdfStyle={setPdfStyle}
+                                pdfAccent={pdfAccent} setPdfAccent={setPdfAccent}
+                                pdfAccent2={pdfAccent2} setPdfAccent2={setPdfAccent2}
+                                mediaCover={mediaCover} setMediaCover={setMediaCover}
+                                videoSocialLinks={videoSocialLinks} setVideoSocialLinks={setVideoSocialLinks}
+                                mp3SocialLinks={mp3SocialLinks} setMp3SocialLinks={setMp3SocialLinks}
+                                socialLinks={socialLinks} setSocialLinks={setSocialLinks}
                                 email={email} setEmail={setEmail}
                                 emailSubject={emailSubject} setEmailSubject={setEmailSubject}
                                 emailBody={emailBody} setEmailBody={setEmailBody}
@@ -1088,6 +1552,10 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                                 wifiType={wifiType} setWifiType={setWifiType}
                                 wifiPass={wifiPass} setWifiPass={setWifiPass}
                                 wifiHidden={wifiHidden} setWifiHidden={setWifiHidden}
+                                appCtaIos={appCtaIos} setAppCtaIos={setAppCtaIos}
+                                appCtaAndroid={appCtaAndroid} setAppCtaAndroid={setAppCtaAndroid}
+                                appCtaWeb={appCtaWeb} setAppCtaWeb={setAppCtaWeb}
+                                appAutoRedirect={appAutoRedirect} setAppAutoRedirect={setAppAutoRedirect}
                                 validation={validation}
                                 copyContent={() => {
                                     copyContent();
@@ -1456,7 +1924,6 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                             />
                         </TabsContent>
 
-
                         <TabsContent value="logo" className="space-y-6 mt-6">
                             <h3 className="text-sm font-medium mb-4 text-muted-foreground">Logo Settings</h3>
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1507,436 +1974,394 @@ export default function QRDesigner({embedded = false, initialSnapshot = null, on
                             </div>
                         </TabsContent>
                     </Tabs>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
+            {/* Integrated Preview area below */}
             {/*/!* Quick Download bar under preview *!/*/}
             {/*{!embedded && (*/}
             {/*)}*/}
 
             {/*QR Code Preview with pan/zoom*/}
-            <Card className="flex items-center justify-center h-200">
-                <CardContent
-                    className="flex flex-col items-center justify-center gap-3 h-full w-full"
+            <div className="flex  sticky top-0  self-start h-250 overflow-hidden items-start justify-start border-0 shadow-none lg:col-span-3">
+                <div
+                    className="flex pt-0 border-0 overflow flex-col h-full w-full"
                 >
-                    <div className="w-full flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                        <span>QR encodes:</span>
-                        <Button
-                            type="button"
-                            size="sm"
-                            variant={contentSource === 'direct' ? 'default' : 'outline'}
-                            onClick={() => setContentSource('direct')}
+                    <EncodesToolbar
+                      contentSource={contentSource}
+                      setContentSource={setContentSource}
+                      viewerKind={viewerKind}
+                      setViewerKind={setViewerKind}
+                      mode={mode}
+                      setLandingUrl={setLandingUrl}
+                      buildPreviewUrl={(m) => {
+                        const origin = typeof window !== 'undefined' ? location.origin : '';
+                        const baseParams = (() => {
+                          if (m === 'pdf') {
+                            return {
+                              url: linkUrl,
+                              title: pdfTitle,
+                              desc: pdfDescription,
+                              company: pdfCompany,
+                              site: pdfWebsite,
+                              cta: pdfCtaText,
+                              target: pdfOpenTarget,
+                              tf: pdfTitleFont,
+                              bf: pdfTextFont,
+                              style: pdfStyle,
+                              accent: pdfAccent,
+                              accent2: pdfAccent2,
+                              ph: phHash || undefined,
+                            };
+                          }
+                          if (m === 'whatsapp') {
+                            const raw = String(phone || '').trim();
+                            const dial = String(whatsDialCode || '').replace(/\D+/g, '');
+                            let digits;
+                            if (/^\+\d+/.test(raw)) {
+                              digits = raw.replace(/\D+/g, '');
+                            } else {
+                              const local = raw.replace(/\D+/g, '');
+                              digits = `${dial}${local}`;
+                            }
+                            digits = digits.replace(/^0+/, '');
+                            return {
+                              to: digits,
+                              text: data || '',
+                              tf: pdfTitleFont,
+                              bf: pdfTextFont,
+                              accent: pdfAccent,
+                              accent2: pdfAccent2,
+                            };
+                          }
+                          if (m === 'phone') {
+                            return {
+                              to: phone,
+                              title: pdfTitle || 'Call Us',
+                              desc: pdfDescription,
+                              cta: pdfCtaText || 'Call',
+                              tf: pdfTitleFont, bf: pdfTextFont,
+                              accent: pdfAccent, accent2: pdfAccent2,
+                            };
+                          }
+                          if (m === 'email') {
+                            return {
+                              to: email,
+                              subject: emailSubject,
+                              body: emailBody,
+                              title: pdfTitle || 'Send us an email',
+                              desc: pdfDescription,
+                              cta: pdfCtaText || 'Compose Email',
+                              tf: pdfTitleFont, bf: pdfTextFont,
+                              accent: pdfAccent, accent2: pdfAccent2,
+                            };
+                          }
+                          if (m === 'sms') {
+                            const raw = String(phone || '').trim();
+                            const dial = String(smsDialCode || '').replace(/\D+/g, '');
+                            let digits;
+                            if (/^\+\d+/.test(raw)) {
+                              digits = raw.replace(/\D+/g, '');
+                            } else {
+                              const local = raw.replace(/\D+/g, '');
+                              digits = `${dial}${local}`;
+                            }
+                            digits = digits.replace(/^0+/, '');
+                            return {
+                              to: digits,
+                              body: data || '',
+                              title: pdfTitle || 'Send an SMS',
+                              desc: pdfDescription,
+                              cta: pdfCtaText || 'Open SMS',
+                              tf: pdfTitleFont, bf: pdfTextFont,
+                              accent: pdfAccent, accent2: pdfAccent2,
+                            };
+                          }
+                          if (m === 'image') {
+                            return {
+                              url: linkUrl,
+                              title: pdfTitle,
+                              desc: pdfDescription,
+                              site: pdfWebsite,
+                              cta: pdfCtaText || 'Open',
+                              target: pdfOpenTarget,
+                              tf: pdfTitleFont,
+                              bf: pdfTextFont,
+                              style: pdfStyle,
+                              accent: pdfAccent,
+                              accent2: pdfAccent2,
+                            };
+                          }
+                          if (m === 'mp3') {
+                            return {
+                              url: linkUrl,
+                              title: pdfTitle || 'MP3',
+                              desc: pdfDescription,
+                              site: pdfWebsite,
+                              cta: pdfCtaText || 'Play',
+                              target: pdfOpenTarget,
+                              tf: pdfTitleFont,
+                              bf: pdfTextFont,
+                              style: pdfStyle,
+                              accent: pdfAccent,
+                              accent2: pdfAccent2,
+                              cover: mediaCover,
+                              ph: phHash || undefined,
+                              ...(() => {
+                                const out = {};
+                                const items = (mp3SocialLinks||[]).slice(0,6);
+                                items.forEach((it, idx) => {
+                                  const i = idx + 1;
+                                  if (it.platform) out[`s${i}p`] = it.platform;
+                                  if (it.url) out[`s${i}u`] = it.url;
+                                  if (it.text) out[`s${i}t`] = it.text;
+                                });
+                                return out;
+                              })(),
+                            };
+                          }
+                          if (m === 'video') {
+                            return {
+                              url: linkUrl,
+                              title: pdfTitle || 'Video',
+                              desc: pdfDescription,
+                              site: pdfWebsite,
+                              cta: pdfCtaText || 'Watch',
+                              target: pdfOpenTarget,
+                              tf: pdfTitleFont,
+                              bf: pdfTextFont,
+                              style: pdfStyle,
+                              accent: pdfAccent,
+                              accent2: pdfAccent2,
+                              cover: mediaCover,
+                              ph: phHash || undefined,
+                              ...(() => {
+                                const out = {};
+                                const items = (videoSocialLinks||[]).slice(0,6);
+                                items.forEach((it, idx) => {
+                                  const i = idx + 1;
+                                  if (it.platform) out[`s${i}p`] = it.platform;
+                                  if (it.url) out[`s${i}u`] = it.url;
+                                  if (it.text) out[`s${i}t`] = it.text;
+                                });
+                                return out;
+                              })(),
+                            };
+                          }
+                          if (m === 'wifi') {
+                            return {
+                              ssid: wifiSsid,
+                              type: wifiType,
+                              pass: wifiPass,
+                              hidden: wifiHidden,
+                              title: pdfTitle || 'Wi‑Fi Network',
+                              desc: pdfDescription,
+                              cta: pdfCtaText || 'Copy details',
+                              tf: pdfTitleFont, bf: pdfTextFont,
+                              accent: pdfAccent, accent2: pdfAccent2,
+                            };
+                          }
+                          if (m === 'geo') {
+                            return {
+                              lat: state,
+                              lng: zip,
+                              label: country,
+                              title: pdfTitle || 'Open Location',
+                              desc: pdfDescription,
+                              cta: pdfCtaText || 'Open in Maps',
+                              tf: pdfTitleFont, bf: pdfTextFont,
+                              accent: pdfAccent, accent2: pdfAccent2,
+                            };
+                          }
+                          if (m === 'maps') {
+                            return {
+                              url: linkUrl,
+                              title: pdfTitle || 'Open Map',
+                              desc: pdfDescription,
+                              cta: pdfCtaText || 'Open',
+                              tf: pdfTitleFont, bf: pdfTextFont,
+                              accent: pdfAccent, accent2: pdfAccent2,
+                            };
+                          }
+                          if (m === 'mecard') {
+                            return {
+                              fn: firstName, ln: lastName,
+                              phone: contactPhone, email: contactEmail,
+                              org, url, street, city, state, zip, country,
+                              title: pdfTitle || 'Contact', desc: pdfDescription,
+                              tf: pdfTitleFont, bf: pdfTextFont,
+                              accent: pdfAccent, accent2: pdfAccent2,
+                            };
+                          }
+                          if (m === 'vcard') {
+                            return {
+                              fn: firstName, ln: lastName,
+                              phone: contactPhone, email: contactEmail,
+                              org, url, street, city, state, zip, country, note,
+                              title: pdfTitle || 'Contact Card', desc: pdfDescription,
+                              tf: pdfTitleFont, bf: pdfTextFont,
+                              accent: pdfAccent, accent2: pdfAccent2,
+                            };
+                          }
+                          if (m === 'social') {
+                            const out = {
+                              title: pdfTitle || 'Links',
+                              desc: pdfDescription,
+                              tf: pdfTitleFont, bf: pdfTextFont,
+                              accent: pdfAccent, accent2: pdfAccent2,
+                            };
+                            (socialLinks || []).slice(0,6).forEach((it, idx) => {
+                              const i = idx + 1;
+                              if (it.platform) out[`s${i}p`] = it.platform;
+                              if (it.url) out[`s${i}u`] = it.url;
+                              if (it.text) out[`s${i}t`] = it.text;
+                            });
+                            return out;
+                          }
+                          if (m === 'instagram') {
+                            return {
+                              url: linkUrl,
+                              title: pdfTitle || 'Instagram', desc: pdfDescription,
+                              cta: pdfCtaText || 'Open Profile',
+                              tf: pdfTitleFont, bf: pdfTextFont,
+                              accent: pdfAccent, accent2: pdfAccent2,
+                            };
+                          }
+                          if (m === 'facebook') {
+                            return {
+                              url: linkUrl,
+                              title: pdfTitle || 'Facebook', desc: pdfDescription,
+                              cta: pdfCtaText || 'Open Page',
+                              tf: pdfTitleFont, bf: pdfTextFont,
+                              accent: pdfAccent, accent2: pdfAccent2,
+                            };
+                          }
+                          if (m === 'menu') {
+                            return {
+                              url: linkUrl,
+                              title: pdfTitle || 'Menu', desc: pdfDescription,
+                              cta: pdfCtaText || 'View Menu',
+                              tf: pdfTitleFont, bf: pdfTextFont,
+                              accent: pdfAccent, accent2: pdfAccent2,
+                            };
+                          }
+                          if (m === 'coupon') {
+                            return {
+                              url: linkUrl,
+                              title: pdfTitle || 'Coupon', desc: pdfDescription,
+                              cta: pdfCtaText || 'Redeem',
+                              tf: pdfTitleFont, bf: pdfTextFont,
+                              accent: pdfAccent, accent2: pdfAccent2,
+                            };
+                          }
+                          if (m === 'app') {
+                            return {
+                              ios: url,
+                              android: street,
+                              web: city,
+                              title: pdfTitle || 'Get the app',
+                              desc: pdfDescription,
+                              tf: pdfTitleFont,
+                              bf: pdfTextFont,
+                              style: pdfStyle,
+                              accent: pdfAccent,
+                              accent2: pdfAccent2,
+                              auto: appAutoRedirect ? 'device' : undefined,
+                              ctaIos: appCtaIos || undefined,
+                              ctaAndroid: appCtaAndroid || undefined,
+                              ctaWeb: appCtaWeb || undefined,
+                            };
+                          }
+                          if (m === 'link') {
+                            return {
+                              url: linkUrl,
+                              title: pdfTitle,
+                              desc: pdfDescription,
+                              site: linkUrl,
+                              cta: pdfCtaText || 'Open',
+                              tf: pdfTitleFont,
+                              bf: pdfTextFont,
+                              style: pdfStyle,
+                              accent: pdfAccent,
+                              accent2: pdfAccent2,
+                            };
+                          }
+                          return {};
+                        })();
+                        return buildPreviewUrlUtil(m, origin, baseParams);
+                      }}
+                      ensureRedirectUrl={async () => {
+                        if (!redirectUrlProp && !redirectUrl) {
+                          const created = await saveQrToDb();
+                          if (created?.slug && typeof window !== 'undefined') {
+                            const origin = window.location.origin;
+                            setRedirectUrl(`${origin}/r/${created.slug}`);
+                          }
+                        }
+                      }}
+                    />
+                    <div className="w-full overflow-visible pr-10">
+                      <div className="inline-block" style={{ minWidth: 420 }}>
+                        <MobileMockup
+                          device="iPhone X"
+                          color="black"
+                          width={375}
+                          height={812}
+                          src={viewerKind === 'preview' ? landingUrl : ''}
+                          srcDoc={viewerKind === 'preview' && !landingUrl ? `<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><style>body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;display:flex;align-items:center;justify-content:center;height:100vh;background:#fff;} .msg{max-width:280px;text-align:center;color:#111} .muted{color:#666;font-size:12px;margin-top:8px}</style></head><body><div class=\"msg\"><div style=\"font-weight:700;font-size:16px;margin-bottom:6px\">Preview coming soon</div><div class=\"muted\">This content type preview is not yet implemented.</div></div></body></html>` : ''}
                         >
-                            Direct content
-                        </Button>
-                        <Button
-                            type="button"
-                            size="sm"
-                            variant={contentSource === 'redirect' ? 'default' : 'outline'}
-                            onClick={async () => {
-                                if (!redirectUrlProp && !redirectUrl) {
-                                    const created = await saveQrToDb();
-                                    if (created?.slug && typeof window !== 'undefined') {
-                                        const origin = window.location.origin;
-                                        setRedirectUrl(`${origin}/r/${created.slug}`);
-                                    }
-                                }
-                                setContentSource('redirect');
-                            }}
-                        >
-                            Redirect URL
-                        </Button>
-                        {(redirectUrlProp || redirectUrl) && (
-                            <a
-                                href={(redirectUrlProp || redirectUrl) || '#'}
-                                className="ml-2 underline decoration-dotted text-[11px]"
-                                target="_blank" rel="noreferrer"
-                                title="Open redirect URL"
-                            >
-                                {(redirectUrlProp || redirectUrl)}
-                            </a>
-                        )}
+                            {viewerKind === 'qr' && (
+                              <QRViewer
+                                ref={qrViewerRef}
+                                options={options}
+                                displaySize={displaySize}
+                                cornerSquareType={cornerSquareType}
+                                circularBorder={circularBorder}
+                              />
+                            )}
+                        </MobileMockup>
+                      </div>
                     </div>
-                    <div
-                        ref={viewerRef}
-                        className="relative overflow-hidden flex items-center justify-center w-full h-full cursor-grab"
-                    >
-                        <div ref={ref} className="flex items-center justify-center"/>
-                        {/* Zoom controls */}
-                        <div className="absolute top-2 right-2 z-10 flex items-center gap-2"
-                             data-role="viewer-controls">
-                            <Button className='hover:bg-orange-400' size="icon" onClick={zoomOutBtn} title="Zoom out">
-                                <ZoomOut className="size-4"/>
-                            </Button>
-                            <Button className='hover:bg-orange-400' size="icon" onClick={zoomInBtn} title="Zoom in">
-                                <ZoomIn className="size-4"/>
-                            </Button>
-                            <Button className='hover:bg-orange-400' size="icon" onClick={resetView} title="Reset view">
-                                <RotateCcw className="size-4"/>
-                            </Button>
-                        </div>
-                    </div>
-                    <div className="w-full flex flex-wrap items-center justify-center gap-3 py-3">
-                        <Button
-                            type="button"
-                            onClick={() => {
-                                download('png');
-                                toast.success(t("designerEditor.messages.downloadStarted", {format: 'PNG'}));
-                            }}
-                        >
-                            {t("designerEditor.logoTab.downloadPng")}
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => {
-                                download('svg');
-                                toast.success(t("designerEditor.messages.downloadStarted", {format: 'SVG'}));
-                            }}
-                        >
-                            {t("designerEditor.logoTab.downloadSvg")}
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => {
-                                downloadPDF();
-                                toast.success(t("designerEditor.messages.downloadStarted", {format: 'PDF'}));
-                            }}
-                        >
-                            {t("designerEditor.logoTab.downloadPdf")}
-                        </Button>
-                    </div>
-
-                    <div>
-                        <h3 className="text-sm font-medium mb-3 text-muted-foreground">{t("designerEditor.saveToLibrary")}</h3>
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">
-                            <div className="lg:col-span-2">
-                                <Label className="mb-2 block text-sm">{t("designerEditor.qrName")}</Label>
-                                <Input
-                                    value={qrName}
-                                    onChange={(e) => setQrName(e.target.value)}
-                                    placeholder={t("designerEditor.qrNamePlaceholder")}
-                                    className="w-full"
-                                />
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <Button onClick={saveQrToDb} disabled={savingDb} className="w-full">
-                                    {savingDb ? t("designerEditor.saving") : t("designerEditor.saveQr")}
-                                </Button>
-                                {savedQr?.slug && (
-                                    <a className="text-sm text-center underline text-muted-foreground hover:text-foreground transition-colors"
-                                       href="/qrs">
-                                        {t("designerEditor.viewInMyQrs")}
-                                    </a>
-                                )}
-                            </div>
-                        </div>
-                    </div>
+                    <ExportActions
+                      t={t}
+                      onDownload={(fmt) => { download(fmt); toast.success(t("designerEditor.messages.downloadStarted", {format: fmt.toUpperCase()})); }}
+                      onDownloadPDF={() => { downloadPDF(); toast.success(t("designerEditor.messages.downloadStarted", {format: 'PDF'})); }}
+                      qrName={qrName}
+                      setQrName={setQrName}
+                      saveQrToDb={saveQrToDb}
+                      savingDb={savingDb}
+                      savedQr={savedQr}
+                    />
 
 
-                </CardContent>
+                </div>
+            </div>
 
-
-            </Card>
-            {/*{!embedded && (*/}
-            {/*    <Card className="lg:col-span-2">*/}
-            {/*        <CardHeader className="pb-4">*/}
-            {/*            <CardTitle className="text-base">{t("designerEditor.saveAndExport")}</CardTitle>*/}
-            {/*        </CardHeader>*/}
-            {/*        <CardContent className="space-y-6">*/}
-            {/*            /!* Save QR to Library Section *!/*/}
-            {/*            <div>*/}
-            {/*                <h3 className="text-sm font-medium mb-3 text-muted-foreground">{t("designerEditor.saveToLibrary")}</h3>*/}
-            {/*                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">*/}
-            {/*                    <div className="lg:col-span-2">*/}
-            {/*                        <Label className="mb-2 block text-sm">{t("designerEditor.qrName")}</Label>*/}
-            {/*                        <Input*/}
-            {/*                            value={qrName}*/}
-            {/*                            onChange={(e) => setQrName(e.target.value)}*/}
-            {/*                            placeholder={t("designerEditor.qrNamePlaceholder")}*/}
-            {/*                            className="w-full"*/}
-            {/*                        />*/}
-            {/*                    </div>*/}
-            {/*                    <div className="flex flex-col gap-2">*/}
-            {/*                        <Button onClick={saveQrToDb} disabled={savingDb} className="w-full">*/}
-            {/*                            {savingDb ? t("designerEditor.saving") : t("designerEditor.saveQr")}*/}
-            {/*                        </Button>*/}
-            {/*                        {savedQr?.slug && (*/}
-            {/*                            <a className="text-sm text-center underline text-muted-foreground hover:text-foreground transition-colors"*/}
-            {/*                               href="/qrs">*/}
-            {/*                                {t("designerEditor.viewInMyQrs")}*/}
-            {/*                            </a>*/}
-            {/*                        )}*/}
-            {/*                    </div>*/}
-            {/*                </div>*/}
-            {/*            </div>*/}
-
-            {/*            /!* Divider *!/*/}
-            {/*            /!*<div className="border-t"></div>*!/*/}
-
-            {/*            /!* Download Section *!/*/}
-            {/*            /!*<div>*!/*/}
-            {/*            /!*    <h3 className="text-sm font-medium mb-3 text-muted-foreground">{t("designerEditor.downloadOptions")}</h3>*!/*/}
-            {/*            /!*    <div className="flex flex-wrap gap-3">*!/*/}
-            {/*            /!*        <Button*!/*/}
-            {/*            /!*            type="button"*!/*/}
-            {/*            /!*            onClick={() => {*!/*/}
-            {/*            /!*                download('png');*!/*/}
-            {/*            /!*                toast.success(t("designerEditor.messages.downloadStarted", {format: 'PNG'}));*!/*/}
-            {/*            /!*            }}*!/*/}
-            {/*            /!*        >*!/*/}
-            {/*            /!*            {t("designerEditor.logoTab.downloadPng")}*!/*/}
-            {/*            /!*        </Button>*!/*/}
-            {/*            /!*        <Button*!/*/}
-            {/*            /!*            type="button"*!/*/}
-            {/*            /!*            variant="outline"*!/*/}
-            {/*            /!*            onClick={() => {*!/*/}
-            {/*            /!*                download('svg');*!/*/}
-            {/*            /!*                toast.success(t("designerEditor.messages.downloadStarted", {format: 'SVG'}));*!/*/}
-            {/*            /!*            }}*!/*/}
-            {/*            /!*        >*!/*/}
-            {/*            /!*            {t("designerEditor.logoTab.downloadSvg")}*!/*/}
-            {/*            /!*        </Button>*!/*/}
-            {/*            /!*        <Button*!/*/}
-            {/*            /!*            type="button"*!/*/}
-            {/*            /!*            variant="outline"*!/*/}
-            {/*            /!*            onClick={() => {*!/*/}
-            {/*            /!*                downloadPDF();*!/*/}
-            {/*            /!*                toast.success(t("designerEditor.messages.downloadStarted", {format: 'PDF'}));*!/*/}
-            {/*            /!*            }}*!/*/}
-            {/*            /!*        >*!/*/}
-            {/*            /!*            {t("designerEditor.logoTab.downloadPdf")}*!/*/}
-            {/*            /!*        </Button>*!/*/}
-            {/*            /!*    </div>*!/*/}
-            {/*            /!*</div>*!/*/}
-
-            {/*            /!*Divider *!/*/}
-            {/*            /!*<div className="border-t"></div>*!/*/}
-
-            {/*            /!* Quick Save Preset Section *!/*/}
-            {/*            /!*<div>*!/*/}
-            {/*            /!*    <h3 className="text-sm font-medium mb-3 text-muted-foreground">{t("designerEditor.quickSave.title")}</h3>*!/*/}
-            {/*            /!*    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">*!/*/}
-            {/*            /!*        /!* Save to Cloud *!/*!/*/}
-            {/*            /!*        <div className="space-y-3">*!/*/}
-            {/*            /!*            <Label className="text-sm">{t("designerEditor.quickSave.cloudSaveLabel")}</Label>*!/*/}
-            {/*            /!*            <div className="flex gap-2">*!/*/}
-            {/*            /!*                <Input*!/*/}
-            {/*            /!*                    value={presetName}*!/*/}
-            {/*            /!*                    onChange={(e) => setPresetName(e.target.value)}*!/*/}
-            {/*            /!*                    placeholder={t("designerEditor.presetsTab.presetNamePlaceholder")}*!/*/}
-            {/*            /!*                    className="flex-1"*!/*/}
-            {/*            /!*                />*!/*/}
-            {/*            /!*                <Button*!/*/}
-            {/*            /!*                    type="button"*!/*/}
-            {/*            /!*                    variant="outline"*!/*/}
-            {/*            /!*                    onClick={async () => {*!/*/}
-            {/*            /!*                        const snapshot = buildSnapshot();*!/*/}
-            {/*            /!*                        const res = await fetch('/api/presets', {*!/*/}
-            {/*            /!*                            method: 'POST',*!/*/}
-            {/*            /!*                            headers: {'Content-Type': 'application/json'},*!/*/}
-            {/*            /!*                            body: JSON.stringify({*!/*/}
-            {/*            /!*                                name: presetName || t('designerEditor.untitled'),*!/*/}
-            {/*            /!*                                snapshot*!/*/}
-            {/*            /!*                            })*!/*/}
-            {/*            /!*                        });*!/*/}
-            {/*            /!*                        if (res.ok) toast.success(t("designerEditor.messages.presetSaved"));*!/*/}
-            {/*            /!*                        else toast.error(t("designerEditor.messages.failedToSave"));*!/*/}
-            {/*            /!*                    }}*!/*/}
-            {/*            /!*                >*!/*/}
-            {/*            /!*                    {t("designerEditor.quickSave.saveToCloud")}*!/*/}
-            {/*            /!*                </Button>*!/*/}
-            {/*            /!*            </div>*!/*/}
-            {/*            /!*        </div>*!/*/}
-
-            {/*            /!*        /!* Load from Cloud *!/*!/*/}
-            {/*            /!*        <div className="space-y-3">*!/*/}
-            {/*            /!*            <Label className="text-sm">{t("designerEditor.quickSave.cloudLoadLabel")}</Label>*!/*/}
-            {/*            /!*            <div className="flex gap-2">*!/*/}
-            {/*            /!*                <select*!/*/}
-            {/*            /!*                    className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"*!/*/}
-            {/*            /!*                    value={cloudSelectedId}*!/*/}
-            {/*            /!*                    onChange={async (e) => {*!/*/}
-            {/*            /!*                        const id = e.target.value;*!/*/}
-            {/*            /!*                        setCloudSelectedId(id);*!/*/}
-            {/*            /!*                        if (!id) return;*!/*/}
-            {/*            /!*                        const r = await fetch(`/api/presets/${id}`);*!/*/}
-            {/*            /!*                        const js = await r.json();*!/*/}
-            {/*            /!*                        if (js?.success) applySnapshot(js.item.snapshot);*!/*/}
-            {/*            /!*                    }}*!/*/}
-            {/*            /!*                >*!/*/}
-            {/*            /!*                    <option value="">{t("designerEditor.quickSave.selectCloudPreset")}</option>*!/*/}
-            {/*            /!*                    {cloudPresets.map(p => (*!/*/}
-            {/*            /!*                        <option key={p._id} value={p._id}>{p.name}</option>*!/*/}
-            {/*            /!*                    ))}*!/*/}
-            {/*            /!*                </select>*!/*/}
-            {/*            /!*                <Button*!/*/}
-            {/*            /!*                    type="button"*!/*/}
-            {/*            /!*                    variant="outline"*!/*/}
-            {/*            /!*                    onClick={async () => {*!/*/}
-            {/*            /!*                        if (!cloudSelectedId) return;*!/*/}
-            {/*            /!*                        await fetch(`/api/presets/${cloudSelectedId}`, {method: "DELETE"});*!/*/}
-            {/*            /!*                        refreshCloudPresets();*!/*/}
-            {/*            /!*                        setCloudSelectedId("");*!/*/}
-            {/*            /!*                    }}*!/*/}
-            {/*            /!*                    disabled={!cloudSelectedId}*!/*/}
-            {/*            /!*                >*!/*/}
-            {/*            /!*                    {t("designerEditor.presetsTab.deleteButton")}*!/*/}
-            {/*            /!*                </Button>*!/*/}
-            {/*            /!*                <Button type="button" variant="outline" onClick={refreshCloudPresets}>*!/*/}
-            {/*            /!*                    {t("designerEditor.quickSave.refresh")}*!/*/}
-            {/*            /!*                </Button>*!/*/}
-            {/*            /!*            </div>*!/*/}
-            {/*            /!*        </div>*!/*/}
-            {/*            /!*    </div>*!/*/}
-            {/*            /!*</div>*!/*/}
-            {/*        </CardContent>*/}
-            {/*    </Card>*/}
-            {/*)}*/}
             {!embedded && (
-                <Card className='lg:col-span-2'>
+                <div className='lg:col-span-4'>
                     <CardHeader className="pb-4">
                         <CardTitle className="text-base flex items-center gap-2">
                             <List className="size-4"/> {t("designerEditor.tabs.presets")}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        {/* Local Presets Section */}
-                        {/*<div>*/}
-                        {/*    <h3 className="text-sm font-medium mb-3 text-muted-foreground">{t("designerEditor.presetsTab.localTitle")}</h3>*/}
-                        {/*    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">*/}
-                        {/*        /!* Save Local Preset *!/*/}
-                        {/*        <div className="space-y-3">*/}
-                        {/*            <Label*/}
-                        {/*                className="text-sm">{t("designerEditor.presetsTab.savePresetNameLabel")}</Label>*/}
-                        {/*            <div className="flex gap-2">*/}
-                        {/*                <Input*/}
-                        {/*                    value={presetName}*/}
-                        {/*                    onChange={(e) => setPresetName(e.target.value)}*/}
-                        {/*                    placeholder={t("designerEditor.presetsTab.presetNamePlaceholder")}*/}
-                        {/*                    className="flex-1"*/}
-                        {/*                />*/}
-                        {/*                <Button type="button" variant="outline" onClick={savePreset}>*/}
-                        {/*                    {t("designerEditor.presetsTab.savePresetButton")}*/}
-                        {/*                </Button>*/}
-                        {/*            </div>*/}
-                        {/*        </div>*/}
-
-                        {/*        /!* Load/Manage Local Presets *!/*/}
-                        {/*        <div className="space-y-3">*/}
-                        {/*            <Label className="text-sm">{t("designerEditor.presetsTab.manageLabel")}</Label>*/}
-                        {/*            <div className="flex gap-2">*/}
-                        {/*                <Select value={selectedPresetId} onValueChange={setSelectedPresetId}*/}
-                        {/*                        className="flex-1">*/}
-                        {/*                    <SelectTrigger>*/}
-                        {/*                        <SelectValue*/}
-                        {/*                            placeholder={t("designerEditor.presetsTab.selectPresetPlaceholder")}/>*/}
-                        {/*                    </SelectTrigger>*/}
-                        {/*                    <SelectContent>*/}
-                        {/*                        {savedPresets.length === 0 && (*/}
-                        {/*                            <SelectItem value="none"*/}
-                        {/*                                        disabled>{t("designerEditor.presetsTab.noPresets")}</SelectItem>*/}
-                        {/*                        )}*/}
-                        {/*                        {savedPresets.map((p) => (*/}
-                        {/*                            <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>*/}
-                        {/*                        ))}*/}
-                        {/*                    </SelectContent>*/}
-                        {/*                </Select>*/}
-                        {/*                <Button type="button" variant="outline" onClick={loadPreset}*/}
-                        {/*                        disabled={!selectedPresetId}>*/}
-                        {/*                    {t("designerEditor.presetsTab.loadButton")}*/}
-                        {/*                </Button>*/}
-                        {/*                <Button type="button" variant="outline" onClick={deletePreset}*/}
-                        {/*                        disabled={!selectedPresetId}>*/}
-                        {/*                    {t("designerEditor.presetsTab.deleteButton")}*/}
-                        {/*                </Button>*/}
-                        {/*            </div>*/}
-                        {/*        </div>*/}
-                        {/*    </div>*/}
-                        {/*</div>*/}
 
                         {/* Divider */}
                         <div className="border-t"></div>
 
                         {/* Cloud Presets Section */}
-                        <div>
-                            <h3 className="text-sm font-medium mb-3 text-muted-foreground">{t("designerEditor.presetsTab.cloudTitle")}</h3>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                {/* Save to Cloud */}
-                                <div className="space-y-3">
-                                    <Label className="text-sm">{t("designerEditor.quickSave.cloudSaveLabel")}</Label>
-                                    <div className="flex gap-2">
-                                        <Input
-                                            value={presetName}
-                                            onChange={(e) => setPresetName(e.target.value)}
-                                            placeholder={t("designerEditor.presetsTab.presetNamePlaceholder")}
-                                            className="flex-1"
-                                        />
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={async () => {
-                                                const snapshot = buildSnapshot();
-                                                const res = await fetch('/api/presets', {
-                                                    method: 'POST',
-                                                    headers: {'Content-Type': 'application/json'},
-                                                    body: JSON.stringify({
-                                                        name: presetName || t('designerEditor.untitled'),
-                                                        snapshot
-                                                    })
-                                                });
-                                                if (res.ok) toast.success(t("designerEditor.messages.presetSaved"));
-                                                else toast.error(t("designerEditor.messages.failedToSave"));
-                                            }}
-                                        >
-                                            {t("designerEditor.quickSave.saveToCloud")}
-                                        </Button>
-                                    </div>
-                                </div>
-
-                                {/* Load/Manage Cloud Presets */}
-                                <div className="space-y-3">
-                                    <Label className="text-sm">{t("designerEditor.quickSave.cloudLoadLabel")}</Label>
-                                    <div className="flex gap-2">
-                                        <select
-                                            className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                            value={cloudSelectedId}
-                                            onChange={async (e) => {
-                                                const id = e.target.value;
-                                                setCloudSelectedId(id);
-                                                if (!id) return;
-                                                const r = await fetch(`/api/presets/${id}`);
-                                                const js = await r.json();
-                                                if (js?.success) applySnapshot(js.item.snapshot);
-                                            }}
-                                        >
-                                            <option value="">{t("designerEditor.quickSave.selectCloudPreset")}</option>
-                                            {cloudPresets.map(p => (
-                                                <option key={p._id} value={p._id}>{p.name}</option>
-                                            ))}
-                                        </select>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={async () => {
-                                                if (!cloudSelectedId) return;
-                                                await fetch(`/api/presets/${cloudSelectedId}`, {method: "DELETE"});
-                                                refreshCloudPresets();
-                                                setCloudSelectedId("");
-                                            }}
-                                            disabled={!cloudSelectedId}
-                                        >
-                                            {t("designerEditor.presetsTab.deleteButton")}
-                                        </Button>
-                                        <Button type="button" variant="outline" onClick={refreshCloudPresets}>
-                                            {t("designerEditor.quickSave.refresh")}
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <PresetsManager
+                          t={t}
+                          buildSnapshot={buildSnapshot}
+                          applySnapshot={applySnapshot}
+                          cloudPresets={cloudPresets}
+                          refreshCloudPresets={refreshCloudPresets}
+                          presetName={presetName}
+                          setPresetName={setPresetName}
+                          cloudSelectedId={cloudSelectedId}
+                          setCloudSelectedId={setCloudSelectedId}
+                        />
                     </CardContent>
-                </Card>
+                </div>
             )}
 
 

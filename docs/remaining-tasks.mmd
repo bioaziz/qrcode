@@ -1,0 +1,66 @@
+mindmap
+  root((Remaining Tasks))
+    ContentTab Modularization
+      Extract to modules
+        LinkContent
+        PhoneContent
+        EmailContent
+        WhatsAppContent
+        SMSContent
+        WifiContent
+        MediaContent (image/mp3/video/maps)
+        AppContent
+        GeoContent
+        MapsContent
+        MeCardContent
+        VCardContent
+        SocialContent
+        InstagramContent
+        FacebookContent
+      Shared patterns
+        Props contract for get/set state
+        Small helpers colocated per module
+        Minimal validation messages
+    Preview Routes (/view/*)
+      Implement pages
+        /view/link
+        /view/image
+        /view/mp3
+        /view/video
+        /view/vcard
+        /view/mecard (alias optional)
+        /view/whatsapp
+        /view/sms
+      Styling
+        No global header (already hidden for /view/*)
+        Clean typography, mobile-first
+        Match PDF page visual standards
+    Preview URL Utilities
+      Expand lib/preview.js
+        buildPreviewUrl(mode, origin, params)
+        Builders per type (link, image, mp3, video, vcard, whatsapp, sms)
+      Replace ad-hoc builders in QRDesigner/EncodesToolbar
+      (Optional) Add lightweight unit tests
+    Designer Preview Area
+      Keep smartphone frame via react-device-frameset
+      Sticky positioning only (done); fine-tune top offset
+      Responsive: height tokens for sm/md/lg
+      A11y: focus trap not needed (no modal), ensure toolbar tab order
+    PDF Flow Adjustments
+      Manual URL input removed (done)
+      Upload-only URL via PdfUploadField (done)
+      Verify /api/upload/pdf validations & error states
+    i18n
+      Add strings for new content modules
+      Ensure PdfContent keys exist or fallback
+    Cleanup
+      Remove any leftover inline PDF UI code (done)
+      Ensure no unused imports in ContentTab
+      Lint pass and fix minor warnings
+    QA
+      Manual test matrix
+        Create PDF → upload → preview → redirect
+        Switch presets rapidly → no crash
+        Mobile + desktop layouts (sticky preview)
+      Basic regression on downloads (PNG/SVG/PDF)
+

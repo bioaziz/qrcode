@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Install deps first for better caching
 COPY package.json package-lock.json* ./
-RUN npm ci || npm install
+RUN npm ci || npm install --legacy-peer-deps
 
 # Copy the rest
 COPY . .

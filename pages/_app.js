@@ -21,7 +21,8 @@ const geistMono = Geist_Mono({
 
 function App({ Component, pageProps: { session, ...pageProps } }) {
   const router = useRouter();
-  const hideNav = router.pathname === "/"; // no header on landing
+  // Hide NavBar on landing and all embeddable preview routes
+  const hideNav = router.pathname === "/" || router.pathname.startsWith("/view/");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -38,7 +39,7 @@ function App({ Component, pageProps: { session, ...pageProps } }) {
   return (
     <SessionProvider session={session}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <div className={`${geistSans.variable} ${geistMono.variable} font-sans min-h-screen`}>
+        <div className={`${geistSans.variable} ${geistMono.variable} font-sans `}>
           {!hideNav && <NavBar />}
           <Component {...pageProps} />
           <Toaster richColors />
